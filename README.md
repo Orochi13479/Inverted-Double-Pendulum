@@ -6,6 +6,10 @@ The project aims to ...
 
 ## MjBot Implementation
 ### Setup
+Install robotpkg
+
+pinocchio
+
 Please run the following in the ~/git/Inverted-Double-Pendulum directory:
 ```
 mkdir build
