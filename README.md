@@ -6,9 +6,7 @@ The project aims to ...
 
 ## MjBot Implementation
 ### Setup
-Install robotpkg
-
-pinocchio
+Install [robotpkg/pinocchio](https://stack-of-tasks.github.io/pinocchio/download.html)
 
 Please run the following in the ~/git/Inverted-Double-Pendulum directory:
 ```
