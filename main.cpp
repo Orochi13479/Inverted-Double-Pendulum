@@ -1,5 +1,6 @@
 #include <iostream>
 #include "IDPDriver.h"
+#include "IDPControl.h"
 
 int main(int argc, char **argv){
     using namespace mjbots;
