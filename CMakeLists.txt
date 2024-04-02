@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.11)
 
 project(InvertedDoublePendulum)
 
@@ -13,12 +13,17 @@ FetchContent_MakeAvailable(moteus)
 
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/openrobots")
 
-find_package(pinocchio)
+# find_package(pinocchio)
 
-add_executable(IDPControl IDPControl.cc)
-target_link_libraries(IDPControl moteus::cpp)
-target_link_libraries(IDPControl pinocchio::pinocchio)
+add_executable(${PROJECT_NAME}_main main.cpp IDPControl.cpp IDPDriver.cpp)
+target_link_libraries(${PROJECT_NAME}_main moteus::cpp)
 
-add_executable(IDPDriver IDPDriver.cc)
-target_link_libraries(IDPDriver moteus::cpp)
-target_link_libraries(IDPDriver pinocchio::pinocchio)
+# add_executable(IDPControl IDPControl.cpp)
+# target_link_libraries(IDPControl moteus::cpp)
+# target_link_libraries(IDPControl pinocchio::pinocchio)
+
+# add_executable(IDPDriver IDPDriver.cpp)
+# target_link_libraries(IDPDriver moteus::cpp)
+# target_link_libraries(IDPDriver pinocchio::pinocchio)
+
+

@@ -8,11 +8,8 @@
 
 #include "moteus.h"
 
-int main(int argc, char** argv) {
-  using namespace mjbots;
-
-  moteus::Controller::DefaultArgProcess(argc, argv);
-  
-
-  return 0;
-}
+class Driver {
+  public:
+    Driver();
+    void test();
+};
