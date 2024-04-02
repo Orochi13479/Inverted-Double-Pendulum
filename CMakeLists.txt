@@ -15,8 +15,8 @@ FetchContent_MakeAvailable(moteus)
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/openrobots")
 
 add_executable(${PROJECT_NAME}_main main.cpp IDPDriver.cpp IDPControl.cpp)
-target_link_libraries(${PROJECT_NAME}_main moteus::cpp pthread)
+# target_link_libraries(${PROJECT_NAME}_main moteus::cpp pthread)
 
 # Uncomment if Pinocchio is needed
-# find_package(pinocchio)
-# target_link_libraries(${PROJECT_NAME}_main moteus::cpp pinocchio::pinocchio) 
+find_package(pinocchio)
+target_link_libraries(${PROJECT_NAME}_main pinocchio::pinocchio moteus::cpp pthread) 
