@@ -1,8 +1,11 @@
 # Inverted Double Pendulum
-The project aims to ...
+The project aims to create a functioning Inverted Double Pendulum that employ the use of 2x Moteus r4.11 motors to actuate the pendulum.
+A Simulink Simulation is developed to ensure the functionality and possibility of the Inverted Double pendulum can be run. 
 
 ## Simulation
 ### Setup
+Open Simulink file DoublePendulum.slx
+Run the Simulink file and launch visualiser in Matlab
 
 ## MjBot Implementation
 ### Requirements
