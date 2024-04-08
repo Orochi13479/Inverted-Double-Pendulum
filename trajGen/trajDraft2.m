@@ -71,7 +71,7 @@ eqn_2 = subs(eqRed_2);
 M = matlabFunction(V,'vars',{'t','Y'});
 
 % Define the inital conditions of the state variables 
-initCond = [pi/4 0 pi/6 0];
+initCond = [0 0 0 0];
 
 % Use ode45 to sol be the state variables. The solutions are a function of
 % time within the interval [0, 10]
