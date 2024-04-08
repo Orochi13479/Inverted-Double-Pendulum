@@ -2,9 +2,14 @@
 The project aims to create a functioning Inverted Double Pendulum that employ the use of 2x Moteus r4.11 motors to actuate the pendulum.
 A Simulink Simulation is developed to ensure the functionality and possibility of the Inverted Double pendulum can be run. 
 
+
 ## Simulation
 ### Setup
-Open Simulink file DoublePendulum.slx
+
+- Install Matlab Add Ons [Simulink](https://au.mathworks.com/help/install/install-products.html)
+- Install Matlab Add Ons [Simscape Multibody](https://au.mathworks.com/campaigns/offerings/download_smlink.html)
+
+Open Simulink file DoublePendulum.slx.
 Run the Simulink file and launch visualiser in Matlab
 
 ## MjBot Implementation
