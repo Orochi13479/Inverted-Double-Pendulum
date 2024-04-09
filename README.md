@@ -55,6 +55,10 @@ Reset Motor Position (Recommended use before running script)
 ```
 moteus_tool -t 1,2 --zero-offset
 ```
-## Latency Test of Preempt-RT Kernel compared to Standard Kernel
 
-![alt text](https://github.com/Orochi13479/Inverted-Double-Pendulum/blob/main/Misc/RT%20Latency.png)
+## Latency Test of Standard Kernel compared to Preempt-RT Kernel
+### Standard Kernel 6.6.20+rpt-rpi-v8
+![alt text](https://github.com/Orochi13479/Inverted-Double-Pendulum/blob/main/Misc/Standard%20Latency.png?raw=true)
+
+### Preempt-RT patched Kernel 6.6.23-rt28-v8+
+![alt text](https://github.com/Orochi13479/Inverted-Double-Pendulum/blob/main/Misc/RT%20Latency.png?raw=true)
