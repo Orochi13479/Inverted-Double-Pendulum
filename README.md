@@ -55,3 +55,6 @@ Reset Motor Position (Recommended use before running script)
 ```
 moteus_tool -t 1,2 --zero-offset
 ```
+## Latency Test of Preempt-RT Kernel compared to Standard Kernel
+
+![alt text]()
