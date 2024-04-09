@@ -57,4 +57,4 @@ moteus_tool -t 1,2 --zero-offset
 ```
 ## Latency Test of Preempt-RT Kernel compared to Standard Kernel
 
-![alt text]()
+![alt text](https://github.com/Orochi13479/Inverted-Double-Pendulum/blob/main/Misc/RT%20Latency.png)
