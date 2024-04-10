@@ -131,7 +131,8 @@ int main(int argc, char **argv)
     double armLength;
     std::cout << "Enter Arm Length (Default 0.225m): ";
     std::cin >> armLength;
-    getPracTorque(armLength);
+
+    std::cout << "Practical Torque Output: " << getPracTorque(armLength) << "Nm" << std::endl;
 
     return 0;
 }
