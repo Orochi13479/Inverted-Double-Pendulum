@@ -2,10 +2,19 @@
 
 #include <stdio.h>
 #include <unistd.h>
-
+#include <csignal> // For signal handling
 #include <iostream>
 
 #include "moteus.h"
+
+// Global flag for indicating if Ctrl+C was pressed
+volatile sig_atomic_t ctrl_c_pressed = 0;
+
+// Signal handler function
+void signalHandler(int signal)
+{
+    ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
+}
 
 double inputAndLimitTorque(const std::string &motor_name, double max_torque)
 {
@@ -29,6 +38,9 @@ double inputAndLimitTorque(const std::string &motor_name, double max_torque)
 
 int main(int argc, char **argv)
 {
+    // Set up signal handler for Ctrl+C (SIGINT)
+    std::signal(SIGINT, signalHandler);
+
     using namespace mjbots;
     // Set up controllers and transport
     moteus::Controller::DefaultArgProcess(argc, argv);
@@ -83,7 +95,7 @@ int main(int argc, char **argv)
     std::cout << "Torque command for motor 2: " << torque_command[1] << std::endl;
 
     // Main loop
-    while (true)
+    while (!ctrl_c_pressed)
     {
         ::usleep(10);
 
