@@ -101,6 +101,7 @@ int main(int argc, char **argv)
 
     std::cout << "Torque command for motor 1: " << torque_command[0] << "Nm" << std::endl;
     std::cout << "Torque command for motor 2: " << torque_command[1] << "Nm" << std::endl;
+    std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
     // Main loop
     while (!ctrl_c_pressed)
