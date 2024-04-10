@@ -36,6 +36,14 @@ double inputAndLimitTorque(const std::string &motor_name, double max_torque)
     return torque_command;
 }
 
+double getPracTorque(double armLength = 0.225)
+{
+    double scaleWeight;
+    std::cout << "Enter scale reading in grams: ";
+    std::cin >> scaleWeight;
+    return (scaleWeight / 9.81) * armLength;
+}
+
 int main(int argc, char **argv)
 {
     // Set up signal handler for Ctrl+C (SIGINT)
@@ -112,7 +120,7 @@ int main(int argc, char **argv)
         transport->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
     }
 
-    printf("Entering fault mode!\n");
+    std::cout << "Entering fault mode!" << std::endl;
 
     ::usleep(50000);
 
@@ -120,6 +128,10 @@ int main(int argc, char **argv)
     {
         c->SetStop();
     }
+    double armLength;
+    std::cout << "Enter Arm Length (Default 0.225m): ";
+    std::cin >> armLength;
+    getPracTorque(armLength);
 
     return 0;
 }
