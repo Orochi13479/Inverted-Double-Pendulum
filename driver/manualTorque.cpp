@@ -16,12 +16,12 @@ double inputAndLimitTorque(const std::string &motor_name, double max_torque)
     // Limit the torque command to the nearest value within the range [-max_torque, max_torque]
     if (torque_command < -max_torque)
     {
-        std::cout << "TORQUE TOO HIGH: " << torque_command << "SETTING TO MAX TORQUE: " << max_torque << std::endl;
+        std::cout << "TORQUE " << torque_command << " TOO HIGH. SETTING TO MAX TORQUE: " << max_torque << std::endl;
         torque_command = -max_torque;
     }
     else if (torque_command > max_torque)
     {
-        std::cout << "TORQUE TOO HIGH: " << torque_command << "SETTING TO MAX TORQUE: " << max_torque << std::endl;
+        std::cout << "TORQUE " << torque_command << " TOO HIGH. SETTING TO MAX TORQUE: " << max_torque << std::endl;
         torque_command = max_torque;
     }
     return torque_command;
