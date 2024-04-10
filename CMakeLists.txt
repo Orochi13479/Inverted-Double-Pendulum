@@ -14,6 +14,10 @@ FetchContent_MakeAvailable(moteus)
 
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/openrobots")
 
+add_executable(${PROJECT_NAME}_manualTorque driver/manualTorque.cpp)
+target_link_libraries(${PROJECT_NAME}_manualTorque moteus::cpp pthread) 
+
+
 add_executable(${PROJECT_NAME}_main main.cpp IDPDriver.cpp IDPControl.cpp)
 # target_link_libraries(${PROJECT_NAME}_main moteus::cpp pthread)
 

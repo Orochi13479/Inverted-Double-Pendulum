@@ -1,11 +1,9 @@
 // Driver code for Inverted Double Pendulum
 
-#include "IDPDriver.h"
+#include <stdio.h>
+#include <unistd.h>
 
-Driver::Driver(){
+#include <iostream>
+#include <optional>
 
-}
-
-void Driver::test(){
-
-}
+#include "moteus.h"

@@ -1,8 +1,9 @@
 #include <iostream>
-#include "IDPDriver.h"
-#include "IDPControl.h"
 
-int main(int argc, char **argv){
+#include "IDPControl.h"
+#include "IDPDriver.cpp"
+
+int main(int argc, char** argv) {
     using namespace mjbots;
     moteus::Controller::DefaultArgProcess(argc, argv);
     auto transport = moteus::Controller::MakeSingletonTransport({});
@@ -18,18 +19,20 @@ int main(int argc, char **argv){
 
     std::vector<std::shared_ptr<moteus::Controller>> controllers = {
         std::make_shared<moteus::Controller>([&]() {
-        auto options = options_common;
-        options.id = 1;
-        return options;
+            auto options = options_common;
+            options.id = 1;
+            return options;
         }()),
         std::make_shared<moteus::Controller>([&]() {
-        auto options = options_common;
-        options.id = 2;
-        return options;
+            auto options = options_common;
+            options.id = 2;
+            return options;
         }()),
     };
 
-    for (auto& c : controllers) { c->SetStop(); }
+    for (auto& c : controllers) {
+        c->SetStop();
+    }
 
     moteus::PositionMode::Command cmd;
     cmd.kp_scale = 0.0;
@@ -40,9 +43,5 @@ int main(int argc, char **argv){
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
-    std::cout << "Test";
-
-    Driver driver;
-    driver.test();
     return 0;
 }
