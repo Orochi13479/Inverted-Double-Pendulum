@@ -25,12 +25,12 @@ double inputAndLimitTorque(const std::string &motor_name, double max_torque)
     // Limit the torque command to the nearest value within the range [-max_torque, max_torque]
     if (torque_command < -max_torque)
     {
-        std::cout << "TORQUE " << torque_command << " TOO HIGH. SETTING TO MAX TORQUE: " << -max_torque << std::endl;
+        std::cout << "TORQUE " << torque_command << "Nm TOO HIGH. SETTING TO MAX TORQUE: " << -max_torque << "Nm" << std::endl;
         torque_command = -max_torque;
     }
     else if (torque_command > max_torque)
     {
-        std::cout << "TORQUE " << torque_command << " TOO HIGH. SETTING TO MAX TORQUE: " << max_torque << std::endl;
+        std::cout << "TORQUE " << torque_command << "Nm TOO HIGH. SETTING TO MAX TORQUE: " << max_torque << "Nm" << std::endl;
         torque_command = max_torque;
     }
     return torque_command;
@@ -99,8 +99,8 @@ int main(int argc, char **argv)
     torque_command[0] = inputAndLimitTorque("motor 1", MAX_TORQUE);
     torque_command[1] = inputAndLimitTorque("motor 2", MAX_TORQUE);
 
-    std::cout << "Torque command for motor 1: " << torque_command[0] << std::endl;
-    std::cout << "Torque command for motor 2: " << torque_command[1] << std::endl;
+    std::cout << "Torque command for motor 1: " << torque_command[0] << "Nm" << std::endl;
+    std::cout << "Torque command for motor 2: " << torque_command[1] << "Nm" << std::endl;
 
     // Main loop
     while (!ctrl_c_pressed)
