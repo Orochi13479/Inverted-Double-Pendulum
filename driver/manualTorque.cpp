@@ -7,6 +7,21 @@
 
 #include "moteus.h"
 
+double inputAndLimitTorque(const std::string &motor_name, double max_torque)
+{
+    double torque_command;
+    std::cout << "Enter torque command for " << motor_name << ": ";
+    std::cin >> torque_command;
+
+    // Limit the torque command to the nearest value within the range [-max_torque, max_torque]
+    if (torque_command < -max_torque)
+        torque_command = -max_torque;
+    else if (torque_command > max_torque)
+        torque_command = max_torque;
+
+    return torque_command;
+}
+
 int main(int argc, char **argv)
 {
     using namespace mjbots;
@@ -49,15 +64,18 @@ int main(int argc, char **argv)
     cmd.kd_scale = 0.0;
     cmd.feedforward_torque = 0.0;
 
+    const double MAX_TORQUE = 0.2;
     double torque_command[2] = {};
+
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
     // Manually input torque commands
-    std::cout << "Enter torque command for motor 1: ";
-    std::cin >> torque_command[0];
-    std::cout << "Enter torque command for motor 2: ";
-    std::cin >> torque_command[1];
+    torque_command[0] = inputAndLimitTorque("motor 1", MAX_TORQUE);
+    torque_command[1] = inputAndLimitTorque("motor 2", MAX_TORQUE);
+
+    std::cout << "Torque command for motor 1: " << torque_command[0] << std::endl;
+    std::cout << "Torque command for motor 2: " << torque_command[1] << std::endl;
 
     // Main loop
     while (true)
@@ -75,10 +93,6 @@ int main(int argc, char **argv)
 
         // Send frames
         transport->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
-
-        // Display torque commands
-        std::cout << "Torque command for motor 1: " << torque_command[0] << std::endl;
-        std::cout << "Torque command for motor 2: " << torque_command[1] << std::endl;
     }
 
     printf("Entering fault mode!\n");
