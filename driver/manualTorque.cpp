@@ -114,14 +114,11 @@ int main(int argc, char **argv)
 
     printf("Entering fault mode!\n");
 
-    while (true)
-    {
-        ::usleep(50000);
+    ::usleep(50000);
 
-        for (auto &c : controllers)
-        {
-            c->SetStop();
-        }
+    for (auto &c : controllers)
+    {
+        c->SetStop();
     }
 
     return 0;
