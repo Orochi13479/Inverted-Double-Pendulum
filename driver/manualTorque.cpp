@@ -39,7 +39,7 @@ double inputAndLimitTorque(const std::string &motor_name, double max_torque)
 double getPracTorque(double armLength = 0.225)
 {
     double scaleWeight;
-    std::cout << "Enter scale reading in grams: ";
+    std::cout << "Enter scale reading (grams): ";
     std::cin >> scaleWeight;
     return ((scaleWeight / 9.81) * armLength) / 10.0;
 }
@@ -128,11 +128,13 @@ int main(int argc, char **argv)
     {
         c->SetStop();
     }
+
     double armLength;
-    std::cout << "Enter Arm Length (Default 0.225m): " << std::endl;
+    std::cout << "Enter Arm Length (m): ";
     std::cin >> armLength;
 
-    std::cout << "Practical Torque Output: " << getPracTorque(armLength) << "Nm" << std::endl;
+    double pracTorque = getPracTorque(armLength);
+    std::cout << "Practical Torque Output: " << pracTorque << "Nm" << std::endl;
 
     return 0;
 }
