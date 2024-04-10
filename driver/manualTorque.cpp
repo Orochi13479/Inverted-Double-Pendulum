@@ -53,6 +53,12 @@ int main(int argc, char **argv)
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
+    // Manually input torque commands
+    std::cout << "Enter torque command for motor 1: ";
+    std::cin >> torque_command[0];
+    std::cout << "Enter torque command for motor 2: ";
+    std::cin >> torque_command[1];
+
     // Main loop
     while (true)
     {
@@ -60,12 +66,6 @@ int main(int argc, char **argv)
 
         send_frames.clear();
         receive_frames.clear();
-
-        // Manually input torque commands
-        std::cout << "Enter torque command for motor 1: ";
-        std::cin >> torque_command[0];
-        std::cout << "Enter torque command for motor 2: ";
-        std::cin >> torque_command[1];
 
         for (size_t i = 0; i < controllers.size(); i++)
         {
