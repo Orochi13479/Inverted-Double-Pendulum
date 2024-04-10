@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     cmd.kd_scale = 0.0;
     cmd.feedforward_torque = 0.0;
 
-    const double MAX_TORQUE = 0.1;
+    const double MAX_TORQUE = 0.2;
     double torque_command[2] = {};
 
     std::vector<moteus::CanFdFrame> send_frames;
