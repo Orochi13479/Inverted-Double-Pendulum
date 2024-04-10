@@ -26,30 +26,30 @@ int main(int argc, char **argv)
     pf.kd_scale = moteus::kInt8;
 
     // Create two controllers
-    std::shared_ptr<moteus::Controller> controller1 = std::make_shared<moteus::Controller>([&]()
-                                                                                           {
-        auto options = options_common;
-        options.id = 1;
-        return options; }());
+    std::vector<std::shared_ptr<moteus::Controller>> controllers = {
+        std::make_shared<moteus::Controller>([&]()
+                                             {
+            auto options = options_common;
+            options.id = 1;
+            return options; }()),
+        std::make_shared<moteus::Controller>([&]()
+                                             {
+            auto options = options_common;
+            options.id = 2;
+            return options; }()),
+    };
 
-    std::shared_ptr<moteus::Controller> controller2 = std::make_shared<moteus::Controller>([&]()
-                                                                                           {
-        auto options = options_common;
-        options.id = 2;
-        return options; }());
+    for (auto &c : controllers)
+    {
+        c->SetStop();
+    }
 
-    // Stop the controllers initially
-    controller1->SetStop();
-    controller2->SetStop();
-
-    // Command for position mode
     moteus::PositionMode::Command cmd;
     cmd.kp_scale = 0.0;
     cmd.kd_scale = 0.0;
     cmd.feedforward_torque = 0.0;
 
-    double torque_command[2] = {0.0, 0.0}; // Torque commands for each motor
-
+    double torque_command[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
@@ -67,12 +67,14 @@ int main(int argc, char **argv)
         std::cout << "Enter torque command for motor 2: ";
         std::cin >> torque_command[1];
 
-        // Create send frames
-        std::vector<moteus::CanFdFrame> send_frames = {controller1->MakePosition(cmd),
-                                                       controller2->MakePosition(cmd)};
+        for (size_t i = 0; i < controllers.size(); i++)
+        {
+            cmd.feedforward_torque = torque_command[i];
+            send_frames.push_back(controllers[i]->MakePosition(cmd));
+        }
 
         // Send frames
-        transport->BlockingCycle(send_frames.data(), send_frames.size(), nullptr);
+        transport->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         // Display torque commands
         std::cout << "Torque command for motor 1: " << torque_command[0] << std::endl;
@@ -85,8 +87,10 @@ int main(int argc, char **argv)
     {
         ::usleep(50000);
 
-        controller1->SetStop();
-        controller2->SetStop();
+        for (auto &c : controllers)
+        {
+            c->SetStop();
+        }
     }
 
     return 0;
