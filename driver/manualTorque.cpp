@@ -41,7 +41,7 @@ double getPracTorque(double armLength = 0.225)
     double scaleWeight;
     std::cout << "Enter scale reading in grams: ";
     std::cin >> scaleWeight;
-    return (scaleWeight / 9.81) * armLength;
+    return ((scaleWeight / 9.81) * armLength) / 10.0;
 }
 
 int main(int argc, char **argv)
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
         c->SetStop();
     }
     double armLength;
-    std::cout << "Enter Arm Length (Default 0.225m): ";
+    std::cout << "Enter Arm Length (Default 0.225m): " << std::endl;
     std::cin >> armLength;
 
     std::cout << "Practical Torque Output: " << getPracTorque(armLength) << "Nm" << std::endl;
