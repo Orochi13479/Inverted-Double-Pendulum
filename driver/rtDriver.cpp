@@ -87,7 +87,6 @@ int main(int argc, char **argv)
 
         auto loop_end = steady_clock::now();
         auto duration = duration_cast<microseconds>(loop_end - loop_start).count();
-        
 
         int delay = sleep_time - duration;
         if (delay > 0)
@@ -103,9 +102,18 @@ int main(int argc, char **argv)
 
     auto end = steady_clock::now();
     auto total_time = duration_cast<seconds>(end - start).count();
+
+    ::usleep(50000);
+
+    for (auto &c : controllers)
+    {
+        c->SetStop();
+    }
+
     std::cout << "Total runtime: " << total_time << " seconds\n";
     std::cout << "Total loops: " << loop_count << "\n";
     std::cout << "Missed ticks: " << missed_ticks << "\n";
     std::cout << "Exiting program." << std::endl;
+
     return 0;
 }
