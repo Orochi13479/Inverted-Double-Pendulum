@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     using namespace std::chrono;
     auto start = steady_clock::now();
     int desired_frequency = 100;
-    const int max_frequency = 2000;
+    const int max_frequency = 50000;
     int sleep_time = 1000000 / desired_frequency;
     int loop_count = 0, missed_ticks = 0;
     std::map<int, int> missed_ticks_per_frequency;
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
                 missed_ticks_per_frequency[desired_frequency] = missed_ticks;
                 missed_ticks = 0;
 
-                desired_frequency += 100;
+                desired_frequency += 500;
                 if (desired_frequency > max_frequency)
                 {
                     desired_frequency = max_frequency;
@@ -168,12 +168,12 @@ int main(int argc, char **argv)
     auto end = steady_clock::now();
     auto total_time = duration_cast<seconds>(end - start).count();
 
-    std::cout << "Total runtime: " << total_time << " seconds\n";
-    std::cout << "Total loops: " << loop_count << "\n";
     for (const auto &freq : missed_ticks_per_frequency)
     {
         std::cout << "Missed ticks at " << freq.first << " Hz: " << freq.second << "\n";
     }
+    std::cout << "Total runtime: " << total_time << " seconds\n";
+    std::cout << "Total loops: " << loop_count << "\n";
 
     return 0;
 }
