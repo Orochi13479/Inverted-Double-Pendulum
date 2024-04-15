@@ -95,8 +95,8 @@ int main(int argc, char **argv)
 
     using namespace std::chrono;
     auto start = steady_clock::now();
-    int desired_frequency = 0;                    // Hz, initial desired control loop frequency
-    const int max_frequency = 1000;               // Hz, maximum control loop frequency
+    int desired_frequency = 0.1;                  // Hz, initial desired control loop frequency
+    const int max_frequency = 450;                // Hz, maximum control loop frequency
     int frequency_increase_interval = 5;          // seconds
     int sleep_time = 1000000 / desired_frequency; // microseconds
     int loop_count = 0;
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
                 missed_ticks_per_frequency[desired_frequency] = missed_ticks;
                 missed_ticks = 0; // Reset missed ticks for new frequency
 
-                desired_frequency += 50; // Increase frequency by 50 Hz
+                desired_frequency += 10; // Increase frequency by 50 Hz
                 if (desired_frequency > max_frequency)
                 {
                     desired_frequency = max_frequency;
@@ -141,6 +141,8 @@ int main(int argc, char **argv)
 
         auto loop_end = steady_clock::now();
         auto duration = duration_cast<microseconds>(loop_end - loop_start).count();
+
+        std::cout << "Increased frequency to " << desired_frequency << " Hz\n";
 
         int delay = sleep_time - duration;
         if (delay > 0)
