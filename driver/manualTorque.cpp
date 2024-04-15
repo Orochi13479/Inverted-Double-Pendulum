@@ -54,11 +54,11 @@ double getPracTorqueFromInertia(double scaleWeight)
     double MOI = ((1 / 3) * armMass * pow(armLength, 2)) +
                  ((1 / 2) * motorMass * pow(motorRadius, 2)) +
                  (motorMass * pow(armLength + motorRadius, 2));
-    
+
     std::cout << "MOI: " << MOI << std::endl;
 
     // Linear acceleration
-    double a = (scaleWeight/1000 * 9.81) / (0.26); // 0.26kg is setup based. This WILL change with different Setups
+    double a = (scaleWeight / 1000 * 9.81) / (0.26); // 0.26kg is setup based. This WILL change with different Setups
     std::cout << "a: " << a << std::endl;
 
     // Angular acceleration

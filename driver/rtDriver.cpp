@@ -8,11 +8,13 @@
 
 #include "moteus.h"
 
+// Global flag for indicating if Ctrl+C was pressed
 volatile sig_atomic_t ctrl_c_pressed = 0;
 
+// Signal handler function
 void signalHandler(int signal)
 {
-    ctrl_c_pressed = 1;
+    ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
 }
 
 double inputAndLimitTorque(const std::string &motor_name, double max_torque)
@@ -20,27 +22,38 @@ double inputAndLimitTorque(const std::string &motor_name, double max_torque)
     double torque_command;
     std::cout << "Enter torque command for " << motor_name << ": ";
     std::cin >> torque_command;
+
+    // Limit the torque command to the nearest value within the range [-max_torque, max_torque]
     if (torque_command < -max_torque)
     {
-        std::cout << "TORQUE TOO HIGH. SETTING TO MAX TORQUE: " << -max_torque << "Nm" << std::endl;
-        return -max_torque;
+        std::cout << "TORQUE " << torque_command << "Nm TOO HIGH. SETTING TO MAX TORQUE: " << -max_torque << "Nm" << std::endl;
+        torque_command = -max_torque;
     }
     else if (torque_command > max_torque)
     {
-        std::cout << "TORQUE TOO HIGH. SETTING TO MAX TORQUE: " << max_torque << "Nm" << std::endl;
-        return max_torque;
+        std::cout << "TORQUE " << torque_command << "Nm TOO HIGH. SETTING TO MAX TORQUE: " << max_torque << "Nm" << std::endl;
+        torque_command = max_torque;
     }
     return torque_command;
 }
 
 int main(int argc, char **argv)
 {
+    // Set up signal handler for Ctrl+C (SIGINT)
     std::signal(SIGINT, signalHandler);
+
     using namespace mjbots;
+    // Set up controllers and transport
     moteus::Controller::DefaultArgProcess(argc, argv);
     auto transport = moteus::Controller::MakeSingletonTransport({});
+
+    // Options for setting up controllers
     moteus::Controller::Options options_common;
+
+    // Set position format
     auto &pf = options_common.position_format;
+    pf.position = moteus::kIgnore;
+    pf.velocity = moteus::kIgnore;
     pf.feedforward_torque = moteus::kFloat;
     pf.kp_scale = moteus::kInt8;
     pf.kd_scale = moteus::kInt8;
@@ -59,8 +72,24 @@ int main(int argc, char **argv)
             return options; }()),
     };
 
+    for (auto &c : controllers)
+    {
+        c->SetStop();
+    }
+
+    moteus::PositionMode::Command cmd;
+    cmd.kp_scale = 0.0;
+    cmd.kd_scale = 0.0;
+    cmd.feedforward_torque = 0.0;
+
     const double MAX_TORQUE = 0.2;
-    double torque_command[] = {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)};
+    double torque_command[2] = {};
+
+    // Manually input torque commands
+    torque_command[0] = inputAndLimitTorque("motor 1", MAX_TORQUE);
+    torque_command[1] = inputAndLimitTorque("motor 2", MAX_TORQUE);
+    std::vector<moteus::CanFdFrame> send_frames;
+
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
@@ -77,13 +106,15 @@ int main(int argc, char **argv)
 
         send_frames.clear();
         receive_frames.clear();
+
         for (size_t i = 0; i < controllers.size(); i++)
         {
-            moteus::PositionMode::Command cmd;
             cmd.feedforward_torque = torque_command[i];
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
-        transport->BlockingCycle(send_frames.data(), send_frames.size(), &receive_frames);
+
+        // Send frames
+        transport->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         auto loop_end = steady_clock::now();
         auto duration = duration_cast<microseconds>(loop_end - loop_start).count();
