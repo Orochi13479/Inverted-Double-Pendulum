@@ -6,6 +6,7 @@
 #include <memory>
 #include <map>
 #include <cmath>
+#include <future>
 
 #include "moteus.h"
 
@@ -95,13 +96,10 @@ int main(int argc, char **argv)
 
     using namespace std::chrono;
     auto start = steady_clock::now();
-    int desired_frequency = 0.1;                  // Hz, initial desired control loop frequency
-    const int max_frequency = 450;                // Hz, maximum control loop frequency
-    int frequency_increase_interval = 5;          // seconds
-    int sleep_time = 1000000 / desired_frequency; // microseconds
-    int loop_count = 0;
-    int missed_ticks = 0;
-
+    int desired_frequency = 100;
+    const int max_frequency = 500;
+    int sleep_time = 1000000 / desired_frequency;
+    int loop_count = 0, missed_ticks = 0;
     std::map<int, int> missed_ticks_per_frequency;
     steady_clock::time_point last_frequency_increase = start;
 
@@ -118,54 +116,51 @@ int main(int argc, char **argv)
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 
-        // Send frames
-        transport->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
+        // Asynchronously send frames
+        std::promise<void> done_promise;
+        auto done_future = done_promise.get_future();
+        transport->Cycle(&send_frames[0], send_frames.size(), &receive_frames,
+                         [&](int status) { // This matches the expected signature of CompletionCallback
+                             done_promise.set_value();
+                         });
+
+        // Wait for the asynchronous operation to complete or timeout
+        if (done_future.wait_for(std::chrono::microseconds(sleep_time)) == std::future_status::timeout)
+        {
+            missed_ticks++;
+        }
 
         // Check if it's time to increase the frequency
-        if (duration_cast<seconds>(loop_start - last_frequency_increase).count() >= frequency_increase_interval)
+        if (duration_cast<seconds>(loop_start - last_frequency_increase).count() >= 5)
         {
             if (desired_frequency < max_frequency)
             {
                 missed_ticks_per_frequency[desired_frequency] = missed_ticks;
-                missed_ticks = 0; // Reset missed ticks for new frequency
+                missed_ticks = 0;
 
-                desired_frequency += 10; // Increase frequency by 50 Hz
+                desired_frequency += 50;
                 if (desired_frequency > max_frequency)
                 {
                     desired_frequency = max_frequency;
                 }
-                sleep_time = 1000000 / desired_frequency; // Recalculate sleep time
+                sleep_time = 1000000 / desired_frequency;
                 last_frequency_increase = loop_start;
                 std::cout << "Increased frequency to " << desired_frequency << " Hz\n";
             }
         }
 
-        auto loop_end = steady_clock::now();
-        auto duration = duration_cast<microseconds>(loop_end - loop_start).count();
-
-        int delay = sleep_time - duration;
-        if (delay > 0)
-        {
-            usleep(delay);
-        }
-        else
-        {
-            missed_ticks++;
-        }
         loop_count++;
     }
 
-    missed_ticks_per_frequency[desired_frequency] = missed_ticks; // Record for the last frequency
-
-    auto end = steady_clock::now();
-    auto total_time = duration_cast<seconds>(end - start).count();
-
-    ::usleep(50000);
+    missed_ticks_per_frequency[desired_frequency] = missed_ticks;
 
     for (auto &c : controllers)
     {
         c->SetStop();
     }
+
+    auto end = steady_clock::now();
+    auto total_time = duration_cast<seconds>(end - start).count();
 
     std::cout << "Total runtime: " << total_time << " seconds\n";
     std::cout << "Total loops: " << loop_count << "\n";
