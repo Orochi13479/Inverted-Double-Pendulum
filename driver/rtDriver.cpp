@@ -4,6 +4,7 @@
 #include <chrono>
 #include <vector>
 #include <memory>
+#include <map>
 #include <cmath>
 
 #include "moteus.h"
@@ -94,13 +95,14 @@ int main(int argc, char **argv)
 
     using namespace std::chrono;
     auto start = steady_clock::now();
-    int desired_frequency = 50;                   // Hz, initial desired control loop frequency
+    int desired_frequency = 0;                    // Hz, initial desired control loop frequency
     const int max_frequency = 1000;               // Hz, maximum control loop frequency
     int frequency_increase_interval = 5;          // seconds
     int sleep_time = 1000000 / desired_frequency; // microseconds
     int loop_count = 0;
     int missed_ticks = 0;
 
+    std::map<int, int> missed_ticks_per_frequency;
     steady_clock::time_point last_frequency_increase = start;
 
     while (!ctrl_c_pressed)
@@ -124,6 +126,9 @@ int main(int argc, char **argv)
         {
             if (desired_frequency < max_frequency)
             {
+                missed_ticks_per_frequency[desired_frequency] = missed_ticks;
+                missed_ticks = 0; // Reset missed ticks for new frequency
+
                 desired_frequency += 50; // Increase frequency by 50 Hz
                 if (desired_frequency > max_frequency)
                 {
@@ -131,7 +136,6 @@ int main(int argc, char **argv)
                 }
                 sleep_time = 1000000 / desired_frequency; // Recalculate sleep time
                 last_frequency_increase = loop_start;
-                std::cout << "Increased frequency to " << desired_frequency << " Hz\n";
             }
         }
 
@@ -150,6 +154,8 @@ int main(int argc, char **argv)
         loop_count++;
     }
 
+    missed_ticks_per_frequency[desired_frequency] = missed_ticks; // Record for the last frequency
+
     auto end = steady_clock::now();
     auto total_time = duration_cast<seconds>(end - start).count();
 
@@ -162,8 +168,10 @@ int main(int argc, char **argv)
 
     std::cout << "Total runtime: " << total_time << " seconds\n";
     std::cout << "Total loops: " << loop_count << "\n";
-    std::cout << "Missed ticks: " << missed_ticks << "\n";
-    std::cout << "Exiting program." << std::endl;
+    for (const auto &freq : missed_ticks_per_frequency)
+    {
+        std::cout << "Missed ticks at " << freq.first << " Hz: " << freq.second << "\n";
+    }
 
     return 0;
 }
