@@ -1,16 +1,19 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <csignal> // For signal handling
 #include <iostream>
 
-#include "IDPControl.h"
-#include "IDPDriver.cpp"
+#include "moteus.h"
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
     using namespace mjbots;
     moteus::Controller::DefaultArgProcess(argc, argv);
     auto transport = moteus::Controller::MakeSingletonTransport({});
 
     moteus::Controller::Options options_common;
 
-    auto& pf = options_common.position_format;
+    auto &pf = options_common.position_format;
     pf.position = moteus::kIgnore;
     pf.velocity = moteus::kIgnore;
     pf.feedforward_torque = moteus::kFloat;
@@ -18,19 +21,20 @@ int main(int argc, char** argv) {
     pf.kd_scale = moteus::kInt8;
 
     std::vector<std::shared_ptr<moteus::Controller>> controllers = {
-        std::make_shared<moteus::Controller>([&]() {
+        std::make_shared<moteus::Controller>([&]()
+                                             {
             auto options = options_common;
             options.id = 1;
-            return options;
-        }()),
-        std::make_shared<moteus::Controller>([&]() {
+            return options; }()),
+        std::make_shared<moteus::Controller>([&]()
+                                             {
             auto options = options_common;
             options.id = 2;
-            return options;
-        }()),
+            return options; }()),
     };
 
-    for (auto& c : controllers) {
+    for (auto &c : controllers)
+    {
         c->SetStop();
     }
 

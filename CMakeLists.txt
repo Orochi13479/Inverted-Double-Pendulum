@@ -14,13 +14,13 @@ FetchContent_MakeAvailable(moteus)
 
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/openrobots")
 
-add_executable(${PROJECT_NAME}_manualTorque driver/manualTorque.cpp)
-target_link_libraries(${PROJECT_NAME}_manualTorque moteus::cpp pthread) 
-
-
-add_executable(${PROJECT_NAME}_main main.cpp IDPDriver.cpp IDPControl.cpp)
-# target_link_libraries(${PROJECT_NAME}_main moteus::cpp pthread)
-
-# Uncomment if Pinocchio is needed
 find_package(pinocchio)
-target_link_libraries(${PROJECT_NAME}_main pinocchio::pinocchio moteus::cpp pthread) 
+
+add_executable(manualTorque_${PROJECT_NAME} driver/manualTorque.cpp)
+target_link_libraries(manualTorque_${PROJECT_NAME} moteus::cpp pthread) 
+
+add_executable(rtDriver_${PROJECT_NAME} driver/rtDriver.cpp)
+target_link_libraries(rtDriver_${PROJECT_NAME} moteus::cpp pthread) 
+
+add_executable(main_${PROJECT_NAME} main.cpp IDPDriver.cpp IDPControl.cpp)
+target_link_libraries(main_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread) 

@@ -23,7 +23,7 @@ Run the Simulink file and launch visualiser in Matlab
 #### One Time Setup
 - Install [robotpkg](http://robotpkg.openrobots.org/install.html)
 - Install [robotpkg/pinocchio](https://stack-of-tasks.github.io/pinocchio/download.html)
-- Patch RPI kernel using RT patch found [here](https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/6.6/patch-6.6.23-rt28.patch.gz) by loosely following this [guide](https://www.instructables.com/64bit-RT-Kernel-Compilation-for-Raspberry-Pi-4B-/)
+- Patch RPI kernel using RT patch found [here](https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/6.6//older/patch-6.6.23-rt28.patch.gz) by loosely following this [guide](https://www.instructables.com/64bit-RT-Kernel-Compilation-for-Raspberry-Pi-4B-/)
 
 #### Compile and Build Project
 Please run the following in the ~/git/Inverted-Double-Pendulum directory:
