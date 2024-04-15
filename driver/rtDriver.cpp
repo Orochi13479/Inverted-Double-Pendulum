@@ -94,10 +94,14 @@ int main(int argc, char **argv)
 
     using namespace std::chrono;
     auto start = steady_clock::now();
-    int desired_frequency = 100;                  // Hz, the desired control loop frequency
+    int desired_frequency = 50;                   // Hz, initial desired control loop frequency
+    const int max_frequency = 1000;               // Hz, maximum control loop frequency
+    int frequency_increase_interval = 5;          // seconds
     int sleep_time = 1000000 / desired_frequency; // microseconds
     int loop_count = 0;
     int missed_ticks = 0;
+
+    steady_clock::time_point last_frequency_increase = start;
 
     while (!ctrl_c_pressed)
     {
@@ -114,6 +118,22 @@ int main(int argc, char **argv)
 
         // Send frames
         transport->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
+
+        // Check if it's time to increase the frequency
+        if (duration_cast<seconds>(loop_start - last_frequency_increase).count() >= frequency_increase_interval)
+        {
+            if (desired_frequency < max_frequency)
+            {
+                desired_frequency += 50; // Increase frequency by 50 Hz
+                if (desired_frequency > max_frequency)
+                {
+                    desired_frequency = max_frequency;
+                }
+                sleep_time = 1000000 / desired_frequency; // Recalculate sleep time
+                last_frequency_increase = loop_start;
+                std::cout << "Increased frequency to " << desired_frequency << " Hz\n";
+            }
+        }
 
         auto loop_end = steady_clock::now();
         auto duration = duration_cast<microseconds>(loop_end - loop_start).count();
