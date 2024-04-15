@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     using namespace std::chrono;
     auto start = steady_clock::now();
     int desired_frequency = 100;
-    const int max_frequency = 50000;
+    const int max_frequency = 28000;
     int sleep_time = 1000000 / desired_frequency;
     int loop_count = 0, missed_ticks = 0;
     std::map<int, int> missed_ticks_per_frequency;
