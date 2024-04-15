@@ -48,10 +48,10 @@ eqRed_2 = subs(eqy_2,[T_1 T_2],[Tension.T_1 Tension.T_2]);
 % SECTION 4: Solve System Equations
 
 % Define values 
-L_1 = 1;        % arm 1 length (m)
-L_2 = 1;        % arm 2 length (m)
-m_1 = 1;        % arm 1 mass (kg)
-m_2 = 1;        % arm 2 mass (kg)
+L_1 = 0.195;        % Link 1 length (m) (Motor shaft to motor shaft)
+L_2 = 0.215;        % Link 2 length (m) (Motor shaft to end of link)
+m_1 = 0.36;        % Link 1 mass (kg)
+m_2 = 0.21;        % Link 2 mass (kg)
 g = 9.8;        % gravity (m/s^2)
 
 % Substitute values into reduced equations
@@ -72,6 +72,7 @@ M = matlabFunction(V,'vars',{'t','Y'});
 
 % Define the inital conditions of the state variables 
 initCond = [0 0 0 0];
+finalCond = [pi 0 pi 0];
 
 % Use ode45 to sol be the state variables. The solutions are a function of
 % time within the interval [0, 10]
