@@ -136,13 +136,12 @@ int main(int argc, char **argv)
                 }
                 sleep_time = 1000000 / desired_frequency; // Recalculate sleep time
                 last_frequency_increase = loop_start;
+                std::cout << "Increased frequency to " << desired_frequency << " Hz\n";
             }
         }
 
         auto loop_end = steady_clock::now();
         auto duration = duration_cast<microseconds>(loop_end - loop_start).count();
-
-        std::cout << "Increased frequency to " << desired_frequency << " Hz\n";
 
         int delay = sleep_time - duration;
         if (delay > 0)
