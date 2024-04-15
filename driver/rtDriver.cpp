@@ -88,7 +88,6 @@ int main(int argc, char **argv)
     // Manually input torque commands
     torque_command[0] = inputAndLimitTorque("motor 1", MAX_TORQUE);
     torque_command[1] = inputAndLimitTorque("motor 2", MAX_TORQUE);
-    std::vector<moteus::CanFdFrame> send_frames;
 
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
