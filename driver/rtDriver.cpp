@@ -119,9 +119,15 @@ int main(int argc, char **argv)
         // Asynchronously send frames
         std::promise<void> done_promise;
         auto done_future = done_promise.get_future();
+        bool promise_set = false; // Flag to track whether the promise has been set
+
         transport->Cycle(&send_frames[0], send_frames.size(), &receive_frames,
                          [&](int status) { // This matches the expected signature of CompletionCallback
-                             done_promise.set_value();
+                             if (!promise_set)
+                             {
+                                 done_promise.set_value();
+                                 promise_set = true;
+                             }
                          });
 
         // Wait for the asynchronous operation to complete or timeout
