@@ -177,24 +177,6 @@ int main(int argc, char **argv)
         std::cout << "At " << freq.first << " Hz: " << percentage << "%\n";
     }
 
-    // Print text-based graph
-    std::cout << "\nText-based graph:\n";
-    for (int i = 50; i <= max_frequency; i += 10)
-    {
-        double percentage = 0.0;
-        if (missed_ticks_per_frequency.find(i) != missed_ticks_per_frequency.end())
-        {
-            percentage = (static_cast<double>(missed_ticks_per_frequency[i]) / loop_count) * 100;
-        }
-        std::cout << i << " Hz: ";
-        int graphLength = static_cast<int>(percentage / 2); // Scaling the histogram size for clarity
-        for (int j = 0; j < graphLength; j++)
-        {
-            std::cout << "="; // Each '=' represents 2% of missed ticks
-        }
-        std::cout << " (" << percentage << "%)" << std::endl;
-    }
-
     std::cout << "Total runtime: " << total_time << " seconds\n";
     std::cout << "Total loops: " << loop_count << "\n";
 
