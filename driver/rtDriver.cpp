@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 
     using namespace std::chrono;
     auto start = steady_clock::now();
-    int desired_frequency = 10;
+    int desired_frequency = 50;
     const int max_frequency = 400;
     int sleep_time = 1000000 / desired_frequency;
     int loop_count = 0, missed_ticks = 0;
