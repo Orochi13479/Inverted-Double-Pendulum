@@ -148,7 +148,7 @@ int main(int argc, char **argv)
                 desired_frequency += 10;
                 if (desired_frequency > max_frequency)
                 {
-                    desired_frequency = max_frequency;
+                    break;
                 }
                 sleep_time = 1000000 / desired_frequency;
                 last_frequency_increase = loop_start;
