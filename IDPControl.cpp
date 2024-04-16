@@ -8,6 +8,9 @@
 
 #include "moteus.h"
 
+#include <fstream>
+#include <sstream>
+
 // USING THIS FOR TESTING RN, DIDNT WANNA BREAK MAIN
 
 int main(int argc, char **argv)
@@ -22,8 +25,8 @@ int main(int argc, char **argv)
     pf.position = moteus::kIgnore;
     pf.velocity = moteus::kIgnore;
     pf.feedforward_torque = moteus::kFloat;
-    pf.kp_scale = moteus::kInt8;
-    pf.kd_scale = moteus::kInt8;
+    // pf.kp_scale = moteus::kInt8;
+    // pf.kd_scale = moteus::kInt8;
 
     std::vector<std::shared_ptr<moteus::Controller>> controllers = {
         std::make_shared<moteus::Controller>([&]()
@@ -44,9 +47,9 @@ int main(int argc, char **argv)
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 0.0;
-    cmd.kd_scale = 0.0;
-    cmd.feedforward_torque = 0.0;
+    // cmd.kp_scale = 0.0;
+    // cmd.kd_scale = 0.0;
+    // cmd.feedforward_torque = 0.0;
 
     double torque_command[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
