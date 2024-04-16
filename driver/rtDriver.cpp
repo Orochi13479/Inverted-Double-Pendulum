@@ -134,6 +134,7 @@ int main(int argc, char **argv)
         if (done_future.wait_for(std::chrono::microseconds(sleep_time)) == std::future_status::timeout)
         {
             missed_ticks++;
+            std::cerr << "Error: Cycle did not complete in time!" << std::endl;
         }
 
         // Check if it's time to increase the frequency
