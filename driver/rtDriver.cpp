@@ -1,3 +1,6 @@
+#include <cactus_rt/rt.h>
+#include "moteus.h"
+
 #include <iostream>
 #include <unistd.h>
 #include <csignal>
@@ -8,11 +11,8 @@
 #include <cmath>
 #include <future>
 
-#include "moteus.h"
-// #include <cactus_rt/rt.h>
-
-// using cactus_rt::App;
-// using cactus_rt::CyclicThread;
+using cactus_rt::App;
+using cactus_rt::CyclicThread;
 
 // Global flag for indicating if Ctrl+C was pressed
 volatile sig_atomic_t ctrl_c_pressed = 0;
