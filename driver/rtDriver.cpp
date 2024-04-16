@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     using namespace std::chrono;
     auto start = steady_clock::now();
     int desired_frequency = 50;
-    const int max_frequency = 400;
+    const int max_frequency = 350;
     int sleep_time = 1000000 / desired_frequency;
     int loop_count = 0, missed_ticks = 0;
     std::map<int, int> missed_ticks_per_frequency;
@@ -169,34 +169,34 @@ int main(int argc, char **argv)
         c->SetStop();
     }
 
-    int total_missed_ticks = 0;
-    int total_possible_ticks = loop_count;
-
+    // Print missed tick percentages
+    std::cout << "Missed tick percentages:\n";
     for (const auto &freq : missed_ticks_per_frequency)
     {
-        total_missed_ticks += freq.second;
-        std::cout << "Missed ticks at " << freq.first << " Hz: " << freq.second << "\n";
+        double percentage = (static_cast<double>(freq.second) / loop_count) * 100;
+        std::cout << "At " << freq.first << " Hz: " << percentage << "%\n";
     }
 
-    // Calculate and display missed tick percentages
-    std::cout << "\nMissed Tick Percentages by Frequency:\n";
-    int max_display_width = 50; // Max width for graph bars
-    for (const auto &freq : missed_ticks_per_frequency)
+    // Print text-based graph
+    std::cout << "\nText-based graph:\n";
+    for (int i = 50; i <= max_frequency; i += 10)
     {
-        double percentage = (double)freq.second / loop_count * 100;
-        std::cout << freq.first << " Hz: " << percentage << "% ";
-        int bar_width = static_cast<int>((percentage / 100) * max_display_width);
-        for (int i = 0; i < bar_width; i++)
+        double percentage = 0.0;
+        if (missed_ticks_per_frequency.find(i) != missed_ticks_per_frequency.end())
         {
-            std::cout << "|";
+            percentage = (static_cast<double>(missed_ticks_per_frequency[i]) / loop_count) * 100;
         }
-        std::cout << "\n";
+        std::cout << i << " Hz: ";
+        int graphLength = static_cast<int>(percentage / 2); // Scaling the histogram size for clarity
+        for (int j = 0; j < graphLength; j++)
+        {
+            std::cout << "="; // Each '=' represents 2% of missed ticks
+        }
+        std::cout << " (" << percentage << "%)" << std::endl;
     }
 
     std::cout << "Total runtime: " << total_time << " seconds\n";
     std::cout << "Total loops: " << loop_count << "\n";
-    std::cout << "Total missed ticks: " << total_missed_ticks << " ("
-              << (100.0 * total_missed_ticks / loop_count) << "%)\n";
 
     return 0;
 }
