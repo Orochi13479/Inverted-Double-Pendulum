@@ -29,10 +29,15 @@ add_executable(manualTorque_${PROJECT_NAME} driver/manualTorque.cpp)
 target_link_libraries(manualTorque_${PROJECT_NAME} moteus::cpp pthread) 
 
 add_executable(rtDriver_${PROJECT_NAME} driver/rtDriver.cpp)
-target_link_libraries(rtDriver_${PROJECT_NAME} moteus::cpp pthread cactus_rt) 
+target_link_libraries(rtDriver_${PROJECT_NAME} PRIVATE moteus::cpp pthread cactus_rt) 
+
+setup_cactus_rt_target_options(rtDriver_${PROJECT_NAME})
 
 add_executable(driver_${PROJECT_NAME} driver/driver.cpp)
 target_link_libraries(driver_${PROJECT_NAME} moteus::cpp pthread) 
 
-add_executable(main_${PROJECT_NAME} main.cpp IDPDriver.cpp IDPControl.cpp)
+add_executable(main_${PROJECT_NAME} main.cpp)
 target_link_libraries(main_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
+
+add_executable(control_${PROJECT_NAME} IDPControl.cpp)
+target_link_libraries(control_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
