@@ -134,7 +134,7 @@ int main(int argc, char **argv)
         if (done_future.wait_for(std::chrono::microseconds(sleep_time)) == std::future_status::timeout)
         {
             missed_ticks++;
-            std::cerr << "Error: Cycle did not complete in time!" << std::endl;
+            // std::cerr << "Error: Cycle did not complete in time!" << std::endl;
         }
 
         // Check if it's time to increase the frequency
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
                 missed_ticks = 0;
 
                 desired_frequency += 10;
-                if (desired_frequency > max_frequency)
+                if (desired_frequency >= max_frequency)
                 {
                     break;
                 }
@@ -161,20 +161,42 @@ int main(int argc, char **argv)
 
     missed_ticks_per_frequency[desired_frequency] = missed_ticks;
 
+    auto end = steady_clock::now();
+    auto total_time = duration_cast<seconds>(end - start).count();
+
     for (auto &c : controllers)
     {
         c->SetStop();
     }
 
-    auto end = steady_clock::now();
-    auto total_time = duration_cast<seconds>(end - start).count();
+    int total_missed_ticks = 0;
+    int total_possible_ticks = loop_count;
 
     for (const auto &freq : missed_ticks_per_frequency)
     {
+        total_missed_ticks += freq.second;
         std::cout << "Missed ticks at " << freq.first << " Hz: " << freq.second << "\n";
     }
+
+    // Calculate and display missed tick percentages
+    std::cout << "\nMissed Tick Percentages by Frequency:\n";
+    int max_display_width = 50; // Max width for graph bars
+    for (const auto &freq : missed_ticks_per_frequency)
+    {
+        double percentage = (double)freq.second / loop_count * 100;
+        std::cout << freq.first << " Hz: " << percentage << "% ";
+        int bar_width = static_cast<int>((percentage / 100) * max_display_width);
+        for (int i = 0; i < bar_width; i++)
+        {
+            std::cout << "|";
+        }
+        std::cout << "\n";
+    }
+
     std::cout << "Total runtime: " << total_time << " seconds\n";
     std::cout << "Total loops: " << loop_count << "\n";
+    std::cout << "Total missed ticks: " << total_missed_ticks << " ("
+              << (100.0 * total_missed_ticks / loop_count) << "%)\n";
 
     return 0;
 }
