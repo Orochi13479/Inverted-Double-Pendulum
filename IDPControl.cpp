@@ -13,33 +13,35 @@
 
 // USING THIS FOR TESTING RN, DIDNT WANNA BREAK MAIN
 
-double PositionCalculation(double desired_position_degrees, double feedback_position_degrees, 
-                         double feedback_velocity, double dt) {
-        // Convert desired position to radians
-        double desired_position = desired_position_degrees * M_PI / 180.0;
+double PositionCalculation(double desired_position_degrees, double feedback_position_degrees,
+                           double feedback_velocity, double dt)
+{
+    // Convert desired position to radians
+    double desired_position = desired_position_degrees * M_PI / 180.0;
 
-        // Trajectory follower (simplified)
-        double acceleration = 0.0;
-        double control_velocity = 0.0; // OR control_velocity + acceleration * dt OR 0.0
-        double control_position = feedback_position_degrees * M_PI / 180.0; // OR control_position + control_velocity * dt
+    // Trajectory follower (simplified)
+    double acceleration = 0.0;
+    double control_velocity = 0.0;                                      // OR control_velocity + acceleration * dt OR 0.0
+    double control_position = feedback_position_degrees * M_PI / 180.0; // OR control_position + control_velocity * dt
 
-        // Position and velocity errors
-        double position_error = control_position - desired_position;
-        double velocity_error = control_velocity - feedback_velocity;
+    // Position and velocity errors
+    double position_error = control_position - desired_position;
+    double velocity_error = control_velocity - feedback_velocity;
 
-        // Position integrator
-        position_integrator = limit(position_integrator + ki * position_error * dt, ilimit);
+    // Position integrator
+    // position_integrator = limit(position_integrator + ki * position_error * dt, ilimit);
 
-        // Calculate torque command
-        double torque = position_integrator +
-                        kp * kp_scale * position_error +
-                        kd * kd_scale * velocity_error;
+    // // Calculate torque command
+    // double torque = position_integrator +
+    //                 kp * kp_scale * position_error +
+    //                 kd * kd_scale * velocity_error;
 
-        return torque;
-    }
+    // return torque;
+    return 0;
+}
 
-int main() {
-
+int main(int argc, char **argv)
+{
     using namespace mjbots;
     moteus::Controller::DefaultArgProcess(argc, argv);
     auto transport = moteus::Controller::MakeSingletonTransport({});
@@ -93,10 +95,10 @@ int main() {
     double dt = 0.0;
 
     // Compute torque command
-    double torque_command = PositionCalculation(desired_position_degrees, feedback_position_degrees, feedback_velocity, dt);
+    double torque = PositionCalculation(desired_position_degrees, feedback_position_degrees, feedback_velocity, dt);
 
     // Output torque command
-    std::cout << "Torque Command: " << torque_command << " Nm" << std::endl;
+    std::cout << "Torque Command: " << torque << " Nm" << std::endl;
 
     return 0;
 }
