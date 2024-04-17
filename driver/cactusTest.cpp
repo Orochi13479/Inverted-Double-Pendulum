@@ -56,6 +56,7 @@ public:
 protected:
     bool Loop(int64_t /*now*/) noexcept final
     {
+
         std::vector<moteus::CanFdFrame> send_frames;
         std::vector<moteus::CanFdFrame> receive_frames;
 
@@ -66,7 +67,6 @@ protected:
         }
 
         // Perform the cycle with error handling
-        // transport_->Cycle(send_frames.data(), send_frames.size(), &receive_frames, nullptr);
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         return true;
@@ -131,8 +131,13 @@ int main(int argc, char **argv)
     app.RegisterThread(motor_thread);
     SetUpTerminationSignalHandler();
 
+    std::cout << "Testing RT loop for until CTRL+C\n";
+
     app.Start();
-    WaitForAndHandleTerminationSignal();
+    while (!cactus_rt::HasTerminationSignalBeenReceived())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
     app.RequestStop();
     app.Join();
