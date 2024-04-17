@@ -99,18 +99,15 @@ int main(int argc, char **argv)
     pf.kd_scale = moteus::kInt8;
 
     // Create two controllers
-    std::vector<std::shared_ptr<moteus::Controller>> controllers = {
-        std::make_shared<moteus::Controller>([&]()
-                                             {
-            auto options = options_common;
-            options.id = 1;
-            return options; }()),
-        std::make_shared<moteus::Controller>([&]()
-                                             {
-            auto options = options_common;
-            options.id = 2;
-            return options; }()),
-    };
+    moteus::Controller::Options options1 = options_common;
+    options1.id = 1;
+    auto controller1 = std::make_shared<moteus::Controller>(options1);
+
+    moteus::Controller::Options options2 = options_common;
+    options2.id = 2;
+    auto controller2 = std::make_shared<moteus::Controller>(options2);
+
+    std::vector<std::shared_ptr<moteus::Controller>> controllers = {controller1, controller2};
 
     for (auto &c : controllers)
     {
@@ -135,6 +132,11 @@ int main(int argc, char **argv)
 
     app.RequestStop();
     app.Join();
+
+    for (auto &c : controllers)
+    {
+        c->SetStop();
+    }
 
     return 0;
 }
