@@ -48,6 +48,15 @@ int main(int argc, char **argv)
     // Set up signal handler for Ctrl+C (SIGINT)
     std::signal(SIGINT, signalHandler);
 
+    // Real-time scheduling
+    struct sched_param schedParam;
+    schedParam.sched_priority = 50; // Set a high priority
+    if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &schedParam))
+    {
+        std::cerr << "Failed to set thread to real-time priority" << std::endl;
+        return 1;
+    }
+
     using namespace mjbots;
     // Set up controllers and transport
     moteus::Controller::DefaultArgProcess(argc, argv);
