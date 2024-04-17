@@ -66,7 +66,8 @@ protected:
         }
 
         // Perform the cycle with error handling
-        transport_->Cycle(send_frames.data(), send_frames.size(), &receive_frames, nullptr);
+        // transport_->Cycle(send_frames.data(), send_frames.size(), &receive_frames, nullptr);
+        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         return true;
     }
@@ -99,15 +100,18 @@ int main(int argc, char **argv)
     pf.kd_scale = moteus::kInt8;
 
     // Create two controllers
-    moteus::Controller::Options options1 = options_common;
-    options1.id = 1;
-    auto controller1 = std::make_shared<moteus::Controller>(options1);
-
-    moteus::Controller::Options options2 = options_common;
-    options2.id = 2;
-    auto controller2 = std::make_shared<moteus::Controller>(options2);
-
-    std::vector<std::shared_ptr<moteus::Controller>> controllers = {controller1, controller2};
+    std::vector<std::shared_ptr<moteus::Controller>> controllers = {
+        std::make_shared<moteus::Controller>([&]()
+                                             {
+            auto options = options_common;
+            options.id = 1;
+            return options; }()),
+        std::make_shared<moteus::Controller>([&]()
+                                             {
+            auto options = options_common;
+            options.id = 2;
+            return options; }()),
+    };
 
     for (auto &c : controllers)
     {
