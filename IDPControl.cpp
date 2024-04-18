@@ -148,7 +148,9 @@ int main(int argc, char** argv) {
     int status_count = 0;
     constexpr int kStatusPeriod = 100;
 
-    while (!ctrl_c_pressed) {
+    bool status = true;
+
+    while (!ctrl_c_pressed || status == true) {
         ::usleep(10);
 
         // Set current joint positions to desired positions
@@ -201,6 +203,8 @@ int main(int argc, char** argv) {
 
         torque_command[0] = tau(0);
         torque_command[1] = tau(1);
+
+        status = false;
 
         status_count++;
         if (status_count > kStatusPeriod) {
