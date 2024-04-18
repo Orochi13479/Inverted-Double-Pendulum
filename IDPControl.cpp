@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <boost/optional.hpp>
+#include <csignal>  // For signal handling
 #include <iostream>
 #include <optional>
-#include <boost/optional.hpp>
-#include <csignal> // For signal handling
+
 #include "moteus.h"
 #include "pinocchio/algorithm/joint-configuration.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
@@ -14,9 +15,8 @@
 volatile sig_atomic_t ctrl_c_pressed = 0;
 
 // Signal handler function
-void signalHandler(int signal)
-{
-    ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
+void signalHandler(int signal) {
+    ctrl_c_pressed = 1;  // Set flag to indicate Ctrl+C was pressed
 }
 
 namespace {
@@ -35,16 +35,16 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     constexpr double kFudge = 0.95;
 
     SE3 Tlink(SE3::Matrix3::Identity(), SE3::Vector3(0, 0, 0.195));  // 0.15 is the egs arm length in metres
-    Inertia Ilink1(kFudge * 0.36, Tlink.translation(),              // 0.29 is the egs 1st arm weight in kgs
+    Inertia Ilink1(kFudge * 0.36, Tlink.translation(),               // 0.29 is the egs 1st arm weight in kgs
                    Inertia::Matrix3::Identity() * 0.001);
     Inertia Ilink2(kFudge * 0.21, Tlink.translation(),  // 0.28 is the egs 2nd arm weight in kgs
                    Inertia::Matrix3::Identity() * 0.001);
 
     // Setting limits
-    CV qmin = CV::Constant(0);    // position min radians
-    CV qmax = CV::Constant(360 * M_PI /180);  // position max radians
-    TV vmax = CV::Constant(0.2);    // velocity max radians/sec
-    TV taumax = CV::Constant(10);  // torque max nm
+    CV qmin = CV::Constant(0);                 // position min radians
+    CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
+    TV vmax = CV::Constant(0.2);               // velocity max radians/sec
+    TV taumax = CV::Constant(10);              // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
                           "link1_joint", taumax, vmax, qmin, qmax);
@@ -148,24 +148,34 @@ int main(int argc, char** argv) {
     int status_count = 0;
     constexpr int kStatusPeriod = 100;
 
-    bool status = true;
+    // Set current joint positions to desired positions
+    q = q_desired;
 
-    while (!ctrl_c_pressed || status == true) {
+    // Assume zero joint velocities and accelerations for simplicity
+    v.setZero();
+    a.setZero();
+
+    // Calculate inverse dynamics torques
+    const Eigen::VectorXd& tau = CalculateTorques(model, q, v, a);
+
+    // Display calculated torques
+    std::cout << "Calculated Torques (Nm): "
+              << "Tau1: " << tau(0) << ", Tau2: " << tau(1) << std::endl;
+
+    auto maybe_servo1 = FindServo(receive_frames, 1);
+    auto maybe_servo2 = FindServo(receive_frames, 2);
+
+    const auto& v1 = *maybe_servo1;
+    const auto& v2 = *maybe_servo2;
+
+    q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
+    q(1) = WrapAround0(v2.position) * 2 * M_PI;
+
+    torque_command[0] = tau(0);
+    torque_command[1] = tau(1);
+
+    while (!ctrl_c_pressed) {
         ::usleep(10);
-
-        // Set current joint positions to desired positions
-        auto q = q_desired;
-
-        // Assume zero joint velocities and accelerations for simplicity
-        v.setZero();
-        a.setZero();
-
-        // Calculate inverse dynamics torques
-        const Eigen::VectorXd& tau = CalculateTorques(model, q, v, a);
-
-        // Display calculated torques
-        std::cout << "Calculated Torques (Nm): "
-                  << "Tau1: " << tau(0) << ", Tau2: " << tau(1) << std::endl;
 
         send_frames.clear();
         receive_frames.clear();
@@ -179,9 +189,6 @@ int main(int argc, char** argv) {
             &send_frames[0], send_frames.size(),
             &receive_frames);
 
-        auto maybe_servo1 = FindServo(receive_frames, 1);
-        auto maybe_servo2 = FindServo(receive_frames, 2);
-
         if (!maybe_servo1 || !maybe_servo2) {
             missed_replies++;
             if (missed_replies > 3) {
@@ -194,17 +201,6 @@ int main(int argc, char** argv) {
         } else {
             missed_replies = 0;
         }
-
-        const auto& v1 = *maybe_servo1;
-        const auto& v2 = *maybe_servo2;
-
-        q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
-        q(1) = WrapAround0(v2.position) * 2 * M_PI;
-
-        torque_command[0] = tau(0);
-        torque_command[1] = tau(1);
-
-        status = false;
 
         status_count++;
         if (status_count > kStatusPeriod) {
