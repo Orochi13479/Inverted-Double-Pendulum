@@ -34,10 +34,10 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
 
     constexpr double kFudge = 0.95;
 
-    SE3 Tlink(SE3::Matrix3::Identity(), SE3::Vector3(0, 0, 0.15));  // 0.15 is the egs arm length in metres
-    Inertia Ilink1(kFudge * 0.29, Tlink.translation(),              // 0.29 is the egs 1st arm weight in kgs
+    SE3 Tlink(SE3::Matrix3::Identity(), SE3::Vector3(0, 0, 0.195));  // 0.15 is the egs arm length in metres
+    Inertia Ilink1(kFudge * 0.36, Tlink.translation(),              // 0.29 is the egs 1st arm weight in kgs
                    Inertia::Matrix3::Identity() * 0.001);
-    Inertia Ilink2(kFudge * 0.28, Tlink.translation(),  // 0.28 is the egs 2nd arm weight in kgs
+    Inertia Ilink2(kFudge * 0.21, Tlink.translation(),  // 0.28 is the egs 2nd arm weight in kgs
                    Inertia::Matrix3::Identity() * 0.001);
 
     // Setting limits
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
     pinocchio::Data data(model);
 
     double desired_position_deg;
-    std::cout << "ENTER DESIRED END-EFFECTOR POSITION IN DEGREES (MAKE SURE IT IS CALIBRATED FIRST!): ";
+    std::cout << "ENTER DESIRED END-EFFECTOR POSITION IN DEGREES (MAKE SURE IT IS CALIBRATED): ";
     std::cin >> desired_position_deg;
 
     // Convert desired position from degrees to radians
