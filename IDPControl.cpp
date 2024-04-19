@@ -72,16 +72,20 @@ int main(int argc, char **argv) {
     cmd.feedforward_torque = 0.0;
 
     const double MAX_TORQUE = 0.5;
-    const double TORQUE_STEP = 0.02;  // Step size for torque increment
-    const int DELAY_MS = 500;         // Delay between torque steps in milliseconds
+    const int NUM_STEPS = 10;  // Number of steps to reach torque_input
+    const int DELAY_MS = 500;  // Delay between torque steps in milliseconds
     double torque_command[2] = {};
+    double current_torque[2] = {};
+    double torque_step[2] = {
+        (torque_command[0] - current_torque[0]) / NUM_STEPS,
+        (torque_command[1] - current_torque[1]) / NUM_STEPS};
 
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
     // Manually input torque commands
-    torque_command[0] = inputAndLimitTorque("motor 1", MAX_TORQUE);
-    torque_command[1] = inputAndLimitTorque("motor 2", MAX_TORQUE);
+    torque_command[0] = inputTorque("motor 1", MAX_TORQUE);
+    torque_command[1] = inputTorque("motor 2", MAX_TORQUE);
 
     std::cout << "Torque command for motor 1: " << torque_command[0] << "Nm" << std::endl;
     std::cout << "Torque command for motor 2: " << torque_command[1] << "Nm" << std::endl;
@@ -96,13 +100,14 @@ int main(int argc, char **argv) {
 
         for (size_t i = 0; i < controllers.size(); i++) {
             // Increment torque command
-            current_torque[i] += TORQUE_STEP;
+            current_torque[i] += torque_step[i];
 
-            // Limit torque to max torque
-            if (current_torque[i] > MAX_TORQUE) {
-                current_torque[i] = MAX_TORQUE;
+            // Limit torque to input torque
+            if (current_torque[i] > torque_command[i]) {
+                current_torque[i] = torque_command[i];
             }
-            cmd.feedforward_torque = torque_command[i];
+
+            cmd.feedforward_torque = current_torque[i];
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 
