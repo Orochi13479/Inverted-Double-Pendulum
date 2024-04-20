@@ -44,7 +44,7 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     CV qmin = CV::Constant(0);                 // position min radians
     CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
     TV vmax = CV::Constant(0.005);               // velocity max radians/sec
-    TV taumax = CV::Constant(50);              // torque max nm
+    TV taumax = CV::Constant(5.0);              // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
                           "link1_joint", taumax, vmax, qmin, qmax);
@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
     cmd.kd_scale = 5000;
     cmd.velocity_limit = 0.005;
     cmd.feedforward_torque = 0.0;
-    cmd.maximum_torque = 50.0;
+    cmd.maximum_torque = 5.0;
 
     double torque_command[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
@@ -181,8 +181,8 @@ int main(int argc, char** argv) {
     const Eigen::VectorXd& tau = CalculateTorques(model, q_current, v, a);
 
     // Display calculated torques
-    std::cout << "Calculated Torques (Nm): "
-              << "Tau1: " << tau(0) << ", Tau2: " << tau(1) << std::endl;
+    std::cout << "CALCULATED TORQUES (Nm): "
+              << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
 
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
