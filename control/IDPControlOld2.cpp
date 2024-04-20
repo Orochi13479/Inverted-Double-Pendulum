@@ -159,6 +159,7 @@ int main(int argc, char** argv) {
     cmd.kp_scale = 1000.0;
     cmd.kd_scale = 750;
     cmd.velocity_limit = 0.005;
+    // cmd.accel_limit = 0;
     cmd.feedforward_torque = 0.0;
     cmd.maximum_torque = 2.0;
 
