@@ -110,12 +110,12 @@ int main(int argc, char** argv) {
     std::cin >> desired_position_deg;
 
     // Convert desired position from degrees to radians
-    // double desired_position_rad = -desired_position_deg * M_PI / 180.0;
-    double desired_position_rev = degreesToRevolutions(desired_position_deg);
+    double desired_position_rad = -desired_position_deg * M_PI / 180.0;
+    // double desired_position_rev = degreesToRevolutions(desired_position_deg);
 
     Eigen::VectorXd q_desired(2);  // Desired joint positions
-    // q_desired << desired_position_rad, desired_position_rad;
-    q_desired << desired_position_rev, desired_position_rev;
+    q_desired << desired_position_rad, desired_position_rad;
+    // q_desired << desired_position_rev, desired_position_rev;
 
     // Eigen::VectorXd q(2);  // Current joint positions
     // Eigen::VectorXd v(2);  // Current joint velocities
