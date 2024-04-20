@@ -156,11 +156,11 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 10000.0;
-    cmd.kd_scale = 5000;
+    cmd.kp_scale = 1000.0;
+    cmd.kd_scale = 750;
     cmd.velocity_limit = 0.005;
     cmd.feedforward_torque = 0.0;
-    cmd.maximum_torque = 5.0;
+    cmd.maximum_torque = 2.0;
 
     double torque_command[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
