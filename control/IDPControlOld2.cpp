@@ -156,9 +156,9 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 500.0;
-    cmd.kd_scale = 50;
-    cmd.velocity_limit = 0.005;
+    cmd.kp_scale = 1000.0;
+    cmd.kd_scale = 500;
+    cmd.velocity_limit = 0.01;
     cmd.feedforward_torque = 0.0;
 
     double torque_command[2] = {};
@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
             printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  \r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                    revolutionsToDegrees(v1.position + v2.position),
-                   torque_command[0], torque_command[1],
+                   v1.torque, v2.torque,
                    v1.temperature, v2.temperature);
             fflush(stdout);
 
