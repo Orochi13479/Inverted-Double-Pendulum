@@ -43,8 +43,8 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     // Setting limits
     CV qmin = CV::Constant(0);                 // position min radians
     CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
-    TV vmax = CV::Constant(0.01);               // velocity max radians/sec
-    TV taumax = CV::Constant(1000);              // torque max nm
+    TV vmax = CV::Constant(0.005);               // velocity max radians/sec
+    TV taumax = CV::Constant(50);              // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
                           "link1_joint", taumax, vmax, qmin, qmax);
@@ -156,11 +156,11 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 1000.0;
-    cmd.kd_scale = 500;
-    cmd.velocity_limit = 0.01;
+    cmd.kp_scale = 10000.0;
+    cmd.kd_scale = 5000;
+    cmd.velocity_limit = 0.005;
     cmd.feedforward_torque = 0.0;
-    cmd.maximum_torque = 2.0;
+    cmd.maximum_torque = 50.0;
 
     double torque_command[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
