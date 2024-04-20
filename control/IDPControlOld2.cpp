@@ -205,6 +205,8 @@ int main(int argc, char** argv) {
 
         status_count++;
         if (status_count > kStatusPeriod) {
+            double v1_position_degrees = v1.position * M_PI / 180.0;
+            double v2_position_degrees = v2.position * M_PI / 180.0;
             printf("Mode: %2d/%2d  position: %6.3f/%6.3f  torque: %6.3f/%6.3f  temp: %4.1f/%4.1f  \r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                    v1.position, v2.position,
