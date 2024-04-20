@@ -160,6 +160,7 @@ int main(int argc, char** argv) {
     cmd.kd_scale = 500;
     cmd.velocity_limit = 0.01;
     cmd.feedforward_torque = 0.0;
+    cmd.maximum_torque = 2.0;
 
     double torque_command[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
