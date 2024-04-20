@@ -84,6 +84,16 @@ boost::optional<mjbots::moteus::Query::Result> FindServo(
     return {};
 }
 
+double degreesToRevolutions(double degrees) {
+    const double degreesPerRevolution = 360.0;
+    return degrees / degreesPerRevolution;
+}
+
+double revolutionsToDegrees(double revolutions) {
+    const double degreesPerRevolution = 360.0;
+    return revolutions * degreesPerRevolution;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -100,10 +110,12 @@ int main(int argc, char** argv) {
     std::cin >> desired_position_deg;
 
     // Convert desired position from degrees to radians
-    double desired_position_rad = -desired_position_deg * M_PI / 180.0;
+    // double desired_position_rad = -desired_position_deg * M_PI / 180.0;
+    double desired_position_rev = degreesToRevolutions(desired_position_deg);
 
     Eigen::VectorXd q_desired(2);  // Desired joint positions
-    q_desired << desired_position_rad, desired_position_rad;
+    // q_desired << desired_position_rad, desired_position_rad;
+    q_desired << desired_position_rev, desired_position_rev;
 
     // Eigen::VectorXd q(2);  // Current joint positions
     // Eigen::VectorXd v(2);  // Current joint velocities
@@ -140,8 +152,8 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 5.0;
-    cmd.kd_scale = 0.05;
+    cmd.kp_scale = 50.0;
+    cmd.kd_scale = 0.5;
     cmd.velocity_limit = 0.005;
     cmd.feedforward_torque = 0.0;
 
@@ -209,11 +221,10 @@ int main(int argc, char** argv) {
 
         status_count++;
         if (status_count > kStatusPeriod) {
-            double position_degrees = (v1.position + v2.position) * M_PI / 180.0;
 
-            printf("Mode: %2d/%2d  position: %6.3f  torque: %6.3f/%6.3f  temp: %4.1f/%4.1f  \r",
+            printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  \r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                   position_degrees,
+                   revolutionsToDegrees(v1.position + v2.position),
                    torque_command[0], torque_command[1],
                    v1.temperature, v2.temperature);
             fflush(stdout);
