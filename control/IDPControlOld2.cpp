@@ -140,9 +140,9 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 0.5;
-    cmd.kd_scale = 0.0;
-    cmd.velocity_limit = 0.05;
+    cmd.kp_scale = 5.0;
+    cmd.kd_scale = 0.05;
+    cmd.velocity_limit = 0.005;
     cmd.feedforward_torque = 0.0;
 
     double torque_command[2] = {};
@@ -209,11 +209,11 @@ int main(int argc, char** argv) {
 
         status_count++;
         if (status_count > kStatusPeriod) {
-            double v1_position_degrees = v1.position * M_PI / 180.0;
-            double v2_position_degrees = v2.position * M_PI / 180.0;
-            printf("Mode: %2d/%2d  position: %6.3f/%6.3f  torque: %6.3f/%6.3f  temp: %4.1f/%4.1f  \r",
+            double position_degrees = (v1.position + v2.position) * M_PI / 180.0;
+
+            printf("Mode: %2d/%2d  position: %6.3f  torque: %6.3f/%6.3f  temp: %4.1f/%4.1f  \r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                   v1_position_degrees, v2_position_degrees,
+                   position_degrees,
                    torque_command[0], torque_command[1],
                    v1.temperature, v2.temperature);
             fflush(stdout);
