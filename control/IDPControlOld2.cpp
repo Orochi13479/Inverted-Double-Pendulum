@@ -43,8 +43,8 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     // Setting limits
     CV qmin = CV::Constant(0);                 // position min radians
     CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
-    TV vmax = CV::Constant(0.005);               // velocity max radians/sec
-    TV taumax = CV::Constant(100);              // torque max nm
+    TV vmax = CV::Constant(0.01);               // velocity max radians/sec
+    TV taumax = CV::Constant(1000);              // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
                           "link1_joint", taumax, vmax, qmin, qmax);
