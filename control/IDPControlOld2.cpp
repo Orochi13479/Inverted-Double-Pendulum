@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <boost/optional.hpp>
+#include <csignal>  // For signal handling
 #include <iostream>
 #include <optional>
-#include <boost/optional.hpp>
-#include <csignal> // For signal handling
+
 #include "moteus.h"
 #include "pinocchio/algorithm/joint-configuration.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
@@ -14,9 +15,8 @@
 volatile sig_atomic_t ctrl_c_pressed = 0;
 
 // Signal handler function
-void signalHandler(int signal)
-{
-    ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
+void signalHandler(int signal) {
+    ctrl_c_pressed = 1;  // Set flag to indicate Ctrl+C was pressed
 }
 
 namespace {
@@ -35,16 +35,16 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     constexpr double kFudge = 0.95;
 
     SE3 Tlink(SE3::Matrix3::Identity(), SE3::Vector3(0, 0, 0.195));  // 0.195 is the arm length in metres
-    Inertia Ilink1(kFudge * 0.36, Tlink.translation(),              // 0.36 is the 1st arm weight in kgs
+    Inertia Ilink1(kFudge * 0.36, Tlink.translation(),               // 0.36 is the 1st arm weight in kgs
                    Inertia::Matrix3::Identity() * 0.001);
     Inertia Ilink2(kFudge * 0.21, Tlink.translation(),  // 0.21 is the 2nd arm weight in kgs
                    Inertia::Matrix3::Identity() * 0.001);
 
     // Setting limits
-    CV qmin = CV::Constant(0);    // position min radians
-    CV qmax = CV::Constant(360 * M_PI /180);  // position max radians
-    TV vmax = CV::Constant(0.2);    // velocity max radians/sec
-    TV taumax = CV::Constant(10);  // torque max nm
+    CV qmin = CV::Constant(0);                 // position min radians
+    CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
+    TV vmax = CV::Constant(0.2);               // velocity max radians/sec
+    TV taumax = CV::Constant(10);              // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
                           "link1_joint", taumax, vmax, qmin, qmax);
@@ -136,8 +136,9 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 0.0;
+    cmd.kp_scale = 0.1;
     cmd.kd_scale = 0.0;
+    cmd.velocity_limit = 0.5;
     cmd.feedforward_torque = 0.0;
 
     double torque_command[2] = {};
@@ -148,22 +149,22 @@ int main(int argc, char** argv) {
     int status_count = 0;
     constexpr int kStatusPeriod = 100;
 
-    while (true ) {
+    // Set current joint positions to desired positions
+    auto q_current = q_desired;
+
+    // Assume zero joint velocities and accelerations for simplicity
+    v.setZero();
+    a.setZero();
+
+    // Calculate inverse dynamics torques
+    const Eigen::VectorXd& tau = CalculateTorques(model, q_current, v, a);
+
+    // Display calculated torques
+    std::cout << "Calculated Torques (Nm): "
+              << "Tau1: " << tau(0) << ", Tau2: " << tau(1) << std::endl;
+
+    while (true) {
         ::usleep(10);
-
-        // Set current joint positions to desired positions
-        auto q = q_desired;
-
-        // Assume zero joint velocities and accelerations for simplicity
-        v.setZero();
-        a.setZero();
-
-        // Calculate inverse dynamics torques
-        const Eigen::VectorXd& tau = CalculateTorques(model, q, v, a);
-
-        // Display calculated torques
-        std::cout << "Calculated Torques (Nm): "
-                  << "Tau1: " << tau(0) << ", Tau2: " << tau(1) << std::endl;
 
         send_frames.clear();
         receive_frames.clear();

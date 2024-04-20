@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     cmd.kd_scale = 0.0;
     cmd.feedforward_torque = 0.0;
 
-    const double MAX_TORQUE = 0.5;
+    const double MAX_TORQUE = 1.0;
     const int NUM_STEPS = 10;  // Number of steps to reach torque_input
     const int DELAY_MS = 500;  // Delay between torque steps in milliseconds
     double torque_command[2] = {};
@@ -108,6 +108,7 @@ int main(int argc, char **argv) {
             }
 
             cmd.feedforward_torque = current_torque[i];
+            cmd.kp_scale = 0.1;
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 

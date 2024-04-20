@@ -34,7 +34,7 @@ target_link_libraries(driver_${PROJECT_NAME} moteus::cpp pthread)
 add_executable(main_${PROJECT_NAME} main.cpp)
 target_link_libraries(main_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
-add_executable(control_${PROJECT_NAME} IDPControlOld2.cpp)
+add_executable(control_${PROJECT_NAME} control/IDPControlOld2.cpp)
 target_link_libraries(control_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
 add_executable(cactusTest_${PROJECT_NAME} driver/cactusTest.cpp)
