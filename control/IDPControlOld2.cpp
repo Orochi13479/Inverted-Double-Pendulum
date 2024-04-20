@@ -43,7 +43,7 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     // Setting limits
     CV qmin = CV::Constant(0);                 // position min radians
     CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
-    TV vmax = CV::Constant(0.2);               // velocity max radians/sec
+    TV vmax = CV::Constant(0.05);               // velocity max radians/sec
     TV taumax = CV::Constant(10);              // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
@@ -105,9 +105,13 @@ int main(int argc, char** argv) {
     Eigen::VectorXd q_desired(2);  // Desired joint positions
     q_desired << desired_position_rad, desired_position_rad;
 
-    Eigen::VectorXd q(2);  // Current joint positions
-    Eigen::VectorXd v(2);  // Current joint velocities
-    Eigen::VectorXd a(2);  // Current joint accelerations
+    // Eigen::VectorXd q(2);  // Current joint positions
+    // Eigen::VectorXd v(2);  // Current joint velocities
+    // Eigen::VectorXd a(2);  // Current joint accelerations
+
+    Eigen::VectorXd q = randomConfiguration(model);       // in rad for the UR5
+    Eigen::VectorXd v = Eigen::VectorXd::Zero(2);  // in rad/s for the UR5
+    Eigen::VectorXd a = Eigen::VectorXd::Zero(2);  // in rad/s² for the UR5
 
     moteus::Controller::Options options_common;
 
@@ -136,9 +140,9 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 0.1;
+    cmd.kp_scale = 0.5;
     cmd.kd_scale = 0.0;
-    cmd.velocity_limit = 0.5;
+    cmd.velocity_limit = 0.05;
     cmd.feedforward_torque = 0.0;
 
     double torque_command[2] = {};
@@ -209,7 +213,7 @@ int main(int argc, char** argv) {
             double v2_position_degrees = v2.position * M_PI / 180.0;
             printf("Mode: %2d/%2d  position: %6.3f/%6.3f  torque: %6.3f/%6.3f  temp: %4.1f/%4.1f  \r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                   v1.position, v2.position,
+                   v1_position_degrees, v2_position_degrees,
                    torque_command[0], torque_command[1],
                    v1.temperature, v2.temperature);
             fflush(stdout);
