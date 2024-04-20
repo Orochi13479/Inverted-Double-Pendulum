@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 1000.0;
+    cmd.kp_scale = 750.0;
     cmd.kd_scale = 750;
     cmd.velocity_limit = 0.005;
     // cmd.accel_limit = 0;
