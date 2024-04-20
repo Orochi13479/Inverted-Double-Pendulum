@@ -43,8 +43,8 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     // Setting limits
     CV qmin = CV::Constant(0);                 // position min radians
     CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
-    TV vmax = CV::Constant(0.05);               // velocity max radians/sec
-    TV taumax = CV::Constant(10);              // torque max nm
+    TV vmax = CV::Constant(0.005);               // velocity max radians/sec
+    TV taumax = CV::Constant(100);              // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
                           "link1_joint", taumax, vmax, qmin, qmax);
@@ -97,6 +97,10 @@ double revolutionsToDegrees(double revolutions) {
 }  // namespace
 
 int main(int argc, char** argv) {
+
+    // Set up signal handler for Ctrl+C (SIGINT)
+    std::signal(SIGINT, signalHandler);
+
     using namespace mjbots;
     moteus::Controller::DefaultArgProcess(argc, argv);
     auto transport = moteus::Controller::MakeSingletonTransport({});
@@ -121,9 +125,9 @@ int main(int argc, char** argv) {
     // Eigen::VectorXd v(2);  // Current joint velocities
     // Eigen::VectorXd a(2);  // Current joint accelerations
 
-    Eigen::VectorXd q = randomConfiguration(model);       // in rad for the UR5
-    Eigen::VectorXd v = Eigen::VectorXd::Zero(2);  // in rad/s for the UR5
-    Eigen::VectorXd a = Eigen::VectorXd::Zero(2);  // in rad/s² for the UR5
+    Eigen::VectorXd q = randomConfiguration(model);       // in rad
+    Eigen::VectorXd v = Eigen::VectorXd::Zero(2);  // in rad/s
+    Eigen::VectorXd a = Eigen::VectorXd::Zero(2);  // in rad/s²
 
     moteus::Controller::Options options_common;
 
@@ -152,8 +156,8 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 50.0;
-    cmd.kd_scale = 0.5;
+    cmd.kp_scale = 500.0;
+    cmd.kd_scale = 50;
     cmd.velocity_limit = 0.005;
     cmd.feedforward_torque = 0.0;
 
@@ -179,7 +183,9 @@ int main(int argc, char** argv) {
     std::cout << "Calculated Torques (Nm): "
               << "Tau1: " << tau(0) << ", Tau2: " << tau(1) << std::endl;
 
-    while (true) {
+    std::cout << "Press Ctrl+C to Stop Test" << std::endl;
+
+    while (!ctrl_c_pressed) {
         ::usleep(10);
 
         send_frames.clear();
@@ -233,15 +239,15 @@ int main(int argc, char** argv) {
         }
     }
 
-    printf("Entering fault mode!\n");
+    std::cout << "Entering fault mode!" << std::endl;
 
-    while (true) {
-        ::usleep(50000);
+    ::usleep(50000);
 
-        for (auto& c : controllers) {
-            c->SetBrake();
-        }
+    for (auto &c : controllers)
+    {
+        c->SetStop();
     }
+
 
     return 0;
 }
