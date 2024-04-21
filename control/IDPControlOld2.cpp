@@ -160,6 +160,7 @@ int main(int argc, char** argv) {
     // cmd.maximum_torque = 2.0;
 
     double torque_command[2] = {};
+    double velocity_count[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
@@ -170,16 +171,9 @@ int main(int argc, char** argv) {
     // Set current joint positions to desired positions
     auto q_current = q_desired;
 
-    // Assume zero current joint velocities and accelerations for simplicity
-    v.setZero();
-    a.setZero();
-
-    // Calculate inverse dynamics torques
-    const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
-
-    // Display calculated torques
-    std::cout << "CALCULATED TORQUES (Nm): "
-              << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
+    // // Display calculated torques
+    // std::cout << "CALCULATED TORQUES (Nm): "
+    //           << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
 
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
@@ -191,6 +185,7 @@ int main(int argc, char** argv) {
 
         for (size_t i = 0; i < controllers.size(); i++) {
             cmd.feedforward_torque = torque_command[i];
+            cmd.velocity = velocity_count[i];
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 
@@ -217,11 +212,42 @@ int main(int argc, char** argv) {
         const auto& v1 = *maybe_servo1;
         const auto& v2 = *maybe_servo2;
 
+        // Assume zero current joint velocities and accelerations for simplicity
+        v.setZero();
+        a.setZero();
+
+        // Calculate inverse dynamics torques
+        const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
+
         q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
         torque_command[0] = tau(0);
         torque_command[1] = tau(1);
+
+        while (revolutionsToDegrees(v1.position + v2.position) <= desired_position_deg) {
+            velocity_count[0] += 0.001;
+            velocity_count[1] += 0.001;
+        }
+
+        // // Update joint velocities and recompute RNEA torques in a loop
+        // for (int iter = 0; iter < 100; ++iter)  // Loop for 100 iterations as an example
+        // {
+        //     // Update joint velocities for each motor (e.g., increase each velocity by 0.1)
+        //     for (int i = 0; i < model.nv; ++i) {
+        //         motor_velocities[i] += 0.1;
+        //     }
+
+        //     // Recompute RNEA torques with updated velocities
+        //     for (int i = 0; i < model.nv; ++i) {
+        //         pinocchio::rnea(model, data, q, Eigen::VectorXd::Unit(model.nv, i) * motor_velocities[i], a);
+        //     }
+
+        //     // Access computed torques if needed (e.g., data.tau)
+        //     Eigen::VectorXd torques = data.tau;
+
+        //     // Do something with torques if needed
+        // }
 
         status_count++;
         if (status_count > kStatusPeriod) {
