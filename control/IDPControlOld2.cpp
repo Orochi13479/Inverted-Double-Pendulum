@@ -33,8 +33,6 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
 
     M::JointIndex idx = 0;
 
-    constexpr double kFudge = 1.0;
-
     double armLength = 0.195;
     double motorRadius = 0.035;
     double armMass = 0.12;
@@ -45,17 +43,23 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
                  ((1 / 2) * motorMass * pow(motorRadius, 2)) +
                  (motorMass * pow(armLength + motorRadius, 2));
 
-    SE3 Tlink(SE3::Matrix3::Identity(), SE3::Vector3(0, 0, armLength)); 
-    Inertia Ilink1(kFudge * (armMass + motorMass), Tlink.translation(),       
+    double I_arm1 = (1.0 / 3.0) * armMass * pow(armLength, 2);
+    double I_motor1 = (1.0 / 2.0) * motorMass * pow(motorRadius, 2);
+    double I_arm2 = (1.0 / 3.0) * armMass * pow(armLength, 2);
+    double I_motor2 = (1.0 / 2.0) * motorMass * pow(motorRadius, 2);
+    double I_weight = motorMass * pow(armLength + motorRadius, 2);
+
+    SE3 Tlink(SE3::Matrix3::Identity(), SE3::Vector3(0, 0, armLength));
+    Inertia Ilink1((armMass + motorMass), Tlink.translation(),
                    Inertia::Matrix3::Identity() * MOI);
-    Inertia Ilink2(kFudge * secondArmMass, Tlink.translation(),
-                   Inertia::Matrix3::Identity() * MOI);
+    Inertia Ilink2(secondArmMass, Tlink.translation(),
+                   Inertia::Matrix3::Identity() * (I_arm2 + I_motor2 + I_weight));
 
     // Setting limits
-    CV qmin = CV::Constant(-360 * M_PI / 180);                 // position min radians
-    CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
-    TV vmax = CV::Constant(10);              // velocity max radians/sec
-    TV taumax = CV::Constant(1.5);             // torque max nm
+    CV qmin = CV::Constant(-360 * M_PI / 180);  // position min radians
+    CV qmax = CV::Constant(360 * M_PI / 180);   // position max radians
+    TV vmax = CV::Constant(10);                 // velocity max radians/sec
+    TV taumax = CV::Constant(1.5);              // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
                           "link1_joint", taumax, vmax, qmin, qmax);
@@ -76,14 +80,6 @@ double WrapAround0(double v) {
     return v2 > 0.5 ? (v2 - 1.0) : v2;
 }
 
-Eigen::VectorXd CalculateTorques(const pinocchio::Model& model,
-                                 const Eigen::VectorXd& q,
-                                 const Eigen::VectorXd& v,
-                                 const Eigen::VectorXd& a) {
-    pinocchio::Data data(model);
-    return pinocchio::rnea(model, data, q, v, a);
-}
-
 boost::optional<mjbots::moteus::Query::Result> FindServo(
     const std::vector<mjbots::moteus::CanFdFrame>& frames,
     int id) {
@@ -95,23 +91,10 @@ boost::optional<mjbots::moteus::Query::Result> FindServo(
     return {};
 }
 
-// double degreesToRevolutions(double degrees) {
-//     const double degreesPerRevolution = 360.0;
-//     return degrees / degreesPerRevolution;
-// }
-
 double revolutionsToDegrees(double revolutions) {
     const double degreesPerRevolution = 360.0;
     return revolutions * degreesPerRevolution;
 }
-
-// double LinearRamp(double start_torque, double end_torque, double current_time, double ramp_duration) {
-//     if (current_time < ramp_duration) {
-//         return start_torque + (end_torque - start_torque) * (current_time / ramp_duration);
-//     } else {
-//         return end_torque;
-//     }
-// }
 
 }  // namespace
 
@@ -133,19 +116,13 @@ int main(int argc, char** argv) {
 
     // Convert desired position from degrees to radians
     double desired_position_rad = -desired_position_deg * M_PI / 180.0;
-    // double desired_position_rev = degreesToRevolutions(desired_position_deg);
 
     Eigen::VectorXd q_desired(2);  // Desired joint positions
     q_desired << desired_position_rad, desired_position_rad;
-    // q_desired << desired_position_rev, desired_position_rev;
 
-    Eigen::VectorXd q(2);  // Current joint positions
-    Eigen::VectorXd v(2);  // Current joint velocities
-    Eigen::VectorXd a(2);  // Current joint accelerations
-
-    // Eigen::VectorXd q = randomConfiguration(model);  // in rad
-    // Eigen::VectorXd v = Eigen::VectorXd::Zero(2);    // in rad/s
-    // Eigen::VectorXd a = Eigen::VectorXd::Zero(2);    // in rad/s²
+    Eigen::VectorXd q = Eigen::VectorXd::Zero(model.nv);  // in rad
+    Eigen::VectorXd v = Eigen::VectorXd::Zero(model.nv);  // in rad/s
+    Eigen::VectorXd a = Eigen::VectorXd::Zero(model.nv);  // in rad/s²
 
     moteus::Controller::Options options_common;
 
@@ -176,7 +153,7 @@ int main(int argc, char** argv) {
     moteus::PositionMode::Command cmd;
     cmd.kp_scale = 10.0;
     cmd.kd_scale = 7.5;
-    cmd.velocity = 1.0;
+    // cmd.velocity = 1.0;
     // cmd.velocity_limit = 0.1;
     // cmd.accel_limit = 0;
     cmd.feedforward_torque = 0.0;
@@ -197,25 +174,32 @@ int main(int argc, char** argv) {
     v.setZero();
     a.setZero();
 
-    // Calculate inverse dynamics torques
-    const Eigen::VectorXd& tau = CalculateTorques(model, q_current, v, a);
+    double armLength = 0.195;
+    double motorRadius = 0.035;
+    double armMass = 0.12;
+    double motorMass = 0.24;
+    double secondArmMass = 0.21;
 
-    // constexpr double torque_ramp_duration = 5.0;  // Duration of the torque ramp in seconds
-    // double ramp_start_time = 0.0;                 // Start time of the torque ramp
+    double g = 9.81;  // acceleration due to gravity in m/s^2
+
+    // Calculate gravitational torque for each link
+    double torqueGravityLink1 = (armMass + motorMass) * g * (armLength + motorRadius);
+    double torqueGravityLink2 = secondArmMass * g * (armLength + motorRadius);
+
+    // Calculate inverse dynamics torques
+    const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
+
+    double netTorqueLink1 = tau(0) - torqueGravityLink1;
+    double netTorqueLink2 = tau(1) - torqueGravityLink2;
 
     // Display calculated torques
     std::cout << "CALCULATED TORQUES (Nm): "
-              << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
+              << "MOTOR 1: " << netTorqueLink1 << ", MOTOR 2: " << netTorqueLink2 << std::endl;
 
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
     while (!ctrl_c_pressed) {
         ::usleep(10);
-        
-        // std::chrono::high_resolution_clock::time_point start_time;
-        // double current_time = 0.0;
-
-        // start_time = std::chrono::high_resolution_clock::now();
 
         send_frames.clear();
         receive_frames.clear();
@@ -251,20 +235,8 @@ int main(int argc, char** argv) {
         q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
-        torque_command[0] = tau(0);
-        torque_command[1] = tau(1);
-
-        // torque_command[0] = LinearRamp(0.0, tau(0), current_time - ramp_start_time, torque_ramp_duration);
-        // torque_command[1] = LinearRamp(0.0, tau(1), current_time - ramp_start_time, torque_ramp_duration);
-
-        // std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-        // std::chrono::duration<double> elapsed_seconds = now - start_time;
-        // current_time = elapsed_seconds.count();
-
-        // if (current_time - ramp_start_time >= torque_ramp_duration) {
-        //     torque_command[0] = v1.torque;
-        //     torque_command[1] = v1.torque;
-        // }
+        torque_command[0] = netTorqueLink1;
+        torque_command[1] = netTorqueLink2;
 
         status_count++;
         if (status_count > kStatusPeriod) {
