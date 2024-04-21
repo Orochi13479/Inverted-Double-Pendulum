@@ -174,27 +174,12 @@ int main(int argc, char** argv) {
     v.setZero();
     a.setZero();
 
-    double armLength = 0.195;
-    double motorRadius = 0.035;
-    double armMass = 0.12;
-    double motorMass = 0.24;
-    double secondArmMass = 0.21;
-
-    double g = 9.81;  // acceleration due to gravity in m/s^2
-
-    // Calculate gravitational torque for each link
-    double torqueGravityLink1 = (armMass + motorMass) * g * (armLength + motorRadius);
-    double torqueGravityLink2 = secondArmMass * g * (armLength + motorRadius);
-
     // Calculate inverse dynamics torques
     const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
 
-    double netTorqueLink1 = tau(0) - torqueGravityLink1;
-    double netTorqueLink2 = tau(1) - torqueGravityLink2;
-
     // Display calculated torques
     std::cout << "CALCULATED TORQUES (Nm): "
-              << "MOTOR 1: " << netTorqueLink1 << ", MOTOR 2: " << netTorqueLink2 << std::endl;
+              << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
 
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
@@ -235,8 +220,8 @@ int main(int argc, char** argv) {
         q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
-        torque_command[0] = netTorqueLink1;
-        torque_command[1] = netTorqueLink2;
+        torque_command[0] = tau(0);
+        torque_command[1] = tau(1);
 
         status_count++;
         if (status_count > kStatusPeriod) {
