@@ -1,7 +1,7 @@
 
 % SECTION 1: Define the displacement, velocity and acceleration of double pendulum
 % masses
-syms theta_1(t) theta_2(t) L_1 L_2 m_1 m_2 g        % List the name of variables
+syms theta_1(t) theta_2(t) L_1 L_2 m_1 m_2 g       % List the name of variables
 
 % Defines the displacements of double pendulum in Cartesian Co-ordinates
 x_1 = L_1*sin(theta_1);
@@ -70,13 +70,18 @@ eqn_2 = subs(eqRed_2);
 % handle M.
 M = matlabFunction(V,'vars',{'t','Y'});
 
-% Define the inital conditions of the state variables 
-initCond = [0 0 0 0];
-finalCond = [pi 0 pi 0];
+% Define the equilibrium state variables 
+state1 = [0 0 0 0];     % initial condition
+state2 = [0 0 pi 0];    % state 2
+state3 = [pi 1 0 0];    % state 3
+state4 = [pi 1 pi 0];   % final condition
+
+initCond = state1;
+finalCond = state4;
 
 % Use ode45 to sol be the state variables. The solutions are a function of
 % time within the interval [0, 10]
-sols = ode45(M,[0 10],initCond);
+sols = ode45(M,[0 20],initCond);
 
 % Plot solutions of state variables
 plot(sols.x,sols.y)
@@ -98,6 +103,5 @@ hold on;
 fanimator(@(t) plot([0 x_1(t)],[0 y_1(t)],'r-'));
 fanimator(@(t) plot(x_2(t),y_2(t),'go','MarkerSize',m_2*10,'MarkerFaceColor','g'));
 fanimator(@(t) plot([x_1(t) x_2(t)],[y_1(t) y_2(t)],'g-'));
-
 fanimator(@(t) text(-0.3,0.3,"Timer: "+num2str(t,2)));
 hold off;

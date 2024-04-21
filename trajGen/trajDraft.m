@@ -29,7 +29,7 @@ x0 = [0; 0; 0; 0];          % Initial state [q1, q1_dot, q2, q2_dot]
 xf = [pi/2; 0; pi/2; 0];    % Final state [q1, q1_dot, q2, q2_dot]
 
 % Define simulation time span 
-time_span = [0, 10]; 
+tspan = [0, 10]; 
 
 % Trajectory planning using linear interpolation
 t = linspace(tspan(1), tspan(2), 100);
@@ -70,7 +70,7 @@ function dxdt = double_pendulum_dynamics(x, m1, m2, l1, l2, g)
 end
 
 % Define control function
-function u = double_pendulum_control(t, x, system, q1_desired, q2_desired, kp, kd, ki)
+function u = double_pendulum_control(t, x, system, q1_desired, q2_desired,t_desired, kp, kd, ki)
     % Extract state variables
     q1 = x(1);
     q1_dot = x(2);
