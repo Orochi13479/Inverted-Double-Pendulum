@@ -189,8 +189,8 @@ int main(int argc, char** argv) {
     // Calculate inverse dynamics torques
     const Eigen::VectorXd& tau = CalculateTorques(model, q_current, v, a);
 
-    constexpr double torque_ramp_duration = 5.0;  // Duration of the torque ramp in seconds
-    double ramp_start_time = 0.0;                 // Start time of the torque ramp
+    // constexpr double torque_ramp_duration = 5.0;  // Duration of the torque ramp in seconds
+    // double ramp_start_time = 0.0;                 // Start time of the torque ramp
 
 
 
@@ -203,10 +203,10 @@ int main(int argc, char** argv) {
     while (!ctrl_c_pressed) {
         ::usleep(10);
         
-        std::chrono::high_resolution_clock::time_point start_time;
-        double current_time = 0.0;
+        // std::chrono::high_resolution_clock::time_point start_time;
+        // double current_time = 0.0;
 
-        start_time = std::chrono::high_resolution_clock::now();
+        // start_time = std::chrono::high_resolution_clock::now();
 
         send_frames.clear();
         receive_frames.clear();
@@ -242,17 +242,20 @@ int main(int argc, char** argv) {
         q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
-        torque_command[0] = LinearRamp(0.0, tau(0), current_time - ramp_start_time, torque_ramp_duration);
-        torque_command[1] = LinearRamp(0.0, tau(1), current_time - ramp_start_time, torque_ramp_duration);
+        torque_command[0] = tau(0);
+        torque_command[1] = tau(1);
 
-        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed_seconds = now - start_time;
-        current_time = elapsed_seconds.count();
+        // torque_command[0] = LinearRamp(0.0, tau(0), current_time - ramp_start_time, torque_ramp_duration);
+        // torque_command[1] = LinearRamp(0.0, tau(1), current_time - ramp_start_time, torque_ramp_duration);
 
-        if (current_time - ramp_start_time >= torque_ramp_duration) {
-            torque_command[0] = v1.torque;
-            torque_command[1] = v1.torque;
-        }
+        // std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        // std::chrono::duration<double> elapsed_seconds = now - start_time;
+        // current_time = elapsed_seconds.count();
+
+        // if (current_time - ramp_start_time >= torque_ramp_duration) {
+        //     torque_command[0] = v1.torque;
+        //     torque_command[1] = v1.torque;
+        // }
 
         status_count++;
         if (status_count > kStatusPeriod) {
