@@ -212,45 +212,30 @@ int main(int argc, char** argv) {
         const auto& v1 = *maybe_servo1;
         const auto& v2 = *maybe_servo2;
 
-        // Assume zero current joint velocities and accelerations for simplicity
+        // // Assume zero current joint velocities and accelerations for simplicity
         v.setZero();
         a.setZero();
 
-        // Calculate inverse dynamics torques
+        // // Calculate inverse dynamics torques
         const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
+
+        for (int iter = 0; iter < 100; ++iter)  // Loop for 100 iterations as an example
+        {
+            // Update joint velocities for each motor
+            for (int i = 0; i < model.nv; ++i) {
+                v(i) = velocity_count[i];  // Set the joint velocity
+            }
+
+            // Recompute RNEA torques with updated velocities
+            const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
+
+        }
 
         q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
         torque_command[0] = tau(0);
         torque_command[1] = tau(1);
-
-        if (revolutionsToDegrees(v1.position + v2.position) <= desired_position_deg) {
-            velocity_count[0] += 0.1;
-            velocity_count[1] += 0.1;
-        } else{
-            velocity_count[0] = 0;
-            velocity_count[1] = 0;
-        }
-
-        // // Update joint velocities and recompute RNEA torques in a loop
-        // for (int iter = 0; iter < 100; ++iter)  // Loop for 100 iterations as an example
-        // {
-        //     // Update joint velocities for each motor (e.g., increase each velocity by 0.1)
-        //     for (int i = 0; i < model.nv; ++i) {
-        //         motor_velocities[i] += 0.1;
-        //     }
-
-        //     // Recompute RNEA torques with updated velocities
-        //     for (int i = 0; i < model.nv; ++i) {
-        //         pinocchio::rnea(model, data, q, Eigen::VectorXd::Unit(model.nv, i) * motor_velocities[i], a);
-        //     }
-
-        //     // Access computed torques if needed (e.g., data.tau)
-        //     Eigen::VectorXd torques = data.tau;
-
-        //     // Do something with torques if needed
-        // }
 
         status_count++;
         if (status_count > kStatusPeriod) {
