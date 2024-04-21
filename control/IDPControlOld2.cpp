@@ -44,7 +44,7 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     // Setting limits
     CV qmin = CV::Constant(0);                 // position min radians
     CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
-    TV vmax = CV::Constant(0.01);              // velocity max radians/sec
+    TV vmax = CV::Constant(0.1);              // velocity max radians/sec
     TV taumax = CV::Constant(2.0);             // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
@@ -95,13 +95,13 @@ double revolutionsToDegrees(double revolutions) {
     return revolutions * degreesPerRevolution;
 }
 
-double LinearRamp(double start_torque, double end_torque, double current_time, double ramp_duration) {
-    if (current_time < ramp_duration) {
-        return start_torque + (end_torque - start_torque) * (current_time / ramp_duration);
-    } else {
-        return end_torque;
-    }
-}
+// double LinearRamp(double start_torque, double end_torque, double current_time, double ramp_duration) {
+//     if (current_time < ramp_duration) {
+//         return start_torque + (end_torque - start_torque) * (current_time / ramp_duration);
+//     } else {
+//         return end_torque;
+//     }
+// }
 
 }  // namespace
 
@@ -129,13 +129,13 @@ int main(int argc, char** argv) {
     q_desired << desired_position_rad, desired_position_rad;
     // q_desired << desired_position_rev, desired_position_rev;
 
-    // Eigen::VectorXd q(2);  // Current joint positions
-    // Eigen::VectorXd v(2);  // Current joint velocities
-    // Eigen::VectorXd a(2);  // Current joint accelerations
+    Eigen::VectorXd q(2);  // Current joint positions
+    Eigen::VectorXd v(2);  // Current joint velocities
+    Eigen::VectorXd a(2);  // Current joint accelerations
 
-    Eigen::VectorXd q = randomConfiguration(model);  // in rad
-    Eigen::VectorXd v = Eigen::VectorXd::Zero(2);    // in rad/s
-    Eigen::VectorXd a = Eigen::VectorXd::Zero(2);    // in rad/s²
+    // Eigen::VectorXd q = randomConfiguration(model);  // in rad
+    // Eigen::VectorXd v = Eigen::VectorXd::Zero(2);    // in rad/s
+    // Eigen::VectorXd a = Eigen::VectorXd::Zero(2);    // in rad/s²
 
     moteus::Controller::Options options_common;
 
@@ -164,12 +164,12 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 100.0;
-    cmd.kd_scale = 75.0;
-    cmd.velocity_limit = 0.005;
+    cmd.kp_scale = 10.0;
+    cmd.kd_scale = 7.5;
+    cmd.velocity_limit = 0.1;
     // cmd.accel_limit = 0;
     cmd.feedforward_torque = 0.0;
-    cmd.maximum_torque = 2.0;
+    // cmd.maximum_torque = 2.0;
 
     double torque_command[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
     // Set current joint positions to desired positions
     auto q_current = q_desired;
 
-    // Assume zero joint velocities and accelerations for simplicity
+    // Assume zero current joint velocities and accelerations for simplicity
     v.setZero();
     a.setZero();
 
