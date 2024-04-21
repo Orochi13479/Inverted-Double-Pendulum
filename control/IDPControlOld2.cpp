@@ -225,9 +225,12 @@ int main(int argc, char** argv) {
         torque_command[0] = tau(0);
         torque_command[1] = tau(1);
 
-        while (revolutionsToDegrees(v1.position + v2.position) <= desired_position_deg) {
+        if (revolutionsToDegrees(v1.position + v2.position) <= desired_position_deg) {
             velocity_count[0] += 0.001;
             velocity_count[1] += 0.001;
+        } else{
+            velocity_count[0] = 0;
+            velocity_count[1] = 0;
         }
 
         // // Update joint velocities and recompute RNEA torques in a loop
