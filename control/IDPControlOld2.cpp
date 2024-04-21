@@ -164,8 +164,8 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 750.0;
-    cmd.kd_scale = 750;
+    cmd.kp_scale = 100.0;
+    cmd.kd_scale = 75.0;
     cmd.velocity_limit = 0.005;
     // cmd.accel_limit = 0;
     cmd.feedforward_torque = 0.0;
@@ -192,8 +192,7 @@ int main(int argc, char** argv) {
     constexpr double torque_ramp_duration = 5.0;  // Duration of the torque ramp in seconds
     double ramp_start_time = 0.0;                 // Start time of the torque ramp
 
-    std::chrono::high_resolution_clock::time_point start_time;
-    double current_time = 0.0;
+
 
     // Display calculated torques
     std::cout << "CALCULATED TORQUES (Nm): "
@@ -203,6 +202,10 @@ int main(int argc, char** argv) {
 
     while (!ctrl_c_pressed) {
         ::usleep(10);
+        
+        std::chrono::high_resolution_clock::time_point start_time;
+        double current_time = 0.0;
+
         start_time = std::chrono::high_resolution_clock::now();
 
         send_frames.clear();
@@ -247,7 +250,8 @@ int main(int argc, char** argv) {
         current_time = elapsed_seconds.count();
 
         if (current_time - ramp_start_time >= torque_ramp_duration) {
-            ramp_start_time = current_time;  // Reset the start time for the next ramp
+            torque_command[0] = v1.torque;
+            torque_command[1] = v1.torque;
         }
 
         status_count++;
