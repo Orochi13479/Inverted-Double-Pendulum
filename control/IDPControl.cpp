@@ -191,9 +191,10 @@ int main(int argc, char **argv) {
 
         status_count++;
         if (status_count > kStatusPeriod) {
-            printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+            printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                   revolutionsToDegrees(v1.position + v2.position),
+                   revolutionsToDegrees(v1.position),
+                   revolutionsToDegrees(v2.position),
                    v1.torque, v2.torque,
                    v1.temperature, v2.temperature, v1.velocity, v2.velocity);
             fflush(stdout);
