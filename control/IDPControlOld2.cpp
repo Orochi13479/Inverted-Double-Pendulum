@@ -226,8 +226,8 @@ int main(int argc, char** argv) {
         torque_command[1] = tau(1);
 
         if (revolutionsToDegrees(v1.position + v2.position) <= desired_position_deg) {
-            velocity_count[0] += 0.001;
-            velocity_count[1] += 0.001;
+            velocity_count[0] += 0.1;
+            velocity_count[1] += 0.1;
         } else{
             velocity_count[0] = 0;
             velocity_count[1] = 0;
