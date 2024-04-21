@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include <boost/optional.hpp>
+#include <chrono>
 #include <csignal>  // For signal handling
 #include <iostream>
 #include <optional>
@@ -43,8 +44,8 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     // Setting limits
     CV qmin = CV::Constant(0);                 // position min radians
     CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
-    TV vmax = CV::Constant(0.01);               // velocity max radians/sec
-    TV taumax = CV::Constant(2.0);              // torque max nm
+    TV vmax = CV::Constant(0.01);              // velocity max radians/sec
+    TV taumax = CV::Constant(2.0);             // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
                           "link1_joint", taumax, vmax, qmin, qmax);
@@ -84,20 +85,27 @@ boost::optional<mjbots::moteus::Query::Result> FindServo(
     return {};
 }
 
-double degreesToRevolutions(double degrees) {
-    const double degreesPerRevolution = 360.0;
-    return degrees / degreesPerRevolution;
-}
+// double degreesToRevolutions(double degrees) {
+//     const double degreesPerRevolution = 360.0;
+//     return degrees / degreesPerRevolution;
+// }
 
 double revolutionsToDegrees(double revolutions) {
     const double degreesPerRevolution = 360.0;
     return revolutions * degreesPerRevolution;
 }
 
+double LinearRamp(double start_torque, double end_torque, double current_time, double ramp_duration) {
+    if (current_time < ramp_duration) {
+        return start_torque + (end_torque - start_torque) * (current_time / ramp_duration);
+    } else {
+        return end_torque;
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
-
     // Set up signal handler for Ctrl+C (SIGINT)
     std::signal(SIGINT, signalHandler);
 
@@ -125,9 +133,9 @@ int main(int argc, char** argv) {
     // Eigen::VectorXd v(2);  // Current joint velocities
     // Eigen::VectorXd a(2);  // Current joint accelerations
 
-    Eigen::VectorXd q = randomConfiguration(model);       // in rad
-    Eigen::VectorXd v = Eigen::VectorXd::Zero(2);  // in rad/s
-    Eigen::VectorXd a = Eigen::VectorXd::Zero(2);  // in rad/s²
+    Eigen::VectorXd q = randomConfiguration(model);  // in rad
+    Eigen::VectorXd v = Eigen::VectorXd::Zero(2);    // in rad/s
+    Eigen::VectorXd a = Eigen::VectorXd::Zero(2);    // in rad/s²
 
     moteus::Controller::Options options_common;
 
@@ -181,6 +189,12 @@ int main(int argc, char** argv) {
     // Calculate inverse dynamics torques
     const Eigen::VectorXd& tau = CalculateTorques(model, q_current, v, a);
 
+    constexpr double torque_ramp_duration = 5.0;  // Duration of the torque ramp in seconds
+    double ramp_start_time = 0.0;                 // Start time of the torque ramp
+
+    std::chrono::high_resolution_clock::time_point start_time;
+    double current_time = 0.0;
+
     // Display calculated torques
     std::cout << "CALCULATED TORQUES (Nm): "
               << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
@@ -189,6 +203,7 @@ int main(int argc, char** argv) {
 
     while (!ctrl_c_pressed) {
         ::usleep(10);
+        start_time = std::chrono::high_resolution_clock::now();
 
         send_frames.clear();
         receive_frames.clear();
@@ -224,12 +239,19 @@ int main(int argc, char** argv) {
         q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
-        torque_command[0] = tau(0);
-        torque_command[1] = tau(1);
+        torque_command[0] = LinearRamp(0.0, tau(0), current_time - ramp_start_time, torque_ramp_duration);
+        torque_command[1] = LinearRamp(0.0, tau(1), current_time - ramp_start_time, torque_ramp_duration);
+
+        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = now - start_time;
+        current_time = elapsed_seconds.count();
+
+        if (current_time - ramp_start_time >= torque_ramp_duration) {
+            ramp_start_time = current_time;  // Reset the start time for the next ramp
+        }
 
         status_count++;
         if (status_count > kStatusPeriod) {
-
             printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  \r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                    revolutionsToDegrees(v1.position + v2.position),
@@ -245,11 +267,9 @@ int main(int argc, char** argv) {
 
     ::usleep(50000);
 
-    for (auto &c : controllers)
-    {
+    for (auto& c : controllers) {
         c->SetStop();
     }
-
 
     return 0;
 }
