@@ -239,7 +239,7 @@ int main(int argc, char** argv) {
         const auto& v1 = *maybe_servo1;
         const auto& v2 = *maybe_servo2;
 
-        q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
+        q(0) = WrapAround0(v1.position) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
         torque_command[0] = tau(0);
