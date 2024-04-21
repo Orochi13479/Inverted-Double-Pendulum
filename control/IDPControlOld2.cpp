@@ -33,13 +33,23 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
 
     M::JointIndex idx = 0;
 
-    constexpr double kFudge = 0.95;
+    constexpr double kFudge = 1.0;
 
-    SE3 Tlink(SE3::Matrix3::Identity(), SE3::Vector3(0, 0, 0.195));  // 0.195 is the arm length in metres
-    Inertia Ilink1(kFudge * 0.36, Tlink.translation(),               // 0.36 is the 1st arm weight in kgs
-                   Inertia::Matrix3::Identity() * 0.001);
-    Inertia Ilink2(kFudge * 0.21, Tlink.translation(),  // 0.21 is the 2nd arm weight in kgs
-                   Inertia::Matrix3::Identity() * 0.001);
+    double armLength = 0.195;
+    double motorRadius = 0.035;
+    double armMass = 0.12;
+    double motorMass = 0.24;
+    double secondArmMass = 0.21;
+
+    double MOI = ((1 / 3) * armMass * pow(armLength, 2)) +
+                 ((1 / 2) * motorMass * pow(motorRadius, 2)) +
+                 (motorMass * pow(armLength + motorRadius, 2));
+
+    SE3 Tlink(SE3::Matrix3::Identity(), SE3::Vector3(0, 0, armLength)); 
+    Inertia Ilink1(kFudge * (armMass + motorMass), Tlink.translation(),       
+                   Inertia::Matrix3::Identity() * MOI);
+    Inertia Ilink2(kFudge * secondArmMass, Tlink.translation(),
+                   Inertia::Matrix3::Identity() * MOI);
 
     // Setting limits
     CV qmin = CV::Constant(0);                 // position min radians
