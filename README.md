@@ -6,9 +6,14 @@ A Simulink Simulation is developed to ensure the functionality and possibility o
 ## Simulation
 ### Setup
 
-- Install Matlab Add Ons [Simulink](https://au.mathworks.com/help/install/install-products.html)
-- Install Matlab Add Ons [Simscape Multibody](https://au.mathworks.com/campaigns/offerings/download_smlink.html)
+- Install MATLAB Add Ons [Simulink](https://au.mathworks.com/help/install/install-products.html)
+- Install MATLAB Add Ons [Simscape Multibody](https://au.mathworks.com/campaigns/offerings/download_smlink.html)
 
+#### Install Real-Time Kernal
+Please run the following in the MATLAB Command Window (Restart required after executing):
+```
+sldrtkernel -install
+```
 Open Simulink file DoublePendulum.slx.
 Run the Simulink file and launch visualiser in Matlab
 
