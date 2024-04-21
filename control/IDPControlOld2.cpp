@@ -44,7 +44,7 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
     // Setting limits
     CV qmin = CV::Constant(0);                 // position min radians
     CV qmax = CV::Constant(360 * M_PI / 180);  // position max radians
-    TV vmax = CV::Constant(0.1);              // velocity max radians/sec
+    TV vmax = CV::Constant(10);              // velocity max radians/sec
     TV taumax = CV::Constant(2.0);             // torque max nm
 
     idx = model->addJoint(idx, typename JC::JointModelRY(), Tlink,
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
     moteus::PositionMode::Command cmd;
     cmd.kp_scale = 10.0;
     cmd.kd_scale = 7.5;
-    cmd.velocity_limit = 0.1;
+    // cmd.velocity_limit = 0.1;
     // cmd.accel_limit = 0;
     cmd.feedforward_torque = 0.0;
     // cmd.maximum_torque = 2.0;
@@ -191,8 +191,6 @@ int main(int argc, char** argv) {
 
     // constexpr double torque_ramp_duration = 5.0;  // Duration of the torque ramp in seconds
     // double ramp_start_time = 0.0;                 // Start time of the torque ramp
-
-
 
     // Display calculated torques
     std::cout << "CALCULATED TORQUES (Nm): "
@@ -239,7 +237,7 @@ int main(int argc, char** argv) {
         const auto& v1 = *maybe_servo1;
         const auto& v2 = *maybe_servo2;
 
-        q(0) = WrapAround0(v1.position) * 2 * M_PI;
+        q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
         torque_command[0] = tau(0);
