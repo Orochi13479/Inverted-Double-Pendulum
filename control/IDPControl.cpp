@@ -48,25 +48,14 @@ double degreesToRadians(double degrees) {
 }
 
 // Calculate torque based on desired position using proportional control
-std::pair<double, double> calculateTorqueFromSystemPosition(
-    double desired_system_position_deg,
-    double current_position_motor1_deg,
-    double current_position_motor2_deg,
-    double kp) {
-    // Calculate current system position
-    double current_system_position_deg = current_position_motor1_deg + current_position_motor2_deg;
-
-    // Calculate system position error in degrees
-    double system_position_error_deg = desired_system_position_deg - current_system_position_deg;
-
+double calculateTorqueFromPosition(double desired_position_deg, double kp) {
     // Convert position error to radians
-    double system_position_error_rad = degreesToRadians(system_position_error_deg);
+    double position_rad = degreesToRadians(desired_position_deg);
 
-    // Calculate weighted torques for each motor based on their positions
-    double torque_motor1 = kp * system_position_error_rad * (current_position_motor2_deg / current_system_position_deg);
-    double torque_motor2 = kp * system_position_error_rad * (current_position_motor1_deg / current_system_position_deg);
+    // Calculate torque using a proportional relationship
+    double torque = kp * position_rad;
 
-    return {torque_motor1, torque_motor2};
+    return torque;
 }
 
 boost::optional<mjbots::moteus::Query::Result> FindServo(
@@ -135,18 +124,12 @@ int main(int argc, char **argv) {
     std::cout << "ENTER DESIRED END-EFFECTOR POSITION IN DEGREES (MAKE SURE IT IS CALIBRATED): ";
     std::cin >> desired_position_deg;
 
-    double current_position_motor1_deg = 0.0;  // Get current position for motor 1
-    double current_position_motor2_deg = 0.0;  // Get current position for motor 2
-
     // Calculate torque based on desired system position
-    auto torques = calculateTorqueFromSystemPosition(
-        desired_position_deg,
-        current_position_motor1_deg,
-        current_position_motor2_deg,
-        0.1);  // kp
+    auto torques = calculateTorqueFromPosition(
+        desired_position_deg, 0.1);  // kp
 
-    std::cout << "Torque command for motor 1: " << torques.first << "Nm" << std::endl;
-    std::cout << "Torque command for motor 2: " << torques.second << "Nm" << std::endl;
+    std::cout << "Torque command for motor 1: " << torques << "Nm" << std::endl;
+    std::cout << "Torque command for motor 2: " << torques << "Nm" << std::endl;
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
     int missed_replies = 0;
@@ -186,8 +169,8 @@ int main(int argc, char **argv) {
         const auto &v1 = *maybe_servo1;
         const auto &v2 = *maybe_servo2;
 
-        torque_command[0] = torques.first;
-        torque_command[1] = torques.second;
+        torque_command[0] = torques;
+        torque_command[1] = torques;
 
         status_count++;
         if (status_count > kStatusPeriod) {
