@@ -186,12 +186,16 @@ int main(int argc, char** argv) {
     // // Calculate inverse dynamics torques
     const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
 
-    double scaled_tau1 = scaleTorque(tau(0), 1.0);  // 1.0 is the motor's hard limit
-    double scaled_tau2 = scaleTorque(tau(1), 1.0);
+    // double scaled_tau1 = scaleTorque(tau(0), 1.0);  // 1.0 is the motor's hard limit
+    // double scaled_tau2 = scaleTorque(tau(1), 1.0);
+
+    // // // Display calculated torques
+    // std::cout << "CALCULATED TORQUES (Nm): "
+    //           << "MOTOR 1: " << scaled_tau1 << ", MOTOR 2: " << scaled_tau2 << std::endl;
 
     // // Display calculated torques
     std::cout << "CALCULATED TORQUES (Nm): "
-              << "MOTOR 1: " << scaled_tau1 << ", MOTOR 2: " << scaled_tau2 << std::endl;
+              << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
 
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
@@ -235,8 +239,8 @@ int main(int argc, char** argv) {
         q(0) = WrapAround0(v1.position) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
-        torque_command[0] = scaled_tau1;
-        torque_command[1] = scaled_tau2;
+        torque_command[0] = tau(0);
+        torque_command[1] = tau(1);
 
         status_count++;
         if (status_count > kStatusPeriod) {
