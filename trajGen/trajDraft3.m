@@ -1,78 +1,123 @@
-function trajDraft3
-    % SECTION 1: Define the displacement, velocity and acceleration of double pendulum
-    % masses
-    syms theta_1(t) theta_2(t) L_1 L_2 m_1 m_2 g       % List the name of variables
+%% Theory
+%     SECTION 1: Define the displacement, velocity and acceleration of double pendulum
+%     % masses
+%     % List the name of variables
+%     syms q1 q2 q1_dot q2_dot tau1 tau2 q1_dot_dot q2_dot_dot 
+% 
+%     % Define values 
+%     L1 = 0.195;       % Link 1 length (m) (Motor shaft to motor shaft)
+%     L2 = 0.215;       % Link 2 length (m) (Motor shaft to end of link)
+%     m1 = 0.36;        % Link 1 mass (kg)
+%     m2 = 0.21;        % Link 2 mass (kg)
+%     g = 9.8;          % gravity (m/s^2)
+% 
+% 
+%     %% EQUATIONS OF MOTION - From Modern Robotics
+% 
+%     % Symmetric Positive-Defined Mass Matrix 
+%     M11 = m1*(L1^2) + m2*((L1^2)+ 2*L1*L2*cos(q2) + (L2^2));
+%     M12 = m2*(L1*L2*cos(q2)+(L2^2));
+%     M21 = m2*(L1*L2*cos(q2)+(L2^2));
+%     M22 = m2*(L2^2);
+%     M_q = [M11 M12; M21 M22];
+% 
+%     % Coriolis and Centripetal Torques Vector
+%     c11 = -m2*L1*L2*sin(q2)*(2*q1_dot*q2_dot + (q2_dot^2));
+%     c21 = m2*L1*L2*(q1_dot^2)*sin(q2);
+%     c = [c11; c21];
+% 
+%     % Gravitational Torques Vector
+%     g_q11 = (m1 + m2)*L1*g*cos(q1) + m2*g*L2*cos(q1 + q2);
+%     g_q21 = m2*g*L2*cos(q1 + q2);
+%     g_q = [g_q11; g_q21];
+% 
+%     % Overall Acceleration
+%     q_dot_dot = [q1_dot_dot; q2_dot_dot];
+% 
+%     % Overall Torque
+%     tau = [tau1; tau2];
+% 
+%     % Overall Equation
+%     tau = M_q*q_dot_dot*c'*g_q;
+% 
+%% Code
 
-    % Define symbolic velocities and accelerations
-    syms theta_1_dot(t) theta_2_dot(t) theta_1_dot_dot(t) theta_2_dot_dot(t)
+% Define parameters of double inverted pendulum system
+L1 = 0.195;       % Link 1 length (m)
+L2 = 0.215;       % Link 2 length (m)
+m1 = 0.36;        % Link 1 mass (kg)
+m2 = 0.21;        % Link 2 mass (kg)
+g = 9.8;          % gravity (m/s^2)
 
-    % Defines the displacements of double pendulum in Cartesian Co-ordinates
-    x_1 = L_1*sin(theta_1);
-    y_1 = -L_1*cos(theta_1);
-    x_2 = x_1 + L_2*sin(theta_2);
-    y_2 = y_1 - L_2*cos(theta_2);
+% Define time span and initial conditions for simulation
+tspan = [0 10];   % Time span for simulation
+q1_0 = 0;         % Initial angle for the first joint
+q2_0 = 0;         % Initial angle for the second joint
+q1_dot_0 = 0;     % Initial angular velocity for the first joint
+q2_dot_0 = 0;     % Initial angular velocity for the second joint
 
-    % Finds the velocities through differentiation
-    vx_1 = diff(x_1);
-    vy_1 = diff(y_1);
-    vx_2 = diff(x_2);
-    vy_2 = diff(y_2);
+% Solve equations of motion numerically
+[t, q] = ode45(@(t, q) double_pendulum_eqns(t, q, L1, L2, m1, m2, g), tspan, [q1_0; q2_0; q1_dot_0; q2_dot_0]);
 
-    % Finds the accelerations through differentiation
-    ax_1 = diff(vx_1);
-    ay_1 = diff(vy_1);
-    ax_2 = diff(vx_2);
-    ay_2 = diff(vy_2);
+% Extract joint angles over time
+q1 = q(:, 1);
+q2 = q(:, 2);
 
-    % SECTION 2: Define Equations of Motion 
-    syms tau_1(t) tau_2(t)            % Torques acting on first and second pendulums
+% Define functions for x and y positions of pendulum masses
+x1 = @(t) L1 * sin(q1(t));
+y1 = @(t) -L1 * cos(q1(t));
+x2 = @(t) L1 * sin(q1(t)) + L2 * sin(q2(t));
+y2 = @(t) -L1 * cos(q1(t)) - L2 * cos(q2(t));
 
-    % Evaluate torques acting on m_1:
-    eqx_1 = m_1*ax_1 == tau_1*sin(theta_1) - tau_2*sin(theta_2);
-    eqy_1 = m_1*ay_1 == tau_1*cos(theta_1) - tau_2*cos(theta_2) - m_1*g;
-
-    % Evaluate torques acting on m_2:
-    eqx_2 = m_2*ax_2 == -tau_2*sin(theta_2);
-    eqy_2 = m_2*ay_2 == tau_2*cos(theta_2) - m_2*g;
-
-    % SECTION 3: Solve System Equations
-    % Define values 
-    L_1 = 0.195;        % Link 1 length (m) (Motor shaft to motor shaft)
-    L_2 = 0.215;        % Link 2 length (m) (Motor shaft to end of link)
-    m_1 = 0.36;        % Link 1 mass (kg)
-    m_2 = 0.21;        % Link 2 mass (kg)
-    g = 9.8;        % gravity (m/s^2)
-
-    % Convert equations to first-order differential equations
-    eqn_1 = ode(eqx_1, eqy_1, theta_1, theta_2, theta_1_dot, theta_2_dot, L_1, L_2, m_1, m_2, g, tau_1);
-    eqn_2 = ode(eqx_2, eqy_2, theta_1, theta_2, theta_1_dot, theta_2_dot, L_1, L_2, m_1, m_2, g, tau_2);
-
-    % Solve the system of equations numerically
-    sols = ode45(@(t,Y) [subs(eqn_1); subs(eqn_2)], [0 20], [0 0 0 0]);
-
-    % SECTION 4: Create Animation of Oscillating Double Pendulum
-    x_1 = @(t) L_1*sin(deval(sols,t,3));
-    y_1 = @(t) -L_1*cos(deval(sols,t,3));
-    x_2 = @(t) L_1*sin(deval(sols,t,3))+L_2*sin(deval(sols,t,1));
-    y_2 = @(t) -L_1*cos(deval(sols,t,3))-L_2*cos(deval(sols,t,1));
-    fanimator(@(t) plot(x_1(t),y_1(t),'ro','MarkerSize',m_1*10,'MarkerFaceColor','r'));
-    axis equal;
+% Create animation
+figure;
+for i = 1:length(t)
+    plot(x1(i), y1(i), 'ro', 'MarkerSize', m1 * 10, 'MarkerFaceColor', 'r');
     hold on;
-    fanimator(@(t) plot([0 x_1(t)],[0 y_1(t)],'r-'));
-    fanimator(@(t) plot(x_2(t),y_2(t),'go','MarkerSize',m_2*10,'MarkerFaceColor','g'));
-    fanimator(@(t) plot([x_1(t) x_2(t)],[y_1(t) y_2(t)],'g-'));
-    fanimator(@(t) text(-0.3,0.3,"Timer: "+num2str(t,2)));
+    plot([0, x1(i)], [0, y1(i)], 'r-');
+    plot(x2(i), y2(i), 'go', 'MarkerSize', m2 * 10, 'MarkerFaceColor', 'g');
+    plot([x1(i), x2(i)], [y1(i), y2(i)], 'g-');
     hold off;
-
-    % SECTION 5: Define the ode function
-    function eqn = ode(eqx, eqy, theta_1, theta_2, theta_1_dot, theta_2_dot, L_1, L_2, m_1, m_2, g, tau)
-        eqn = vpasolve([eqx, eqy], [theta_1_dot_dot, theta_2_dot_dot]);
-        eqn = odeToVectorField(eqn);
-        eqn = matlabFunction(eqn, 'vars', {'t', 'Y'}, 'outputs', {'dYdt'});
-        function res = ode_fun(t, Y)
-            [dYdt] = eqn(t, Y);
-            res = [Y(3); Y(4); dYdt(1); dYdt(2)];
-        end
-        eqn = @ode_fun;
-    end
+    axis equal;
+    title(['Double Pendulum Animation (t = ', num2str(t(i)), ')']);
+    xlabel('X Position');
+    ylabel('Y Position');
+    xlim([-0.5, 0.5]); % Adjust xlim and ylim as needed
+    ylim([-0.5, 0.5]);
+    pause(0.01); % Adjust pause duration as needed for desired animation speed
 end
+
+function dqdt = double_pendulum_eqns(t, q, L1, L2, m1, m2, g)
+    q1 = q(1);
+    q2 = q(2);
+    q1_dot = q(3);
+    q2_dot = q(4);
+
+    M11 = m1 * L1^2 + m2 * (L1^2 + 2 * L1 * L2 * cos(q2) + L2^2);
+    M12 = m2 * (L1 * L2 * cos(q2) + L2^2);
+    M21 = m2 * (L1 * L2 * cos(q2) + L2^2);
+    M22 = m2 * L2^2;
+    M = [M11, M12; M21, M22];
+
+    c11 = -m2 * L1 * L2 * sin(q2) * (2 * q1_dot * q2_dot + q2_dot^2);
+    c21 = m2 * L1 * L2 * q1_dot^2 * sin(q2);
+    c = [c11; c21];
+
+    g_q11 = (m1 + m2) * L1 * g * cos(q1) + m2 * g * L2 * cos(q1 + q2);
+    g_q21 = m2 * g * L2 * cos(q1 + q2);
+    g_q = [g_q11; g_q21];
+
+    tau1 = 0; % You can specify external torques here if needed
+    tau2 = 0;
+
+    q_dot_dot = M \ ([-c(1) + tau1; -c(2) + tau2] - g_q);
+
+    dqdt = [q1_dot; q2_dot; q_dot_dot];
+end
+
+%% Things to include:
+% Feedforward Torque
+% Controller of some kind e.g. PD or PID controller
+
+
+
