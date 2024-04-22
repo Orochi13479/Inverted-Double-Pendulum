@@ -1,3 +1,5 @@
+// Test Plan 1 & 2
+
 #include <stdio.h>
 #include <unistd.h>
 
@@ -15,14 +17,45 @@ void signalHandler(int signal) {
     ctrl_c_pressed = 1;  // Set flag to indicate Ctrl+C was pressed
 }
 
-double degreesToRevolutions(double degrees) {
-    const double degreesPerRevolution = 360.0;
-    return degrees / degreesPerRevolution;
+double getPracTorque(double scaleWeight) {
+    double armLength = 0.195;
+
+    return ((scaleWeight / 9.81) * armLength) / 10.0;
 }
 
-double revolutionsToDegrees(double revolutions) {
-    const double degreesPerRevolution = 360.0;
-    return revolutions * degreesPerRevolution;
+double getPracTorqueFromInertia(double scaleWeight) {
+    double armLength = 0.195;
+    double motorRadius = 0.035;
+    double armMass = 0.12;
+    double motorMass = 0.24;
+
+    // Moment of Inertia for rod with disk attached at the end
+    double MOI = ((1 / 3) * armMass * pow(armLength, 2)) +
+                 ((1 / 2) * motorMass * pow(motorRadius, 2)) +
+                 (motorMass * pow(armLength + motorRadius, 2));
+
+    // Linear acceleration
+    double a = (scaleWeight / 1000 * 9.81) / (0.26);  // 0.26kg is setup based. This WILL change with different Setups
+
+    // Angular acceleration
+    double aa = (a / armLength);
+
+    return aa * MOI;
+}
+
+double degreesToRadians(double degrees) {
+    return degrees * M_PI / 180.0;
+}
+
+// Calculate torque based on desired position using proportional control
+double calculateTorqueFromPosition(double desired_position_deg, double kp) {
+    // Convert position error to radians
+    double position_rad = degreesToRadians(desired_position_deg);
+
+    // Calculate torque using a proportional relationship
+    double torque = kp * position_rad;
+
+    return torque;
 }
 
 boost::optional<mjbots::moteus::Query::Result> FindServo(
@@ -36,27 +69,9 @@ boost::optional<mjbots::moteus::Query::Result> FindServo(
     return {};
 }
 
-double convertRevolutionsToTorque(double revolutions) {
-    // Example parameters for torque calculation
-    const double arm_length = 0.195;  // Length of the arm in meters
-    const double mass = 0.36;         // Mass in kilograms
-    const double gravity = 9.81;      // Acceleration due to gravity in m/s^2
-
-    // Moment of inertia calculation (assuming a simple pendulum)
-    const double moment_of_inertia = (mass * arm_length * arm_length) / 3.0;
-
-    // Torque calculation based on the equation: Torque = Moment of Inertia * Angular Acceleration
-    // Angular acceleration can be calculated as the second derivative of position with respect to time
-    // However, since we are only given revolutions (position), we'll assume a constant angular velocity for simplicity
-    // You may need to adjust this calculation based on the specific dynamics of your system
-
-    // For simplicity, let's assume a constant angular velocity (1 revolution per second)
-    const double angular_velocity = 2 * M_PI;  // 1 revolution per second in radians per second
-
-    // Torque calculation
-    const double torque = moment_of_inertia * angular_velocity;
-
-    return torque;
+double revolutionsToDegrees(double revolutions) {
+    const double degreesPerRevolution = 360.0;
+    return revolutions * degreesPerRevolution;
 }
 
 int main(int argc, char **argv) {
@@ -95,37 +110,32 @@ int main(int argc, char **argv) {
         c->SetStop();
     }
 
+    std::vector<moteus::CanFdFrame> send_frames;
+    std::vector<moteus::CanFdFrame> receive_frames;
+
     moteus::PositionMode::Command cmd;
     cmd.kp_scale = 10.0;
     cmd.kd_scale = 7.5;
-    cmd.velocity = 0.5;
     cmd.feedforward_torque = 0.0;
 
-    int missed_replies = 0;
-    int status_count = 0;
-    constexpr int kStatusPeriod = 100;
+    double torque_command[2] = {};
 
     double desired_position_deg;
     std::cout << "ENTER DESIRED END-EFFECTOR POSITION IN DEGREES (MAKE SURE IT IS CALIBRATED): ";
     std::cin >> desired_position_deg;
 
-    // Convert desired position from degrees to revolutions
-    double desired_position_rev = degreesToRevolutions(desired_position_deg);
+    // Calculate torque based on desired system position
+    auto torques = calculateTorqueFromPosition(
+        desired_position_deg, 0.1);  // kp
 
-    // Calculate required torque based on the desired position
-    double required_torque = convertRevolutionsToTorque(desired_position_rev);
-
-    std::cout << "Required Torque for desired position: " << required_torque << "Nm" << std::endl;
-    double torque_command[2] = {};
-
-    std::vector<moteus::CanFdFrame> send_frames;
-    std::vector<moteus::CanFdFrame> receive_frames;
-
-    std::cout << "Torque command for motor 1: " << torque_command[0] << "Nm" << std::endl;
-    std::cout << "Torque command for motor 2: " << torque_command[1] << "Nm" << std::endl;
+    std::cout << "Torque command for motor 1: " << torques << "Nm" << std::endl;
+    std::cout << "Torque command for motor 2: " << torques << "Nm" << std::endl;
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
-    // Main loop
+    int missed_replies = 0;
+    int status_count = 0;
+    constexpr int kStatusPeriod = 100;
+
     while (!ctrl_c_pressed) {
         ::usleep(10);
 
@@ -159,14 +169,15 @@ int main(int argc, char **argv) {
         const auto &v1 = *maybe_servo1;
         const auto &v2 = *maybe_servo2;
 
-        torque_command[0] = required_torque;
-        torque_command[1] = required_torque;
+        torque_command[0] = torques;
+        torque_command[1] = torques;
 
         status_count++;
         if (status_count > kStatusPeriod) {
-            printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+            printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                   revolutionsToDegrees(v1.position + v2.position),
+                   revolutionsToDegrees(v1.position),
+                   revolutionsToDegrees(v2.position),
                    v1.torque, v2.torque,
                    v1.temperature, v2.temperature, v1.velocity, v2.velocity);
             fflush(stdout);

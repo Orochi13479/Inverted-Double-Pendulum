@@ -96,6 +96,14 @@ double revolutionsToDegrees(double revolutions) {
     return revolutions * degreesPerRevolution;
 }
 
+double scaleTorque(double torque, double max_torque) {
+    const double safety_margin = 0.95;  // You can adjust this value
+    if (std::abs(torque) > max_torque * safety_margin) {
+        return (torque > 0) ? max_torque : -max_torque;
+    }
+    return torque;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -151,8 +159,8 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 10.0;
-    cmd.kd_scale = 7.5;
+    cmd.kp_scale = 0.0;
+    cmd.kd_scale = 0.0;
     // cmd.velocity = 1.0;
     // cmd.velocity_limit = 0.1;
     // cmd.accel_limit = 0;
@@ -160,6 +168,7 @@ int main(int argc, char** argv) {
     // cmd.maximum_torque = 2.0;
 
     double torque_command[2] = {};
+    double velocity_count[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
@@ -170,14 +179,21 @@ int main(int argc, char** argv) {
     // Set current joint positions to desired positions
     auto q_current = q_desired;
 
-    // Assume zero current joint velocities and accelerations for simplicity
+    // // Assume zero current joint velocities and accelerations for simplicity
     v.setZero();
     a.setZero();
 
-    // Calculate inverse dynamics torques
+    // // Calculate inverse dynamics torques
     const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
 
-    // Display calculated torques
+    // double scaled_tau1 = scaleTorque(tau(0), 1.0);  // 1.0 is the motor's hard limit
+    // double scaled_tau2 = scaleTorque(tau(1), 1.0);
+
+    // // // Display calculated torques
+    // std::cout << "CALCULATED TORQUES (Nm): "
+    //           << "MOTOR 1: " << scaled_tau1 << ", MOTOR 2: " << scaled_tau2 << std::endl;
+
+    // // Display calculated torques
     std::cout << "CALCULATED TORQUES (Nm): "
               << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
 
@@ -191,6 +207,9 @@ int main(int argc, char** argv) {
 
         for (size_t i = 0; i < controllers.size(); i++) {
             cmd.feedforward_torque = torque_command[i];
+            cmd.velocity = velocity_count[i];
+            cmd.kp_scale = 5.0;
+            cmd.kd_scale = 1.5;
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 
@@ -217,7 +236,7 @@ int main(int argc, char** argv) {
         const auto& v1 = *maybe_servo1;
         const auto& v2 = *maybe_servo2;
 
-        q(0) = WrapAround0(v1.position + 0.5) * 2 * M_PI;
+        q(0) = WrapAround0(v1.position) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
         torque_command[0] = tau(0);
