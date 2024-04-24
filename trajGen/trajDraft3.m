@@ -1,6 +1,11 @@
-%% Theory
-%     SECTION 1: Define the displacement, velocity and acceleration of double pendulum
-%     % masses
+%% ROBOTICS STUDIO 2
+% AUTUMN SESSION 2024
+% DOUBLE INVERTED PENDULUM SYSTEM 
+% This script is a draft trajectory plan for the double
+% inverted pendulum system
+
+%% Theory: Equation extracted from Modern Robotics
+% 
 %     % List the name of variables
 %     syms q1 q2 q1_dot q2_dot tau1 tau2 q1_dot_dot q2_dot_dot 
 % 
@@ -57,13 +62,15 @@ q1_dot_0 = 0;     % Initial angular velocity for the first joint
 q2_dot_0 = 0;     % Initial angular velocity for the second joint
 
 % Solve equations of motion numerically
-[t, q] = ode45(@(t, q) double_pendulum_eqns(t, q, L1, L2, m1, m2, g), tspan, [q1_0; q2_0; q1_dot_0; q2_dot_0]);
+[t, q] = ode45(@(t, q) double_pendulum_eqns(t, q, L1, L2, m1, m2, g),...
+    tspan, [q1_0; q2_0; q1_dot_0; q2_dot_0]);
 
 % Extract joint angles over time
 q1 = q(:, 1);
 q2 = q(:, 2);
 
-% Define functions for x and y positions of pendulum masses
+% Define functions for x and y positions of pendulum masses in cartesian
+% co-ordinates
 x1 = @(t) L1 * sin(q1(t));
 y1 = @(t) -L1 * cos(q1(t));
 x2 = @(t) L1 * sin(q1(t)) + L2 * sin(q2(t));
@@ -84,7 +91,7 @@ for i = 1:length(t)
     ylabel('Y Position');
     xlim([-0.5, 0.5]); % Adjust xlim and ylim as needed
     ylim([-0.5, 0.5]);
-    pause(0.01); % Adjust pause duration as needed for desired animation speed
+    pause(0.01); 
 end
 
 function dqdt = double_pendulum_eqns(t, q, L1, L2, m1, m2, g)
@@ -116,8 +123,22 @@ function dqdt = double_pendulum_eqns(t, q, L1, L2, m1, m2, g)
 end
 
 %% Things to include:
+% calculate inertia based on our system model. The inertia from Modern
+% Robotics is based on a simplified model where the link has no mass and
+% the mass is on a 'ball' at the end of the link.
+% Hand designed Model is literally just a sequence of joint angles and
+% velocities. Test on simulation (potentially Daniel's simulation to see
+% if the joints 'look' feesable. - this is the pass level
+% Next step is to come up with a trajectory that is actually feesable in
+% real life. This can be done in multiple ways
+% - Through recording a trajectory through hand swinging the robot when
+%   motors are off
+% - Using Daniel simulator to determine input torques/motion??
+% - Using the ode45 solver 
 % Feedforward Torque
-% Controller of some kind e.g. PD or PID controller
+% PID controller
+% Include a plot that tracks angular velocities (q1_dot and q2_dot) and a
+% plot that tracks joint angles (q1 and q2) 
 
 
 

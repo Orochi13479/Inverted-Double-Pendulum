@@ -1,104 +1,203 @@
-% ROBOTICS STUDIO 2
-% AUTUMN SESSION 2024
-% DOUBLE INVERTED PENDULUM SYSTEM 
-% This script is a draft of hand-designed trajectory plan for the double
-% inverted pendulum system
+
+%% HAND DESIGNED TRAJECTORY 
+% Hand design joint position and angular velocity states so that the
+% pendulum swings up from downward position to balancing in an upright
+% position.
+% Angular Velocity [rad/s]
+% Formula: (2*pi*RPM)/60
+% Torque Limitations result in motor only being able to lift double
+% pendulum to an angle of 30 degrees (pi/6)
+% MJBOT: Model mj5208 brushless motor:
+% Maximum RPM 7500 -> equivalent to 785.3982 rad/s
+% Peak Torque: 1.7 Nm
+% Torque Formula in Angular Motion: Torque = I x alpha, where I is moment
+% of inertia and alpha is angular acceleration
+
+% % Calculate Motor Model Max Angular Velocity in rad/s
+% max_angular_vel = (2*pi*7500)/60;
+% 
+% % Convert from degrees to rad
+% deg = 25;
+% angle = deg*(pi/180)
+% 
+% % Formula for max angular velocity of a simple single pendulum model when
+% % released from a specific angle q. This is for an approximation to
+% % determine initial trajectory path states and will not generate and
+% % accurate calculation. 
+% g = 9.81;
+% L1 = 0.195;       % Link 1 length (m)
+% L2 = 0.215;       % Link 2 length (m) 
+% 
+% 
+% q1 = 1.0399
+% q2 = 0.8843;
+% max_ang_vel_pen1 = sqrt((2*g/L1)*(1 - cos(q1)))     % rad/s
+% max_ang_vel_pen2 = sqrt((2*g/L2)*(1 - cos(q2)));     % rad/s
+% h1_max = (0.5*(L1^2)*(max_ang_vel_pen1^1))/g;
+% h2_max = (0.5*(L2^2)*(max_ang_vel_pen2^2))/g;
+% new_q1 = asin(h1_max/L1) + q1
+% new_q2 = asin(h2_max/L2) + q2;
+% 
+% 
+% % Hand Designed States
+% % State format: state = [q1 q1_dot q2 q2_dot];
+% % Convert states to csv file (potentially use excel) so that Rosh and
+% % Daniel can use data
+% state_0 = [0 0 0 0];     % initial state
+% state_1 = [0 0 0. 0];
+% state_3 = [0 0 0 0];
+% state_4 = [0 0 0 0];
+% state_5 = [0 0 0 0];
+% state_6 = [0 0 0 0];
+% state_7 = [0 0 0 0];
+% state_8 = [pi 0 pi 0];    % final state
+
+%% Calculation
+% g = 9.81;
+% L1 = 0.195;       % Link 1 length (m)
+% L2 = 0.215;       % Link 2 length (m) 
+% 
+% q1 = 0.4363;
+% q2 = 0.8843;
+% max_ang_vel_pen1 = sqrt((2*g/L1)*(1 - cos(q1)));     % rad/s
+% max_ang_vel_pen2 = sqrt((2*g/L2)*(1 - cos(q2)));     % rad/s
+% h1_max = (0.5*(L1^2)*(max_ang_vel_pen1^2))/g;
+% h2_max = (0.5*(L2^2)*(max_ang_vel_pen2^2))/g;
+% new_q1 = asin(h1_max/L1) + 0.4363;
+% new_q2 = asin(h2_max/L2) + 0.4363;
+% 
+% disp('Initial values:');
+% disp(['q1: ', num2str(q1)]);
+% disp(['max_ang_vel_pen1: ', num2str(max_ang_vel_pen1)]);
+% disp(['new_q1: ', num2str(new_q1)]);
+% 
+% for i = 1:10
+%     q1 = new_q1;
+%     max_ang_vel_pen1 = sqrt((2*g/L1)*(1 - cos(q1)));     % rad/s
+%     h1_max = (0.5*(L1^2)*(max_ang_vel_pen1^2))/g;
+%     new_q1 = asin(h1_max/L1) + q1;
+% 
+%     disp(['Iteration ', num2str(i), ':']);
+%     disp(['q1: ', num2str(q1)]);
+%     disp(['max_ang_vel_pen1: ', num2str(max_ang_vel_pen1)]);
+%     disp(['new_q1: ', num2str(new_q1)]);
+% end
+
+% %%
+% g = 9.81;
+% L1 = 0.195;       % Link 1 length (m)
+% L2 = 0.215;       % Link 2 length (m) 
+% q1 = 0.4363;
+% q2 = 0.4363;
+% maxIterations = 5;
+% 
+% % Preallocate arrays to store values
+% q1_values = zeros(maxIterations+1, 1);
+% max_ang_vel_pen1_values = zeros(maxIterations+1, 1);
+% new_q1_values = zeros(maxIterations+1, 1);
+% q2_values = zeros(maxIterations+1, 1);
+% max_ang_vel_pen2_values = zeros(maxIterations+1, 1);
+% new_q2_values = zeros(maxIterations+1, 1);
+% 
+% % Store initial values
+% q1_values(1) = q1;
+% max_ang_vel_pen1_values(1) = sqrt((2*g/L1)*(1 - cos(q1)));
+% new_q1_values(1) = asin((0.5*(L1^2)*(max_ang_vel_pen1_values(1)^2))/g/L1) + q1;
+% q2_values(1) = q2;
+% max_ang_vel_pen2_values(1) = sqrt((2*g/L2)*(1 - cos(q2)));
+% new_q2_values(1) = asin((0.5*(L2^2)*(max_ang_vel_pen2_values(1)^2))/g/L2) + q2;
+% 
+% for i = 1:maxIterations
+%     % Update q1
+%     q1 = new_q1_values(i);
+%     max_ang_vel_pen1 = sqrt((2*g/L1)*(1 - cos(q1)));
+%     h1_max = (0.5*(L1^2)*(max_ang_vel_pen1^2))/g;
+%     new_q1 = asin(h1_max/L1) + q1;
+% 
+%     % Update q2
+%     q2 = new_q2_values(i);
+%     max_ang_vel_pen2 = sqrt((2*g/L2)*(1 - cos(q2)));
+%     h2_max = (0.5*(L2^2)*(max_ang_vel_pen2^2))/g;
+%     new_q2 = asin(h2_max/L2) + q2;
+% 
+%     % Store values
+%     q1_values(i+1) = q1;
+%     max_ang_vel_pen1_values(i+1) = max_ang_vel_pen1;
+%     new_q1_values(i+1) = new_q1;
+%     q2_values(i+1) = q2;
+%     max_ang_vel_pen2_values(i+1) = max_ang_vel_pen2;
+%     new_q2_values(i+1) = new_q2;
+% end
+% 
+% % Display table
+% disp('Iteration | q1         | max_ang_vel_pen1 | new_q1     | q2         | max_ang_vel_pen2 | new_q2');
+% disp('---------------------------------------------------------------------------------------------');
+% for i = 1:maxIterations+1
+%     fprintf('%9d | %10.4f | %16.4f | %10.4f | %10.4f | %16.4f | %10.4f\n', ...
+%             i-1, q1_values(i), max_ang_vel_pen1_values(i), new_q1_values(i), ...
+%             q2_values(i), max_ang_vel_pen2_values(i), new_q2_values(i));
+% end
+
+% %%
+g = 9.81;
+m1 = 0.36;        % Link 1 mass (kg)
+m2 = 0.21;        % Link 2 mass (kg)
+L1 = 0.195;       % Link 1 length (m)
+L2 = 0.215;       % Link 2 length (m)
+q1 = 0.0902;
+q2 = 0.1012;
+maxIterations = 3;
 
 
-% Define system parameters
 
-m1 = 1;      % Mass of the first arm (and motor?) (kg) - still need to get
-m2 = 1;      % Mass of the second arm (kg) - still need to get
-l1 = 1;      % Length of the first arm (m) - still need to get 
-l2 = 1;      % Length of the second arm (m) - still need to get
-g = 9.81;    % Gravity (m/s^2)
 
-% Define the system dynamics (non-linear)
-% Where x is the state vector of the system and t represents time.
-% The function 'double_pendulum_dynamics' calculates the dynamics
-% (equations of motion) of the system given its state vector x and the
-% parameters m1, m2, l1, l2 and g. 
-system = @(t,x) double_pendulum_dynamics(x, m1, m2, l1, l2, g); 
+% Preallocate arrays to store values
+q1_values = zeros(maxIterations+1, 1);
+max_ang_vel_pen1_values = zeros(maxIterations+1, 1);
+new_q1_values = zeros(maxIterations+1, 1);
+q2_values = zeros(maxIterations+1, 1);
+max_ang_vel_pen2_values = zeros(maxIterations+1, 1);
+new_q2_values = zeros(maxIterations+1, 1);
 
-% Define the initial conditions
-% Where q1 and q2 are the joint angles and q1_dot and q2_dot are the joint
-% velocities
-x0 = [0; 0; 0; 0];          % Initial state [q1, q1_dot, q2, q2_dot]
+% Store initial values
+q1_values(1) = q1;
+max_ang_vel_pen1_values(1) = sqrt((2 * g / L1) * (1 - cos(q1))) * sqrt(m1 / (m1 * L1^2));
+new_q1_values(1) = asin((0.5 * (L1^2) * (max_ang_vel_pen1_values(1)^2)) / g / L1) + q1;
+q2_values(1) = q2;
+max_ang_vel_pen2_values(1) = sqrt((2 * g / L2) * (1 - cos(q2))) * sqrt(m2 / (m2 * L2^2));
+new_q2_values(1) = asin((0.5 * (L2^2) * (max_ang_vel_pen2_values(1)^2)) / g / L2) + q2;
 
-% Define the desired final state
-xf = [pi/2; 0; pi/2; 0];    % Final state [q1, q1_dot, q2, q2_dot]
+for i = 1:maxIterations
+    % Update q1
+    q1 = new_q1_values(i);
+    max_ang_vel_pen1 = sqrt((2 * g / L1) * (1 - cos(q1))) * sqrt(m1 / (m1 * L1^2));
+    h1_max = (0.5 * (L1^2) * (max_ang_vel_pen1^2)) / g;
+    new_q1 = asin(h1_max / L1) + q1;
 
-% Define simulation time span 
-tspan = [0, 10]; 
+    % Update q2
+    q2 = new_q2_values(i);
+    max_ang_vel_pen2 = sqrt((2 * g / L2) * (1 - cos(q2))) * sqrt(m2 / (m2 * L2^2));
+    h2_max = (0.5 * (L2^2) * (max_ang_vel_pen2^2)) / g;
+    new_q2 = asin(h2_max / L2) + q2;
 
-% Trajectory planning using linear interpolation
-t = linspace(tspan(1), tspan(2), 100);
-q1_desired = linspace(x0(1), xf(1), length(t));
-q2_desired = linspace(x0(3), xf(3), length(t));
-
-% Control gains (PID)
-kp = 100; 
-kd = 20;
-ki = 0;
-
-% Simulate System
-[t_sim, x_sim] = ode45(@(t, x) double_pendulum_control(t, x, system, q1_desired, q2_desired, kp, kd, ki), tspan, x0);
-
-% Plot results
-figure;
-plot(t_sim, x_sim(:,1), 'b', t_sim, x_sim(:,3), 'r');
-xlabel('Time');
-ylabel('Angle(radians)');
-legend('q1', 'q2');
-title('Double Inverted Pendulum Trajectory Path');
-
-% Define system dynamics function
-function dxdt = double_pendulum_dynamics(x, m1, m2, l1, l2, g)
-    % Extract state value
-    q1 = x(1);
-    q1_dot = x(2);
-    q2 = x(3); 
-    q2_dot = x(4);
-
-    % Equations of motion
-    dxdt = zeros(4,1);
-    dxdt(1) = q1_dot;
-    dxdt(2) = (-m2*12*q2_dot^2*sin(q1-q2)-(m1+m2)*g*sin(q1)+m2*12*q2_dot^2*cos(q1-q2)*sin(q1-q2))/(l1*(m1+m2*sin(q1-q2)^2));
-    dxdt(3) = q2_dot;
-    dxdt(4) = (m2*12*q2_dot^2*sin(q1-q2)+(m1+m2)*(g*sin(q1)*cos(q1-q2) - l1*q1_dot^2*sin(q1-q2))/12/(m2*12*(m1+m2*sin(q1-q2)^2)));
-
+    % Store values
+    q1_values(i+1) = q1;
+    max_ang_vel_pen1_values(i+1) = max_ang_vel_pen1;
+    new_q1_values(i+1) = new_q1;
+    q2_values(i+1) = q2;
+    max_ang_vel_pen2_values(i+1) = max_ang_vel_pen2;
+    new_q2_values(i+1) = new_q2;
 end
 
-% Define control function
-function u = double_pendulum_control(t, x, system, q1_desired, q2_desired,t_desired, kp, kd, ki)
-    % Extract state variables
-    q1 = x(1);
-    q1_dot = x(2);
-    q2 = x(3);
-    q2_dot = x(4);
-
-    % Desired trajectory
-    q1_des = interp1(t_desired, q1_desired, t);
-    q2_des = interp1(t_desired, q2_desired, t);
-
-    % Desired velocities
-    q1_dot_des = interp1(t_desired, q1_desired_dot, t);
-    q2_dot_des = interp1(t_desired, q2_desired_dot, t);
-
-    % Compute errors
-    error1 = q1_des - q1;
-    error1_dot = q1_dot_des - q1_dot;
-    error2 = q2_des - q2;
-    error2_dot = q2_dot_des - q2_dot;
-
-    % Compute control input (PID)
-    u1 = kp*error1 + kd*error1_dot + ki*error1;
-    u2 = kp*error2 + kd*error2_dot + ki*error1;
-    
-    % Conbine control inputs
-    u = [u1; u2];
-
+% Display table
+disp('Iteration | q1         | max_ang_vel_pen1 | new_q1     | q2         | max_ang_vel_pen2 | new_q2');
+disp('---------------------------------------------------------------------------------------------');
+for i = 1:maxIterations+1
+    fprintf('%9d | %10.4f | %16.4f | %10.4f | %10.4f | %16.4f | %10.4f\n', ...
+            i-1, q1_values(i), max_ang_vel_pen1_values(i), new_q1_values(i), ...
+            q2_values(i), max_ang_vel_pen2_values(i), new_q2_values(i));
 end
 
 
+%% Hand Designed Justification 
 
