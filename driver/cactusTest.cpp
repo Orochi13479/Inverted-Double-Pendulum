@@ -44,6 +44,7 @@ private:
     std::vector<std::shared_ptr<moteus::Controller>> controllers_;
     std::shared_ptr<moteus::Transport> transport_;
     moteus::PositionMode::Command cmd_;
+
     std::vector<double> torque_commands_;
 
 public:
@@ -53,11 +54,9 @@ public:
                        std::shared_ptr<moteus::Transport> transport)
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), transport_(transport)
     {
-        moteus::PositionMode::Command cmd_;
         cmd_.kp_scale = 0.0;
         cmd_.kd_scale = 0.0;
         cmd_.feedforward_torque = 0.0;
-        printf("THIS");
     }
 
 protected:
