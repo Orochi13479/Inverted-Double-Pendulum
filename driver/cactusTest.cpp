@@ -100,10 +100,8 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     CyclicThreadConfig config;
-    config.period_ns = 3'000'000; // Target Time 1 ms period (1000 Hz)
-    uint64_t cutOff_ns = 3'000'000;
-    // config.cpu_affinity = std::vector<size_t>{4}; //Threads Changing causes issues
-    config.SetFifoScheduler(90); // Priority
+    config.period_ns = 2'000'000; // Target Time in ns
+    config.SetFifoScheduler(98);  // Priority 0-100
 
     // Set up controllers and transport
     moteus::Controller::DefaultArgProcess(argc, argv);
@@ -155,10 +153,9 @@ int main(int argc, char **argv)
     std::cout << "Testing RT loop until CTRL+C\n";
 
     app.Start();
-    while (!cactus_rt::HasTerminationSignalBeenReceived())
-    {
-        std::this_thread::sleep_for(std::chrono::nanoseconds(cutOff_ns)); // Cutoff time
-    }
+
+    cactus_rt::WaitForAndHandleTerminationSignal();
+
     app.RequestStop();
     app.Join();
 
@@ -171,9 +168,6 @@ int main(int argc, char **argv)
 
     std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
     std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
-
-    std::cout << "Cut Off Duration: " << cutOff_ns << "ns" << std::endl;
-    std::cout << "Cut Off Frequency: " << 1 / (cutOff_ns / 1e9) << "Hz" << std::endl;
 
     std::cout << "Average Loop Duration: " << loopDuration << "ns" << std::endl;
     std::cout << "Average Loop Frequency: " << 1 / (loopDuration / 1e9) << "Hz" << std::endl;
