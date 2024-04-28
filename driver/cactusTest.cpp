@@ -1,8 +1,10 @@
 #include <cactus_rt/rt.h>
-#include "moteus.h" // Assuming this header provides necessary motor control APIs
-
+#include "moteus.h"
 #include <vector>
 #include <memory>
+#include <iostream>
+#include <chrono>
+#include <signal.h>
 
 using namespace cactus_rt;
 using namespace mjbots;
@@ -51,6 +53,11 @@ public:
                        std::shared_ptr<moteus::Transport> transport)
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), transport_(transport)
     {
+        moteus::PositionMode::Command cmd_;
+        cmd_.kp_scale = 0.0;
+        cmd_.kd_scale = 0.0;
+        cmd_.feedforward_torque = 0.0;
+        printf("THIS");
     }
 
 protected:
@@ -80,9 +87,9 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     CyclicThreadConfig config;
-    config.period_ns = 3'000'000; // 1 ms period (1000 Hz)
-    config.cpu_affinity = std::vector<size_t>{2};
-    config.SetFifoScheduler(80);
+    config.period_ns = 1'000'000; // 1 ms period (1000 Hz)
+    config.cpu_affinity = std::vector<size_t>{4};
+    config.SetFifoScheduler(90);
 
     // Set up controllers and transport
     moteus::Controller::DefaultArgProcess(argc, argv);
@@ -103,14 +110,14 @@ int main(int argc, char **argv)
     std::vector<std::shared_ptr<moteus::Controller>> controllers = {
         std::make_shared<moteus::Controller>([&]()
                                              {
-            auto options = options_common;
-            options.id = 1;
-            return options; }()),
+                                                 auto options = options_common;
+                                                 options.id = 1;
+                                                 return options; }()),
         std::make_shared<moteus::Controller>([&]()
                                              {
-            auto options = options_common;
-            options.id = 2;
-            return options; }()),
+                                                 auto options = options_common;
+                                                 options.id = 2;
+                                                 return options; }()),
     };
 
     for (auto &c : controllers)
@@ -131,12 +138,12 @@ int main(int argc, char **argv)
     app.RegisterThread(motor_thread);
     SetUpTerminationSignalHandler();
 
-    std::cout << "Testing RT loop for until CTRL+C\n";
+    std::cout << "Testing RT loop until CTRL+C\n";
 
     app.Start();
     while (!cactus_rt::HasTerminationSignalBeenReceived())
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::nanoseconds(100000));
     }
 
     app.RequestStop();
