@@ -145,6 +145,7 @@ int main(int argc, char **argv)
 
     cactus_rt::App app;
     app.RegisterThread(motor_thread);
+    cactus_rt::SetUpTerminationSignalHandler();
 
     std::cout << "Testing RT loop until CTRL+C\n";
 
