@@ -56,7 +56,6 @@ public:
         cmd_.kp_scale = 0.0;
         cmd_.kd_scale = 0.0;
         cmd_.feedforward_torque = 0.0;
-        printf("Constructor ");
     }
 
 protected:
@@ -72,12 +71,10 @@ protected:
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
-        printf("BEFORE blocking");
         // Perform the cycle with error handling
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
-        printf("AFTER blocking");
-        return true;
+        return false;
     }
 };
 
@@ -142,13 +139,10 @@ int main(int argc, char **argv)
     std::cout << "Testing RT loop until CTRL+C\n";
 
     app.Start();
-    printf("StartingThread ");
     while (!cactus_rt::HasTerminationSignalBeenReceived())
     {
-        printf("WhileLoop ");
         std::this_thread::sleep_for(std::chrono::nanoseconds(3'000'000));
     }
-    printf("StoppingThread ");
     app.RequestStop();
     app.Join();
 
