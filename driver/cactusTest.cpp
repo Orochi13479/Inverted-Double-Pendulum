@@ -44,7 +44,6 @@ private:
     std::vector<std::shared_ptr<moteus::Controller>> controllers_;
     std::shared_ptr<moteus::Transport> transport_;
     moteus::PositionMode::Command cmd_;
-
     std::vector<double> torque_commands_;
 
 public:
@@ -57,6 +56,7 @@ public:
         cmd_.kp_scale = 0.0;
         cmd_.kd_scale = 0.0;
         cmd_.feedforward_torque = 0.0;
+        printf("constructor");
     }
 
 protected:
@@ -71,10 +71,9 @@ protected:
             cmd_.feedforward_torque = torque_commands_[i];
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
-
+        printf("blocking call");
         // Perform the cycle with error handling
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
-        printf("LOOP");
 
         return true;
     }
@@ -143,9 +142,10 @@ int main(int argc, char **argv)
     app.Start();
     while (!cactus_rt::HasTerminationSignalBeenReceived())
     {
+        printf("whileloop");
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
-
+    printf("stopping thread");
     app.RequestStop();
     app.Join();
 
