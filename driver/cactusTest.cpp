@@ -45,6 +45,7 @@ private:
     std::shared_ptr<moteus::Transport> transport_;
     moteus::PositionMode::Command cmd_;
     std::vector<double> torque_commands_;
+    std::vector<long long> loop_durations_;
 
 public:
     MotorControlThread(const char *name, CyclicThreadConfig config,
@@ -56,6 +57,15 @@ public:
         cmd_.kp_scale = 0.0;
         cmd_.kd_scale = 0.0;
         cmd_.feedforward_torque = 0.0;
+    }
+    long long GetAverageLoopDuration() const
+    {
+        long long total_duration = 0;
+        for (auto duration : loop_durations_)
+        {
+            total_duration += duration;
+        }
+        return loop_durations_.empty() ? 0 : total_duration / loop_durations_.size();
     }
 
 protected:
@@ -77,7 +87,7 @@ protected:
 
         auto end_time = std::chrono::steady_clock::now(); // End timing
         auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-        std::cout << "Loop duration: " << duration.count() << " nanoseconds" << std::endl;
+        loop_durations_.push_back(duration.count());
 
         return false;
     }
@@ -143,10 +153,6 @@ int main(int argc, char **argv)
     SetUpTerminationSignalHandler();
 
     std::cout << "Testing RT loop until CTRL+C\n";
-    std::cout << "Target Frequency: \n"
-              << 1 / config.period_ns;
-    std::cout << "Cut Off Frequency: \n"
-              << 1 / cutOff_ns;
 
     app.Start();
     while (!cactus_rt::HasTerminationSignalBeenReceived())
@@ -160,6 +166,13 @@ int main(int argc, char **argv)
     {
         c->SetStop();
     }
+
+    std::cout << "Target Frequency: \n"
+              << 1 / config.period_ns;
+    std::cout << "Cut Off Frequency: \n"
+              << 1 / cutOff_ns;
+
+    std::cout << "Average loop duration: " << motor_thread->GetAverageLoopDuration() << " nanoseconds" << std::endl;
 
     return 0;
 }
