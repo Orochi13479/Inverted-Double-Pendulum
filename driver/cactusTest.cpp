@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     CyclicThreadConfig config;
-    config.period_ns = 1'000'000; // 1 ms period (1000 Hz)
+    config.period_ns = 3'000'000; // 1 ms period (1000 Hz)
     config.cpu_affinity = std::vector<size_t>{2};
     config.SetFifoScheduler(80);
 
