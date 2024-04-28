@@ -167,12 +167,17 @@ int main(int argc, char **argv)
         c->SetStop();
     }
 
-    std::cout << "Target Frequency: \n"
-              << 1 / config.period_ns;
-    std::cout << "Cut Off Frequency: \n"
-              << 1 / cutOff_ns;
 
-    std::cout << "Average loop duration: " << motor_thread->GetAverageLoopDuration() << " nanoseconds" << std::endl;
+    std::cout << "Cut Off Frequency: "              << cutOff_ns<<"ns"<< std::endl;
+    std::cout << "Target Frequency: "
+              << config.period_ns<< "ns"<<std::endl;
+    std::cout << 1/cutOff_ns*10e9<< "Hz"<<std::endl;
+    std::cout << 1/config.period_ns*10e9<< "Hz"<<std::endl;
+
+    auto loopDuration = motor_thread->GetAverageLoopDuration();
+    std::cout << "Average Loop Duration: " << loopDuration << "ns" << std::endl;
+
+    std::cout << "Average Loop Frequency: " << 1/loopDuration*10e9 << "Hz" << std::endl;
 
     return 0;
 }
