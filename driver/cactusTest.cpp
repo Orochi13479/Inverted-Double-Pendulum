@@ -61,6 +61,7 @@ public:
 protected:
     bool Loop(int64_t /*now*/) noexcept final
     {
+        auto start_time = std::chrono::steady_clock::now(); // Start timing
 
         std::vector<moteus::CanFdFrame> send_frames;
         std::vector<moteus::CanFdFrame> receive_frames;
@@ -74,6 +75,10 @@ protected:
         // Perform the cycle with error handling
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
+        auto end_time = std::chrono::steady_clock::now(); // End timing
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+        std::cout << "Loop duration: " << duration.count() << " nanoseconds" << std::endl;
+
         return false;
     }
 };
@@ -85,7 +90,8 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     CyclicThreadConfig config;
-    config.period_ns = 3'000'000; // 1 ms period (1000 Hz)
+    config.period_ns = 3'000'000; // Target Time 1 ms period (1000 Hz)
+    uint64_t cutOff_ns = 3'000'000;
     // config.cpu_affinity = std::vector<size_t>{4}; //Threads Changing causes issues
     config.SetFifoScheduler(90); // Priority
 
@@ -137,11 +143,15 @@ int main(int argc, char **argv)
     SetUpTerminationSignalHandler();
 
     std::cout << "Testing RT loop until CTRL+C\n";
+    std::cout << "Target Frequency: \n"
+              << 1 / config.period_ns;
+    std::cout << "Cut Off Frequency: \n"
+              << 1 / cutOff_ns;
 
     app.Start();
     while (!cactus_rt::HasTerminationSignalBeenReceived())
     {
-        std::this_thread::sleep_for(std::chrono::nanoseconds(3'000'000));
+        std::this_thread::sleep_for(std::chrono::nanoseconds(cutOff_ns)); // Cutoff time
     }
     app.RequestStop();
     app.Join();
