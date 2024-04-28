@@ -142,8 +142,8 @@ int main(int argc, char **argv)
     app.Start();
     while (!cactus_rt::HasTerminationSignalBeenReceived())
     {
-        printf("whileloop");
-        std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+        printf("whileloop ");
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1000000));
     }
     printf("stopping thread");
     app.RequestStop();
