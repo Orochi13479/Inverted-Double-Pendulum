@@ -136,7 +136,7 @@ int main(int argc, char **argv)
     app.Start();
     while (!cactus_rt::HasTerminationSignalBeenReceived())
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     app.RequestStop();
