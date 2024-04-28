@@ -74,6 +74,7 @@ protected:
 
         // Perform the cycle with error handling
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
+        printf("LOOP");
 
         return true;
     }
@@ -86,9 +87,9 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     CyclicThreadConfig config;
-    config.period_ns = 1'000'000; // 1 ms period (1000 Hz)
-    config.cpu_affinity = std::vector<size_t>{4};
-    config.SetFifoScheduler(90);
+    config.period_ns = 3'000'000; // 1 ms period (1000 Hz)
+    // config.cpu_affinity = std::vector<size_t>{4}; //Threads Changing causes issues
+    config.SetFifoScheduler(90); // Priority
 
     // Set up controllers and transport
     moteus::Controller::DefaultArgProcess(argc, argv);
@@ -142,7 +143,7 @@ int main(int argc, char **argv)
     app.Start();
     while (!cactus_rt::HasTerminationSignalBeenReceived())
     {
-        std::this_thread::sleep_for(std::chrono::nanoseconds(100000));
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
 
     app.RequestStop();
