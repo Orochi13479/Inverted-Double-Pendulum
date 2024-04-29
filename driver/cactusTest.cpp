@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
     config.period_ns = 2'000'000; // Target Time in ns
-    config.SetFifoScheduler(98);  // Priority 0-100
+    config.SetFifoScheduler(80);  // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);

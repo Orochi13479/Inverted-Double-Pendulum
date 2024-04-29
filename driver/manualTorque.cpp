@@ -50,7 +50,7 @@ double getPracTorqueFromInertia(double scaleWeight)
     double armMass = 0.12;
     double motorMass = 0.24;
 
-    // Moment of Inertia for rod with disk attached at the end
+    // Moment of Inertia for rod with disk attached at the end (ARM 1 ONLY)
     double MOI = ((1 / 3) * armMass * pow(armLength, 2)) +
                  ((1 / 2) * motorMass * pow(motorRadius, 2)) +
                  (motorMass * pow(armLength + motorRadius, 2));
