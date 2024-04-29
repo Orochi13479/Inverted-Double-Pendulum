@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
     moteus::PositionMode::Command cmd;
     cmd.kp_scale = 0.0;
     cmd.kd_scale = 0.0;
-    // cmd.velocity = 1.0;
+    // cmd.velocity = 0.0;
     // cmd.velocity_limit = 0.1;
     // cmd.accel_limit = 0;
     cmd.feedforward_torque = 0.0;
@@ -161,6 +161,8 @@ int main(int argc, char** argv) {
 
     double torque_command[2] = {};
     double velocity_count[2] = {};
+    double kp_scale[2] = {};
+    double kd_scale[2] = {};
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
@@ -172,8 +174,8 @@ int main(int argc, char** argv) {
     auto q_current = q_desired;
 
     // // Assume zero current joint velocities and accelerations for simplicity
-    v.setZero();
-    a.setZero();
+    v.setZero(); // Derivative of position
+    a.setZero(); //Derivative of velocity
 
     // // Calculate inverse dynamics torques
     const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
@@ -192,9 +194,8 @@ int main(int argc, char** argv) {
 
         for (size_t i = 0; i < controllers.size(); i++) {
             cmd.feedforward_torque = torque_command[i];
-            cmd.velocity = velocity_count[i];
-            cmd.kp_scale = 5.0;
-            cmd.kd_scale = 1.5;
+            cmd.kp_scale = kp_scale[i];
+            cmd.kd_scale = kd_scale[i];
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 
@@ -223,6 +224,12 @@ int main(int argc, char** argv) {
 
         q(0) = WrapAround0(v1.position) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
+
+        kp_scale[0] = 5.0;
+        kp_scale[1] = 5.0;
+
+        kd_scale[0] = 1.5;
+        kd_scale[1] = 1.5;
 
         torque_command[0] = tau(0);
         torque_command[1] = tau(1);
