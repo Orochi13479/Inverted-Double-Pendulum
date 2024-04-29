@@ -96,14 +96,6 @@ double revolutionsToDegrees(double revolutions) {
     return revolutions * degreesPerRevolution;
 }
 
-double scaleTorque(double torque, double max_torque) {
-    const double safety_margin = 0.95;  // You can adjust this value
-    if (std::abs(torque) > max_torque * safety_margin) {
-        return (torque > 0) ? max_torque : -max_torque;
-    }
-    return torque;
-}
-
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -186,14 +178,7 @@ int main(int argc, char** argv) {
     // // Calculate inverse dynamics torques
     const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
 
-    // double scaled_tau1 = scaleTorque(tau(0), 1.0);  // 1.0 is the motor's hard limit
-    // double scaled_tau2 = scaleTorque(tau(1), 1.0);
-
-    // // // Display calculated torques
-    // std::cout << "CALCULATED TORQUES (Nm): "
-    //           << "MOTOR 1: " << scaled_tau1 << ", MOTOR 2: " << scaled_tau2 << std::endl;
-
-    // // Display calculated torques
+    // Display calculated torques
     std::cout << "CALCULATED TORQUES (Nm): "
               << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
 
