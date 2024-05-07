@@ -152,13 +152,10 @@ int main(int argc, char **argv)
     std::vector<std::vector<double>> torque_commands = {
         {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
         {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
-        {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
-        {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
-        {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
         // Add more sequences if needed
     };
 
-    std::vector<int> time_intervals = {3000, 1000, 2000, 500, 5000}; // Time intervals for each action in milliseconds
+    std::vector<int> time_intervals = {500, 2000}; // Time intervals for each action in milliseconds
 
     // Create the motor control thread
     auto motor_thread = std::make_shared<MotorControlThread>(
