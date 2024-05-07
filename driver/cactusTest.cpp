@@ -50,10 +50,10 @@ private:
 public:
     MotorControlThread(const char *name, cactus_rt::CyclicThreadConfig config,
                        std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers,
-                       std::vector<std::vector<double>> torque_commands,    std::vector<int> time_intervals,
-
+                       std::vector<std::vector<double>> torque_commands,
+                       std::vector<int> time_intervals,
                        std::shared_ptr<mjbots::moteus::Transport> transport)
-        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), transport_(transport), index_(0)
+        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0)
     {
         cmd_.kp_scale = 0.0;
         cmd_.kd_scale = 0.0;
@@ -71,7 +71,7 @@ public:
 
 protected:
     bool Loop(int64_t /*now*/) noexcept final
-     {
+    {
         auto start_time = std::chrono::steady_clock::now(); // Start timing
 
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
