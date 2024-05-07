@@ -6,6 +6,7 @@
 #include <csignal>  // For signal handling
 #include <iostream>
 #include <optional>
+#include <fstream>
 
 #include "moteus.h"
 #include "pinocchio/algorithm/joint-configuration.hpp"
