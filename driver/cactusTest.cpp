@@ -58,6 +58,7 @@ public:
         cmd_.kp_scale = 0.0;
         cmd_.kd_scale = 0.0;
         cmd_.feedforward_torque = 0.0;
+        cmd_.velocity_limit = 0.1; //Hertz revolutions / s
     }
     long long GetAverageLoopDuration() const
     {
