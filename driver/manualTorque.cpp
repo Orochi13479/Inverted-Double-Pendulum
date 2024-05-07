@@ -10,6 +10,8 @@
 // Global flag for indicating if Ctrl+C was pressed
 volatile sig_atomic_t ctrl_c_pressed = 0;
 
+std::vector<long long> loop_durations_;
+
 // Signal handler function
 void signalHandler(int signal)
 {
@@ -66,6 +68,16 @@ double getPracTorqueFromInertia(double scaleWeight)
     std::cout << "aa: " << aa << std::endl;
 
     return aa * MOI;
+}
+
+long long GetAverageLoopDuration()
+{
+    long long total_duration = 0;
+    for (auto duration : loop_durations_)
+    {
+        total_duration += duration;
+    }
+    return loop_durations_.empty() ? 0 : total_duration / loop_durations_.size();
 }
 
 int main(int argc, char **argv)
@@ -130,7 +142,7 @@ int main(int argc, char **argv)
     // Main loop
     while (!ctrl_c_pressed)
     {
-        ::usleep(10);
+        auto start_time = std::chrono::steady_clock::now(); // Start timing
 
         send_frames.clear();
         receive_frames.clear();
@@ -143,6 +155,10 @@ int main(int argc, char **argv)
 
         // Send frames
         transport->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
+
+        auto end_time = std::chrono::steady_clock::now(); // End timing
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+        loop_durations_.push_back(duration.count());
     }
 
     std::cout << "Entering fault mode!" << std::endl;
@@ -153,6 +169,11 @@ int main(int argc, char **argv)
     {
         c->SetStop();
     }
+
+    auto loopDuration = GetAverageLoopDuration();
+
+    std::cout << "Average Loop Duration: " << loopDuration << "ns" << std::endl;
+    std::cout << "Average Loop Frequency: " << 1 / (loopDuration / 1e9) << "Hz" << std::endl;
 
     double scaleWeight;
     std::cout << "Enter scale reading (grams): ";
