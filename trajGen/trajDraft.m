@@ -148,9 +148,18 @@ q1 = 0.0902;
 q2 = 0.1012;
 maxIterations = 3;
 
+for i = 1:10
+
+a = pi/10
+b = a*5
+c = a*6
+d = a*7
+e = a*8
+f = a*9
+g = a*10
 
 
-
+end
 % Preallocate arrays to store values
 q1_values = zeros(maxIterations+1, 1);
 max_ang_vel_pen1_values = zeros(maxIterations+1, 1);
