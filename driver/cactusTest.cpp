@@ -41,15 +41,16 @@ private:
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers_;
     std::shared_ptr<mjbots::moteus::Transport> transport_;
     mjbots::moteus::PositionMode::Command cmd_;
-    std::vector<double> torque_commands_;
+    std::vector<std::vector<double>> torque_commands_;
     std::vector<long long> loop_durations_;
+    size_t index_;
 
 public:
     MotorControlThread(const char *name, cactus_rt::CyclicThreadConfig config,
                        std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers,
-                       std::vector<double> torque_commands,
+                       std::vector<std::vector<double>> torque_commands,
                        std::shared_ptr<mjbots::moteus::Transport> transport)
-        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), transport_(transport)
+        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), transport_(transport), index_(0)
     {
         cmd_.kp_scale = 0.0;
         cmd_.kd_scale = 0.0;
@@ -73,9 +74,12 @@ protected:
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
+        if (index_ >= torque_commands_.size())
+            index_ = 0;
+
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.feedforward_torque = torque_commands_[i];
+            cmd_.feedforward_torque = torque_commands_[index_][i];
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
@@ -85,6 +89,7 @@ protected:
         auto end_time = std::chrono::steady_clock::now(); // End timing
         auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
         loop_durations_.push_back(duration.count());
+        index_++;
 
         return false;
     }
@@ -98,7 +103,7 @@ int main(int argc, char **argv)
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
     config.period_ns = 2'500'000; // Target Time in ns
-    config.SetFifoScheduler(90);  // Priority 0-100
+    config.SetFifoScheduler(98);  // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -135,10 +140,11 @@ int main(int argc, char **argv)
     }
 
     const double MAX_TORQUE = 0.2;
-    std::vector<double> torque_commands = {
-        inputAndLimitTorque("motor 1", MAX_TORQUE),
-        inputAndLimitTorque("motor 2", MAX_TORQUE)};
-
+    std::vector<std::vector<double>> torque_commands = {
+        {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
+        {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
+        // Add more sequences if needed
+    };
     // Create the motor control thread
     auto motor_thread = std::make_shared<MotorControlThread>(
         "MotorControlThread", config, controllers, torque_commands, transport);
