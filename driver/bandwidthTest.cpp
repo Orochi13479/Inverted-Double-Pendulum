@@ -146,7 +146,7 @@ int main(int argc, char **argv)
         const auto now = GetNow();
         if (now > status_time)
         {
-            printf("%6.1fHz  rx_count=%2d   \r",
+            printf("                 %6.1fHz  rx_count=%2d   \r",
                    hz_count / kStatusPeriodS, count);
             fflush(stdout);
 
@@ -161,11 +161,8 @@ int main(int argc, char **argv)
     }
 
     // Output average speed
-    if (total_count > 0)
-    {
-        double average_hz = total_hz / total_count;
-        printf("\nAverage speed: %.1f Hz\n", average_hz);
-    }
+    double average_hz = total_hz / total_count;
+    printf("\nAverage speed: %.1f Hz\n", average_hz);
 
     return 0;
 }
