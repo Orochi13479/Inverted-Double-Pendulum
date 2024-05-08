@@ -29,12 +29,14 @@ private:
     std::shared_ptr<mjbots::moteus::Transport> transport_;
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers_;
     std::map<int, bool> responses_;
+    int total_count_;
+    double total_hz_;
 
 public:
     RealTimeThread(const char *name, cactus_rt::CyclicThreadConfig config,
                    std::shared_ptr<mjbots::moteus::Transport> transport,
                    std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers)
-        : CyclicThread(name, config), transport_(transport), controllers_(controllers)
+        : CyclicThread(name, config), transport_(transport), controllers_(controllers), total_count_(0), total_hz_(0)
     {
         int id = 0;
         for (const auto &controller : controllers_)
@@ -74,9 +76,12 @@ protected:
         const auto now = GetNow();
         if (now > status_time)
         {
-            printf("%6.1fHz  rx_count=%2d   \r",
+            printf("                 %6.1fHz  rx_count=%2d   \r",
                    hz_count / kStatusPeriodS, count);
             fflush(stdout);
+
+            total_count_++;
+            total_hz_ += (hz_count / kStatusPeriodS);
 
             hz_count = 0;
             status_time += kStatusPeriodS;
@@ -86,14 +91,17 @@ protected:
 
         return false;
     }
+
+public:
+    double GetAverageHz() const { return total_hz_ / total_count_; }
 };
 
 int main(int argc, char **argv)
 {
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 2'500'000; // Target Time in ns
-    config.SetFifoScheduler(98);  // Priority 0-100
+    config.period_ns = 150'000;  // Target Time in ns
+    config.SetFifoScheduler(98); // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -171,6 +179,9 @@ int main(int argc, char **argv)
 
     app.RequestStop();
     app.Join();
+
+    // Output average speed
+    std::cout << "\nAverage speed: " << rt_thread->GetAverageHz() << " Hz\n";
 
     return 0;
 }
