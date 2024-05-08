@@ -24,8 +24,12 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <csignal> // For signal handling
+#include <iostream>
 
 #include "moteus.h"
+
+volatile sig_atomic_t ctrl_c_pressed = 0;
 
 namespace
 {
@@ -39,9 +43,18 @@ namespace
     }
 }
 
+// Signal handler function
+void signalHandler(int signal)
+{
+    ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
+}
+
 int main(int argc, char **argv)
 {
     using namespace mjbots;
+
+    // Set up signal handler for Ctrl+C (SIGINT)
+    std::signal(SIGINT, signalHandler);
 
     const std::vector<std::string> args_in(argv, argv + argc);
     auto args = moteus::Controller::ProcessTransportArgs(args_in);
@@ -107,7 +120,7 @@ int main(int argc, char **argv)
     int total_count = 0;
     double total_hz = 0.0;
 
-    while (true)
+    while (!ctrl_c_pressed)
     {
         hz_count++;
         send_frames.clear();
