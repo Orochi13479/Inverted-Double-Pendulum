@@ -100,7 +100,10 @@ protected:
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
         if (index_ >= torque_commands_.size())
-            index_ = 0;
+        {
+            // Stop the thread if all torque commands have been sent
+            return true;
+        }
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
@@ -175,8 +178,8 @@ int main(int argc, char **argv)
     }
 
     std::vector<std::vector<double>> torque_commands = {
-        {0, 0},
-        {0, 0},
+        {0.05, -0.05, 0.05, -0.05, 0.05, -0.05, 0.05, -0.05, 0.05},
+        {-0.05, 0.05, -0.05, 0.05, -0.05, 0.05, -0.05, 0.05, -0.05},
     };
 
     // Calculate time intervals as differences between timestamps
