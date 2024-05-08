@@ -55,7 +55,7 @@ m2 = 0.21;        % Link 2 mass (kg)
 g = 9.8;          % gravity (m/s^2)
 
 % Define time span and initial conditions for simulation
-tspan = [0 10];   % Time span for simulation
+tspan = [0 0.5];   % Time span for simulation
 q1_0 = 0;         % Initial angle for the first joint
 q2_0 = 0;         % Initial angle for the second joint
 q1_dot_0 = 0;     % Initial angular velocity for the first joint
@@ -63,7 +63,7 @@ q2_dot_0 = 0;     % Initial angular velocity for the second joint
 
 % Solve equations of motion numerically
 [t, q] = ode45(@(t, q) double_pendulum_eqns(t, q, L1, L2, m1, m2, g),...
-    tspan, [q1_0; q2_0; q1_dot_0; q2_dot_0]);
+    tspan, [q1_0; q2_0; q1_dot_0; q2_dot_0])
 
 % Extract joint angles over time
 q1 = q(:, 1);
@@ -114,12 +114,13 @@ function dqdt = double_pendulum_eqns(t, q, L1, L2, m1, m2, g)
     g_q21 = m2 * g * L2 * cos(q1 + q2);
     g_q = [g_q11; g_q21];
 
-    tau1 = 0; % You can specify external torques here if needed
-    tau2 = 0;
+    tau1 = 0.40; % You can specify external torques here if needed
+    tau2 = 0.44;
 
     q_dot_dot = M \ ([-c(1) + tau1; -c(2) + tau2] - g_q);
 
     dqdt = [q1_dot; q2_dot; q_dot_dot];
+
 end
 
 %% Things to include:
