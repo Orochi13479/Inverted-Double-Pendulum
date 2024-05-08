@@ -15,24 +15,45 @@ void signalHandler(int signal)
     ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
 }
 
-double inputAndLimitTorque(const std::string &motor_name, double max_torque)
-{
-    double torque_command;
-    std::cout << "Enter torque command for " << motor_name << ": ";
-    std::cin >> torque_command;
+// Arrays to store data for each column
+std::vector<float> timestamp;
+std::vector<float> q1;
+std::vector<float> q1_dot;
+std::vector<float> q2;
+std::vector<float> q2_dot;
 
-    // Limit the torque command to the nearest value within the range [-max_torque, max_torque]
-    if (torque_command < -max_torque)
+void readCSV(const std::string &filename)
+{
+    std::string filepath = "../trajGen/" + filename;
+
+    // Open the file
+    std::ifstream file(filepath);
+
+    if (!file.is_open())
     {
-        std::cout << "TORQUE " << torque_command << "Nm TOO HIGH. SETTING TO MAX TORQUE: " << -max_torque << "Nm" << std::endl;
-        torque_command = -max_torque;
+        throw std::runtime_error("Error: Unable to open file " + filepath);
     }
-    else if (torque_command > max_torque)
+
+    // Skip the first line (column headings)
+    std::string line;
+    std::getline(file, line);
+
+    // Read and process the CSV data
+    while (std::getline(file, line))
     {
-        std::cout << "TORQUE " << torque_command << "Nm TOO HIGH. SETTING TO MAX TORQUE: " << max_torque << "Nm" << std::endl;
-        torque_command = max_torque;
+        std::istringstream iss(line);
+        float t, q1_val, q1_dot_val, q2_val, q2_dot_val;
+        char comma;
+        if (iss >> t >> comma >> q1_val >> comma >> q1_dot_val >> comma >> q2_val >> comma >> q2_dot_val)
+        {
+            // Add data to arrays
+            timestamp.push_back(t);
+            q1.push_back(q1_val);
+            q1_dot.push_back(q1_dot_val);
+            q2.push_back(q2_val);
+            q2_dot.push_back(q2_dot_val);
+        }
     }
-    return torque_command;
 }
 
 class MotorControlThread : public cactus_rt::CyclicThread
@@ -58,7 +79,7 @@ public:
         cmd_.kp_scale = 0.0;
         cmd_.kd_scale = 0.0;
         cmd_.feedforward_torque = 0.0;
-        cmd_.velocity_limit = 0.1; //Hertz revolutions / s
+        cmd_.velocity_limit = 0.1; // Hertz revolutions / s
     }
     long long GetAverageLoopDuration() const
     {
@@ -109,6 +130,10 @@ int main(int argc, char **argv)
 {
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
+    // Specify the full path to the CSV file
+    std::string filename = "Hand_Desgined_traj_gen_draft1.csv";
+
+    readCSV(filename);
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
@@ -151,12 +176,12 @@ int main(int argc, char **argv)
 
     const double MAX_TORQUE = 0.2;
     std::vector<std::vector<double>> torque_commands = {
-        {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
-        {inputAndLimitTorque("motor 1", MAX_TORQUE), inputAndLimitTorque("motor 2", MAX_TORQUE)},
+        {0, 0},
+        {0, 0},
         // Add more sequences if needed
     };
 
-    std::vector<int> time_intervals = {500, 2000}; // Time intervals for each action in milliseconds
+    std::vector<float> time_intervals = timestamp * 1000; // Time intervals for each action in milliseconds
 
     // Create the motor control thread
     auto motor_thread = std::make_shared<MotorControlThread>(
