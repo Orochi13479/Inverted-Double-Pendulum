@@ -88,7 +88,7 @@ public:
         {
             total_duration += duration;
         }
-        return loop_durations_.empty() ? 0 : total_duration / loop_durations_.size();
+        return loop_durations_.empty() ? 0 : static_cast<long long unsigned int>(total_duration) / loop_durations_.size();
     }
 
 protected:
@@ -102,6 +102,7 @@ protected:
         if (index_ >= torque_commands_.size())
         {
             // Stop the thread if all torque commands have been sent
+            std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
             return true;
         }
 
@@ -200,7 +201,7 @@ int main(int argc, char **argv)
     std::cout << "Torque Commands:\n";
     for (size_t i = 0; i < torque_commands.size(); ++i)
     {
-        std::cout << "Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
+        std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
     }
 
     // Print time_intervals
@@ -241,8 +242,8 @@ int main(int argc, char **argv)
     std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
     std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
 
-    std::cout << "Average Loop Duration: " << loopDuration << "ns" << std::endl;
-    std::cout << "Average Loop Frequency: " << 1 / (loopDuration / 1e9) << "Hz" << std::endl;
+    std::cout << "Average Loop Duration: " << static_cast<double>(loopDuration) << "ns" << std::endl;
+    std::cout << "Average Loop Frequency: " << 1.0 / (static_cast<double>(loopDuration) / 1e9) << "Hz" << std::endl;
 
     return 0;
 }
