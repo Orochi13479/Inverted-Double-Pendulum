@@ -37,8 +37,8 @@ target_link_libraries(main_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthr
 add_executable(control_${PROJECT_NAME} control/IDPControl.cpp)
 target_link_libraries(control_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
-add_executable(controlTest_${PROJECT_NAME} control/csvReader.cpp)
-target_link_libraries(controlTest_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
+add_executable(csvReaderTest_${PROJECT_NAME} control/csvReader.cpp)
+target_link_libraries(csvReaderTest_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
 add_executable(cactusTest_${PROJECT_NAME} driver/cactusTest.cpp)
 target_link_libraries(cactusTest_${PROJECT_NAME} PRIVATE moteus::cpp pthread cactus_rt) 
