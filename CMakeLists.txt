@@ -39,6 +39,9 @@ target_link_libraries(control_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp p
 add_executable(csvReaderTest_${PROJECT_NAME} control/csvReader.cpp)
 target_link_libraries(csvReaderTest_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
+add_executable(rnea_${PROJECT_NAME} control/rnea.cpp)
+target_link_libraries(rnea_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
+
 
 # Driver Executables
 add_executable(manualTorque_${PROJECT_NAME} driver/manualTorque.cpp)

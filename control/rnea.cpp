@@ -1,19 +1,21 @@
+#include "pinocchio/algorithm/rnea.hpp"
+
 #include <stdio.h>
 #include <unistd.h>
 
+#include <Eigen/Core>
 #include <boost/optional.hpp>
 #include <chrono>
 #include <csignal>  // For signal handling
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
-#include <vector>
+#include <stdexcept>
 #include <string>
 #include <tuple>
-#include <stdexcept>
+#include <vector>
 
 #include "pinocchio/algorithm/joint-configuration.hpp"
-#include "pinocchio/algorithm/rnea.hpp"
 #include "pinocchio/parsers/sample-models.hpp"
 
 namespace {
@@ -74,10 +76,12 @@ void BuildModel(pinocchio::ModelTpl<Scalar, Options, JointCollectionTpl>* model)
 std::vector<float> timestamp;
 std::vector<float> q1;
 std::vector<float> q1_dot;
+std::vector<float> q1_dot_dot;
 std::vector<float> q2;
 std::vector<float> q2_dot;
+std::vector<float> q2_dot_dot;
 
-void readCSV(const std::string& filename){
+void readCSV(const std::string& filename) {
     std::string filepath = "/home/student/git/Inverted-Double-Pendulum/trajGen/" + filename;
 
     // Open the file
@@ -91,57 +95,108 @@ void readCSV(const std::string& filename){
     std::string line;
     std::getline(file, line);
 
-
-
     // Read and process the CSV data
     while (std::getline(file, line)) {
         std::istringstream iss(line);
         float t, q1_val, q1_dot_val, q2_val, q2_dot_val;
         char comma;
-        if (iss >> t >> comma >> q1_val >> comma >> q1_dot_val >> comma >> q2_val >> comma >> q2_dot_val) {
+        if (iss >> t >> comma >> q1_val >> comma >> q2_val >> comma >> q1_dot_val >> comma >> q2_dot_val) {
             // Add data to arrays
             timestamp.push_back(t);
             q1.push_back(q1_val);
-            q1_dot.push_back(q1_dot_val);
             q2.push_back(q2_val);
+            q1_dot.push_back(q1_dot_val);
             q2_dot.push_back(q2_dot_val);
         }
     }
 }
 
+float calculateAcceleration(const std::vector<float>& velocities, const std::vector<float>& timestamps) {
+    float acceleration;
+    for (size_t i = 1; i < timestamps.size(); ++i) {
+        // Calculate delta time
+        float dt = timestamps[i] - timestamps[i - 1];
+        if (dt == 0) {
+            // Avoid division by zero
+            acceleration = 0.0;
+        } else {
+            // Calculate acceleration using velocity difference
+            float dv = velocities[i] - velocities[i - 1];
+            acceleration = dv / dt;
+        }
+    }
+
+    return acceleration;
 }
+
+}  // namespace
 
 int main(int argc, char** argv) {
     pinocchio::Model model;
     BuildModel(&model);
-    pinocchio::Data data(model);
+    pinocchio::Data data1(model);
+    pinocchio::Data data2(model);
 
-    double desired_position_deg;
-    std::cout << "ENTER DESIRED END-EFFECTOR POSITION IN DEGREES (MAKE SURE IT IS CALIBRATED): ";
-    std::cin >> desired_position_deg;
+    std::string filename = "Hand_Desgined_traj_gen_draft1.csv";
 
-    // Convert desired position from degrees to radians
-    double desired_position_rad = -desired_position_deg * M_PI / 180.0;
+    readCSV(filename);
 
-    Eigen::VectorXd q_desired(2);  // Desired joint positions
-    q_desired << desired_position_rad, desired_position_rad;
+    for (std::size_t i = 0; i < timestamp.size(); ++i) {
+        float acceleration1;
+        float acceleration2;
+        float velocity1;
+        float velocity2;
+        float delta_time = timestamp[i] - timestamp[i - 1];
+        if (delta_time == 0) {
+            // Avoid division by zero
+            acceleration1 = 0.0;
+            acceleration2 = 0.0;
+            q1_dot_dot.push_back(acceleration1);
+            q2_dot_dot.push_back(acceleration2);
+        } else {
+            float delta_pos1 = q1[i] - q1[i - 1];
+            float delta_pos2 = q2[i] - q2[i - 1];
+            velocity1 = delta_pos1 / delta_time;
+            velocity2 = delta_pos2 / delta_time;
+            q1_dot.push_back(velocity1);
+            q2_dot.push_back(velocity2);
+            float dv1 = q1_dot[i] - q1_dot[i - 1];
+            float dv2 = q2_dot[i] - q2_dot[i - 1];
+            acceleration1 = dv1 / delta_time;
+            acceleration2 = dv2 / delta_time;
+            q1_dot_dot.push_back(acceleration1);
+            q2_dot_dot.push_back(acceleration2);
+        }
+    }
 
-    Eigen::VectorXd q = Eigen::VectorXd::Zero(model.nv);  // in rad
-    Eigen::VectorXd v = Eigen::VectorXd::Zero(model.nv);  // in rad/s
-    Eigen::VectorXd a = Eigen::VectorXd::Zero(model.nv);  // in rad/s²
+    // Convert float values to Eigen::VectorXd
+    std::vector<Eigen::VectorXd> pos1, pos2, v1, v2, a1, a2, torque1, torque2;
 
-    // Set current joint positions to desired positions
-    auto q_current = q_desired;
+    for (std::size_t i = 0; i < timestamp.size(); ++i) {
+        pos1.push_back(Eigen::VectorXd::Constant(1, static_cast<double>(q1[i])));
+        pos2.push_back(Eigen::VectorXd::Constant(1, static_cast<double>(q2[i])));
+        v1.push_back(Eigen::VectorXd::Constant(1, static_cast<double>(q1_dot[i])));
+        v2.push_back(Eigen::VectorXd::Constant(1, static_cast<double>(q2_dot[i])));
+        a1.push_back(Eigen::VectorXd::Constant(1, static_cast<double>(q1_dot_dot[i])));
+        a2.push_back(Eigen::VectorXd::Constant(1, static_cast<double>(q2_dot_dot[i])));
+    }
 
-    // // Assume zero current joint velocities and accelerations for simplicity
-    v.setZero(); // Derivative of position
-    a.setZero(); //Derivative of velocity
+    // for (std::size_t i = 0; i < timestamp.size(); ++i) {
+    //     torque1.push_back(pinocchio::rnea(model, data1, pos1[i], v1[i], a1[i]));
+    //     torque2.push_back(pinocchio::rnea(model, data2, pos2[i], v2[i], a2[i]));
+    // }
 
-    // // Calculate inverse dynamics torques
-    const Eigen::VectorXd& tau = pinocchio::rnea(model, data, q_current, v, a);
+    // for (std::size_t i = 0; i < timestamp.size(); ++i) {
+    //     std::cout << "timestamp: " << timestamp[i] << " ";
+    //     std::cout << "pos1: " << pos1[i] << " ";
+    //     std::cout << "v1: " << v1[i] << " ";
+    //     std::cout << "a1: " << a1[i] << " ";
+    //     std::cout << "pos2: " << pos2[i] << " ";
+    //     std::cout << "v2: " << v2[i] << " ";
+    //     std::cout << "a2: " << a2[i] << " ";
+    //     std::cout << "torque1: " << torque1[i] << " ";
+    //     std::cout << "torque2: " << torque2[i] << std::endl;
+    // }
 
-    // Display calculated torques
-    std::cout << "CALCULATED TORQUES (Nm): "
-              << "MOTOR 1: " << tau(0) << ", MOTOR 2: " << tau(1) << std::endl;
-
+    return 0;
 }
