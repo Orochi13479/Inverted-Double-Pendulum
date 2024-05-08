@@ -177,10 +177,14 @@ int main(int argc, char **argv)
     std::vector<std::vector<double>> torque_commands = {
         {0, 0},
         {0, 0},
-        // Add more sequences if needed
     };
 
-    std::vector<int> time_intervals = timestamp; // Time intervals for each action in milliseconds
+    // Calculate time intervals as differences between timestamps
+    std::vector<int> time_intervals;
+    for (size_t i = 1; i < timestamp.size(); ++i)
+    {
+        time_intervals.push_back(timestamp[i] - timestamp[i - 1]);
+    }
 
     // Printing torque commands
     std::cout << "Torque Commands:\n";
@@ -195,7 +199,7 @@ int main(int argc, char **argv)
     {
         std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
     }
-    
+
     // Prompt the user to press enter
     std::cout << "Press Enter to start the real-time loop...";
     std::cin.get();
