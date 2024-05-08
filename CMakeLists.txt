@@ -32,7 +32,7 @@ add_executable(driver_${PROJECT_NAME} driver/driver.cpp)
 target_link_libraries(driver_${PROJECT_NAME} moteus::cpp pthread) 
 
 add_executable(main_${PROJECT_NAME} main.cpp)
-target_link_libraries(main_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
+target_link_libraries(main_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread cactus_rt)
 
 setup_cactus_rt_target_options(main_${PROJECT_NAME})
 
