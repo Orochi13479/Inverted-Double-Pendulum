@@ -46,9 +46,12 @@ protected:
     {
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
+        mjbots::moteus::PositionMode::Command cmd;
+        cmd.position = NaN;
+        cmd.velocity = 0.0;
 
         for (auto &controller : controllers_)
-            send_frames.push_back(controller->MakePosition({}));
+            send_frames.push_back(controller->MakePosition(cmd));
 
         for (auto &pair : responses_)
             pair.second = false;
