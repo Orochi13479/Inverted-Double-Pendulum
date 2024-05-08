@@ -1,9 +1,22 @@
-#include <cactus_rt/rt.h>
-#include "moteus.h"
-#include <vector>
-#include <memory>
-#include <iostream>
-#include <signal.h>
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/// @file
+///
+/// This can be used to determine rough maximal bandwidth capability
+/// of a given transport for a position/query loop.
+
 #include <stdio.h>
 #include <unistd.h>
 
@@ -14,115 +27,28 @@
 
 #include "moteus.h"
 
-// A simple way to get the current time accurately as a double.
-static double GetNow()
+namespace
 {
-    struct timespec ts = {};
-    ::clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    return static_cast<double>(ts.tv_sec) +
-           static_cast<double>(ts.tv_nsec) / 1e9;
+    // A simple way to get the current time accurately as a double.
+    static double GetNow()
+    {
+        struct timespec ts = {};
+        ::clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+        return static_cast<double>(ts.tv_sec) +
+               static_cast<double>(ts.tv_nsec) / 1e9;
+    }
 }
-
-class RealTimeThread : public cactus_rt::CyclicThread
-{
-private:
-    std::shared_ptr<mjbots::moteus::Transport> transport_;
-    std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers_;
-    std::map<int, bool> responses_;
-    int total_count_;
-    double total_hz_;
-
-public:
-    RealTimeThread(const char *name, cactus_rt::CyclicThreadConfig config,
-                   std::shared_ptr<mjbots::moteus::Transport> transport,
-                   std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers)
-        : CyclicThread(name, config), transport_(transport), controllers_(controllers), total_count_(0), total_hz_(0)
-    {
-        int id = 0;
-        for (const auto &controller : controllers_)
-            responses_[id++] = false;
-    }
-
-protected:
-    bool Loop(int64_t /*now*/) noexcept final
-    {
-        std::vector<mjbots::moteus::CanFdFrame> send_frames;
-        std::vector<mjbots::moteus::CanFdFrame> receive_frames;
-        mjbots::moteus::PositionMode::Command cmd;
-        cmd.position = NaN;
-        cmd.velocity = 0.0;
-
-        for (auto &controller : controllers_)
-            send_frames.push_back(controller->MakePosition(cmd));
-
-        for (auto &pair : responses_)
-            pair.second = false;
-
-        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
-
-        for (const auto &frame : receive_frames)
-            responses_[frame.source] = true;
-
-        const int count = std::count_if(responses_.begin(), responses_.end(),
-                                        [](const auto &pair)
-                                        { return pair.second; });
-
-        constexpr double kStatusPeriodS = 0.1;
-        static double status_time = GetNow() + kStatusPeriodS;
-        static int hz_count = 0;
-
-        hz_count++;
-
-        const auto now = GetNow();
-        if (now > status_time)
-        {
-            printf("                 %6.1fHz  rx_count=%2d   \r",
-                   hz_count / kStatusPeriodS, count);
-            fflush(stdout);
-
-            total_count_++;
-            total_hz_ += (hz_count / kStatusPeriodS);
-
-            hz_count = 0;
-            status_time += kStatusPeriodS;
-        }
-
-        ::usleep(10);
-
-        return false;
-    }
-
-public:
-    double GetAverageHz() const { return total_hz_ / total_count_; }
-};
 
 int main(int argc, char **argv)
 {
-    // Real-time thread configuration
-    cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 150'000;  // Target Time in ns
-    config.SetFifoScheduler(98); // Priority 0-100
-
-    // Set up controllers and transport
-    mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
-    auto transport = mjbots::moteus::Controller::MakeSingletonTransport({});
-
-    // Options for setting up controllers
-    mjbots::moteus::Controller::Options options_common;
-
-    // Set position format
-    auto &pf = options_common.position_format;
-    pf.position = mjbots::moteus::kIgnore;
-    pf.velocity = mjbots::moteus::kIgnore;
-    pf.feedforward_torque = mjbots::moteus::kFloat;
-    pf.kp_scale = mjbots::moteus::kInt8;
-    pf.kd_scale = mjbots::moteus::kInt8;
+    using namespace mjbots;
 
     const std::vector<std::string> args_in(argv, argv + argc);
-    auto args = mjbots::moteus::Controller::ProcessTransportArgs(args_in);
+    auto args = moteus::Controller::ProcessTransportArgs(args_in);
+    auto transport = moteus::Controller::MakeSingletonTransport({});
 
     // Just for some kind of "--help".
-    mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
+    moteus::Controller::DefaultArgProcess(argc, argv);
 
     args.erase(args.begin()); // our name
 
@@ -139,49 +65,107 @@ int main(int argc, char **argv)
         return false;
     }();
 
+    // This will keep track of if we had a response to a given device in
+    // each cycle.
+    std::map<int, bool> responses;
+
     // Populate our list of controllers with IDs from the command line.
-    std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers;
-    for (const auto &arg : args)
+    std::vector<std::shared_ptr<moteus::Controller>> controllers;
+    while (!args.empty())
     {
-        auto id = std::stoul(arg);
-        controllers.push_back(std::make_shared<mjbots::moteus::Controller>(
-            [&]()
-            {
-                mjbots::moteus::Controller::Options options;
-                options.id = id;
-                if (minimal_format)
+        auto id = std::stoul(args.front());
+        args.erase(args.begin());
+        controllers.push_back(
+            std::make_shared<moteus::Controller>(
+                [&]()
                 {
-                    options.position_format.position = mjbots::moteus::kInt16;
-                    options.position_format.velocity = mjbots::moteus::kInt16;
-                    options.query_format.position = mjbots::moteus::kInt16;
-                    options.query_format.velocity = mjbots::moteus::kInt16;
-                    options.query_format.torque = mjbots::moteus::kIgnore;
-                }
-                return options;
-            }()));
+                    moteus::Controller::Options options;
+                    options.id = id;
+                    if (minimal_format)
+                    {
+                        options.position_format.position = moteus::kInt16;
+                        options.position_format.velocity = moteus::kInt16;
+                        options.query_format.position = moteus::kInt16;
+                        options.query_format.velocity = moteus::kInt16;
+                        options.query_format.torque = moteus::kIgnore;
+                    }
+                    return options;
+                }()));
+        responses[id] = false;
     }
 
-    // Create the real-time thread
-    auto rt_thread = std::make_shared<RealTimeThread>(
-        "RealTimeThread", config, transport, controllers);
+    std::vector<moteus::CanFdFrame> send_frames;
+    std::vector<moteus::CanFdFrame> receive_frames;
 
-    // Register and start the real-time thread
-    cactus_rt::App app;
-    app.RegisterThread(rt_thread);
-    cactus_rt::SetUpTerminationSignalHandler();
+    moteus::PositionMode::Command cmd;
+    cmd.position = NaN;
+    cmd.velocity = 0.0;
 
-    std::cout << "Testing RT loop until CTRL+C\n";
+    constexpr double kStatusPeriodS = 0.1;
+    double status_time = GetNow() + kStatusPeriodS;
+    int hz_count = 0;
+    int total_count = 0;
+    double total_hz = 0.0;
 
-    app.Start();
+    while (true)
+    {
+        hz_count++;
+        send_frames.clear();
+        receive_frames.clear();
 
-    // Wait for Ctrl+C signal
-    cactus_rt::WaitForAndHandleTerminationSignal();
+        for (auto &c : controllers)
+        {
+            send_frames.push_back(c->MakePosition(cmd));
+        }
+        for (auto &pair : responses)
+        {
+            pair.second = false;
+        }
 
-    app.RequestStop();
-    app.Join();
+        transport->BlockingCycle(&send_frames[0], send_frames.size(),
+                                 &receive_frames);
+
+        for (const auto &f : receive_frames)
+        {
+            responses[f.source] = true;
+        }
+
+        const int count = [&]()
+        {
+            int sum = 0;
+            for (const auto &pair : responses)
+            {
+                if (pair.second)
+                {
+                    sum++;
+                }
+            }
+            return sum;
+        }();
+
+        const auto now = GetNow();
+        if (now > status_time)
+        {
+            printf("%6.1fHz  rx_count=%2d   \r",
+                   hz_count / kStatusPeriodS, count);
+            fflush(stdout);
+
+            total_count++;
+            total_hz += (hz_count / kStatusPeriodS);
+
+            hz_count = 0;
+            status_time += kStatusPeriodS;
+        }
+
+        ::usleep(10);
+    }
 
     // Output average speed
-    std::cout << "\nAverage speed: " << rt_thread->GetAverageHz() << " Hz\n";
+    if (total_count > 0)
+    {
+        double average_hz = total_hz / total_count;
+        printf("\nAverage speed: %.1f Hz\n", average_hz);
+    }
 
     return 0;
 }
