@@ -174,7 +174,6 @@ int main(int argc, char **argv)
         c->SetStop();
     }
 
-    const double MAX_TORQUE = 0.2;
     std::vector<std::vector<double>> torque_commands = {
         {0, 0},
         {0, 0},
@@ -182,6 +181,24 @@ int main(int argc, char **argv)
     };
 
     std::vector<int> time_intervals = timestamp; // Time intervals for each action in milliseconds
+
+    // Printing torque commands
+    std::cout << "Torque Commands:\n";
+    for (size_t i = 0; i < torque_commands.size(); ++i)
+    {
+        std::cout << "Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
+    }
+
+    // Print time_intervals
+    std::cout << "\nTime Intervals (in milliseconds):\n";
+    for (size_t i = 0; i < time_intervals.size(); ++i)
+    {
+        std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
+    }
+    
+    // Prompt the user to press enter
+    std::cout << "Press Enter to start the real-time loop...";
+    std::cin.get();
 
     // Create the motor control thread
     auto motor_thread = std::make_shared<MotorControlThread>(
