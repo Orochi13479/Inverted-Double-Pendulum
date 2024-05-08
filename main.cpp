@@ -242,8 +242,8 @@ int main(int argc, char **argv)
     std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
     std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
 
-    std::cout << "Average Loop Duration: " << static_cast<double>(loopDuration) << "ns" << std::endl;
-    std::cout << "Average Loop Frequency: " << 1.0 / (static_cast<double>(loopDuration) / 1e9) << "Hz" << std::endl;
+    std::cout << "Average Loop Duration: " << loopDuration << "ns" << std::endl;
+    std::cout << "Average Loop Frequency: " << 1 / (loopDuration / 1e9) << "Hz" << std::endl;
 
     return 0;
 }
