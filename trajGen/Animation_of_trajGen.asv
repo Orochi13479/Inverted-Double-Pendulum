@@ -10,8 +10,7 @@ y2 = y1 - L2 * cos(q1_sim + q2_sim);
 % Iterates through a loop that plots the current cartesian coordinates od
 % the pendulum ends (that where calculated using q1_sim and q2_sim). The
 % first link is red and the second is green. Plot lines are added to
-% represent pendulum links. The pause(0.01) adds a small delay, creating
-% and animation effect.
+% represen
 figure;
 for i = 1:length(t_sim)
     plot(x1(i), y1(i), 'ro', 'MarkerSize', m1 * 10, 'MarkerFaceColor', 'r');

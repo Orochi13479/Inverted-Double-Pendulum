@@ -40,8 +40,6 @@ for i = 1:numel(t_sim)-1                        % Starts loop that iterates from
         [t_current t_sim(i+1)], q);
     
     % Update state for the next iteration
-    % Updates the initial joint positions and velocities with values obtain
-    % by solver
     q1_0 = q_next(end, 1);
     q2_0 = q_next(end, 2);
     q1_dot_0 = q_next(end, 3);
@@ -52,7 +50,7 @@ for i = 1:numel(t_sim)-1                        % Starts loop that iterates from
     q1_dot_dot = q_dot_dot(1);
     q2_dot_dot = q_dot_dot(2);
     
-    % Store simulation results in arrays
+    % Store simulation results
     q1_sim(i+1) = q1_0;
     q2_sim(i+1) = q2_0;
     q1_dot_sim(i+1) = q1_dot_0;
