@@ -33,7 +33,7 @@ setup_cactus_rt_target_options(main_${PROJECT_NAME})
 
 
 # Control Executables
-add_executable(control_${PROJECT_NAME} control/IDPControl.cpp)
+add_executable(control_${PROJECT_NAME} control/IDPControlOld.cpp)
 target_link_libraries(control_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
 add_executable(csvReaderTest_${PROJECT_NAME} control/csvReader.cpp)
@@ -42,6 +42,8 @@ target_link_libraries(csvReaderTest_${PROJECT_NAME} pinocchio::pinocchio moteus:
 add_executable(rnea_${PROJECT_NAME} control/rnea.cpp)
 target_link_libraries(rnea_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
+add_executable(PIDController_${PROJECT_NAME} control/IDPpidController.cpp)
+target_link_libraries(PIDController_${PROJECT_NAME} moteus::cpp pthread)
 
 # Driver Executables
 add_executable(manualTorque_${PROJECT_NAME} driver/manualTorque.cpp)

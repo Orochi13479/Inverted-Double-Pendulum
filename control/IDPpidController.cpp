@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 #include <stdexcept>
+#include "pid.h"
 
 // Arrays to store data for each column
 std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
@@ -46,6 +47,8 @@ void readCSV(const std::string &filename)
         }
     }
 }
+
+
 
 int main()
 {
