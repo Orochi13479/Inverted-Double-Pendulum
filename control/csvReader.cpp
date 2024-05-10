@@ -7,11 +7,7 @@
 #include <stdexcept>
 
 // Arrays to store data for each column
-std::vector<float> timestamp;
-std::vector<float> q1;
-std::vector<float> q1_dot;
-std::vector<float> q2;
-std::vector<float> q2_dot;
+std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
 
 void readCSV(const std::string &filename)
 {
@@ -33,7 +29,7 @@ void readCSV(const std::string &filename)
     while (std::getline(file, line))
     {
         std::istringstream iss(line);
-        float t, q1_val, q1_dot_val, q2_val, q2_dot_val;
+        float t, q1_val, q1_dot_val, q1_dot_dot_val, tau1_val, q2_val, q2_dot_val, q2_dot_dot_val, tau2_val;
         char comma;
         if (iss >> t >> comma >> q1_val >> comma >> q1_dot_val >> comma >> q2_val >> comma >> q2_dot_val)
         {
@@ -41,8 +37,12 @@ void readCSV(const std::string &filename)
             timestamp.push_back(t);
             q1.push_back(q1_val);
             q1_dot.push_back(q1_dot_val);
+            q1_dot_dot.push_back(q1_dot_dot_val);
+            tau1.push_back(tau1_val);
             q2.push_back(q2_val);
             q2_dot.push_back(q2_dot_val);
+            q2_dot_dot.push_back(q2_dot_dot_val);
+            tau2.push_back(tau2_val);
         }
     }
 }
@@ -50,7 +50,7 @@ void readCSV(const std::string &filename)
 int main()
 {
     // Specify the full path to the CSV file
-    std::string filename = "Hand_Desgined_traj_gen_draft1.csv";
+    std::string filename = "trajectory_data.csv";
 
     readCSV(filename);
 
@@ -58,10 +58,15 @@ int main()
     for (std::size_t i = 0; i < timestamp.size(); ++i)
     {
         std::cout << "timestamp: " << timestamp[i] << " ";
-        std::cout << "q1: " << q1[i] << " ";
-        std::cout << "q1_dot: " << q1_dot[i] << " ";
-        std::cout << "q2: " << q2[i] << " ";
-        std::cout << "q2_dot: " << q2_dot[i] << std::endl;
+        std::cout << "pos1: " << q1[i] << " ";
+        std::cout << "velocity1: " << q1_dot[i] << " ";
+        std::cout << "acc1: " << q1_dot_dot[i] << " ";
+        std::cout << "torque1: " << tau1[i] << " ";
+        std::cout << "pos2: " << q2[i] << " ";
+        std::cout << "velocity2: " << q2_dot[i] << " ";
+        std::cout << "acc2: " << q2_dot_dot[i] << " ";
+        std::cout << "torque2: " << tau2[i] << " ";
+        std::cout << std::endl;
     }
 
     return 0;

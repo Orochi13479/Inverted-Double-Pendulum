@@ -16,11 +16,7 @@ void signalHandler(int signal)
 }
 
 // Arrays to store data for each column
-std::vector<int> timestamp;
-std::vector<float> q1;
-std::vector<float> q1_dot;
-std::vector<float> q2;
-std::vector<float> q2_dot;
+std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
 
 void readCSV(const std::string &filename)
 {
@@ -42,16 +38,20 @@ void readCSV(const std::string &filename)
     while (std::getline(file, line))
     {
         std::istringstream iss(line);
-        float t, q1_val, q1_dot_val, q2_val, q2_dot_val;
+        float t, q1_val, q1_dot_val, q1_dot_dot_val, tau1_val, q2_val, q2_dot_val, q2_dot_dot_val, tau2_val;
         char comma;
         if (iss >> t >> comma >> q1_val >> comma >> q1_dot_val >> comma >> q2_val >> comma >> q2_dot_val)
         {
             // Add data to arrays
-            timestamp.push_back(t * 1000);
+            timestamp.push_back(t);
             q1.push_back(q1_val);
             q1_dot.push_back(q1_dot_val);
+            q1_dot_dot.push_back(q1_dot_dot_val);
+            tau1.push_back(tau1_val);
             q2.push_back(q2_val);
             q2_dot.push_back(q2_dot_val);
+            q2_dot_dot.push_back(q2_dot_dot_val);
+            tau2.push_back(tau2_val);
         }
     }
 }
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "Hand_Desgined_traj_gen_draft1.csv";
+    std::string filename = "trajectory_data.csv";
 
     readCSV(filename);
 
