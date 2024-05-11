@@ -116,13 +116,17 @@ int main(int argc, char** argv) {
     moteus::PositionMode::Command cmd;
     cmd.kp_scale = 0.0;
     cmd.kd_scale = 0.0;
-    // cmd.velocity = 1.0;
     // cmd.velocity_limit = 0.1;
-    // cmd.accel_limit = 0;
     cmd.feedforward_torque = 0.0;
+    // cmd.velocity = 1.0;
+    // cmd.accel_limit = 0;
     // cmd.maximum_torque = 2.0;
 
     double torque_command[2] = {};
+    double kp_scale[2] = {};
+    double kd_scale[2] = {};
+    double velocity[2] = {};
+
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
@@ -131,64 +135,74 @@ int main(int argc, char** argv) {
     constexpr int kStatusPeriod = 100;
 
     while (!ctrl_c_pressed) {
-        ::usleep(10);
+        for (std::size_t i = 0; i < timestamp.size(); ++i) {
+            ::usleep(10);
 
-        send_frames.clear();
-        receive_frames.clear();
+            send_frames.clear();
+            receive_frames.clear();
 
-        for (size_t i = 0; i < controllers.size(); i++) {
-            cmd.feedforward_torque = torque_command[i];
-            cmd.kp_scale = 5.0;
-            cmd.kd_scale = 1.5;
-            send_frames.push_back(controllers[i]->MakePosition(cmd));
-        }
-
-        transport->BlockingCycle(
-            &send_frames[0], send_frames.size(),
-            &receive_frames);
-
-        auto maybe_servo1 = FindServo(receive_frames, 1);
-        auto maybe_servo2 = FindServo(receive_frames, 2);
-
-        if (!maybe_servo1 || !maybe_servo2) {
-            missed_replies++;
-            if (missed_replies > 3) {
-                printf("\n\nServo not responding 1=%d 2=%d\n",
-                       maybe_servo1 ? 1 : 0,
-                       maybe_servo2 ? 1 : 0);
-                break;
+            for (size_t i = 0; i < controllers.size(); i++) {
+                cmd.feedforward_torque = torque_command[i];
+                cmd.kp_scale = kp_scale[i];
+                cmd.kd_scale = kd_scale[i];
+                cmd.velocity = velocity[i];
+                send_frames.push_back(controllers[i]->MakePosition(cmd));
             }
-            continue;
-        } else {
-            missed_replies = 0;
+
+            transport->BlockingCycle(
+                &send_frames[0], send_frames.size(),
+                &receive_frames);
+
+            auto maybe_servo1 = FindServo(receive_frames, 1);
+            auto maybe_servo2 = FindServo(receive_frames, 2);
+
+            if (!maybe_servo1 || !maybe_servo2) {
+                missed_replies++;
+                if (missed_replies > 3) {
+                    printf("\n\nServo not responding 1=%d 2=%d\n",
+                           maybe_servo1 ? 1 : 0,
+                           maybe_servo2 ? 1 : 0);
+                    break;
+                }
+                continue;
+            } else {
+                missed_replies = 0;
+            }
+
+            const auto& v1 = *maybe_servo1;
+            const auto& v2 = *maybe_servo2;
+
+            kp_scale[0] = 5.0;
+            kd_scale[0] = 1.5;
+            kp_scale[1] = 5.0;
+            kd_scale[1] = 1.5;
+            torque_command[0] = tau1[i];
+            torque_command[1] = tau2[i];
+            velocity[0] = q1_dot[i];
+            velocity[1] = q2_dot[i];
+
+
+            status_count++;
+            if (status_count > kStatusPeriod) {
+                printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+                       static_cast<int>(v1.mode), static_cast<int>(v2.mode),
+                       revolutionsToDegrees(v1.position + v2.position),
+                       v1.torque, v2.torque,
+                       v1.temperature, v2.temperature, v1.velocity, v2.velocity);
+                fflush(stdout);
+
+                status_count = 0;
+            }
+
+            std::cout << "Entering fault mode!" << std::endl;
+
+            ::usleep(50000);
+
+            for (auto& c : controllers) {
+                c->SetStop();
+            }
         }
 
-        const auto& v1 = *maybe_servo1;
-        const auto& v2 = *maybe_servo2;
-
-        // torque_command[0] = tau1[];
-        // torque_command[1] = tau(1);
-
-        status_count++;
-        if (status_count > kStatusPeriod) {
-            printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
-                   static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                   revolutionsToDegrees(v1.position + v2.position),
-                   v1.torque, v2.torque,
-                   v1.temperature, v2.temperature, v1.velocity, v2.velocity);
-            fflush(stdout);
-
-            status_count = 0;
-        }
+        return 0;
     }
-
-    std::cout << "Entering fault mode!" << std::endl;
-
-    ::usleep(50000);
-
-    for (auto& c : controllers) {
-        c->SetStop();
-    }
-
-    return 0;
 }
