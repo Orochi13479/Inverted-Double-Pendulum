@@ -121,11 +121,13 @@ int main(int argc, char** argv) {
     // cmd.velocity = 1.0;
     // cmd.accel_limit = 0;
     // cmd.maximum_torque = 2.0;
+    
 
     double torque_command[2] = {};
     double kp_scale[2] = {};
     double kd_scale[2] = {};
     double velocity[2] = {};
+    std::vector<double> position_error;
 
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
@@ -181,6 +183,8 @@ int main(int argc, char** argv) {
             velocity[0] = q1_dot[i];
             velocity[1] = q2_dot[i];
 
+            position_error.push_back(mjbots::moteus::kControlPositionError);
+            
 
             status_count++;
             if (status_count > kStatusPeriod) {
