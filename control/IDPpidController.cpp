@@ -13,6 +13,8 @@
 
 #include "moteus.h"
 
+// mjbots::moteus::MultiplexParser parser;
+
 // Global flag for indicating if Ctrl+C was pressed
 volatile sig_atomic_t ctrl_c_pressed = 0;
 
@@ -69,6 +71,17 @@ boost::optional<mjbots::moteus::Query::Result> FindServo(
     return {};
 }
 
+// boost::optional<double> TorqueError(
+//     const std::vector<mjbots::moteus::CanFdFrame>& frames,
+//     int id) {
+//     for (auto it = frames.rbegin(); it != frames.rend(); ++it) {
+//         if (it->source == id) {
+//             auto result = mjbots::moteus::Query::ParseGeneric(&parser, mjbots::moteus::Register::kControlTorqueError, mjbots::moteus::Resolution::kFloat);
+//             return result;
+//         }
+//     }
+// }
+
 double revolutionsToDegrees(double revolutions) {
     const double degreesPerRevolution = 360.0;
     return revolutions * degreesPerRevolution;
@@ -121,13 +134,13 @@ int main(int argc, char** argv) {
     // cmd.velocity = 1.0;
     // cmd.accel_limit = 0;
     // cmd.maximum_torque = 2.0;
-    
 
     double torque_command[2] = {};
     double kp_scale[2] = {};
     double kd_scale[2] = {};
     double velocity[2] = {};
-    std::vector<double> position_error;
+    std::vector<double> torque_error1;
+    std::vector<double> torque_error2;
 
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
@@ -139,6 +152,15 @@ int main(int argc, char** argv) {
     while (!ctrl_c_pressed) {
         for (std::size_t i = 0; i < timestamp.size(); ++i) {
             ::usleep(10);
+
+            kp_scale[0] = 5.0;
+            kd_scale[0] = 1.5;
+            kp_scale[1] = 5.0;
+            kd_scale[1] = 1.5;
+            torque_command[0] = tau1[i];
+            torque_command[1] = tau2[i];
+            velocity[0] = q1_dot[i];
+            velocity[1] = q2_dot[i];
 
             send_frames.clear();
             receive_frames.clear();
@@ -174,17 +196,8 @@ int main(int argc, char** argv) {
             const auto& v1 = *maybe_servo1;
             const auto& v2 = *maybe_servo2;
 
-            kp_scale[0] = 5.0;
-            kd_scale[0] = 1.5;
-            kp_scale[1] = 5.0;
-            kd_scale[1] = 1.5;
-            torque_command[0] = tau1[i];
-            torque_command[1] = tau2[i];
-            velocity[0] = q1_dot[i];
-            velocity[1] = q2_dot[i];
-
-            position_error.push_back(mjbots::moteus::kControlPositionError);
-            
+            // auto motor1_torque_error = TorqueError(receive_frames, 1);
+            // auto motor2_torque_error = TorqueError(receive_frames, 2);
 
             status_count++;
             if (status_count > kStatusPeriod) {
