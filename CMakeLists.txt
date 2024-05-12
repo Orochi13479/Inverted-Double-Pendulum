@@ -33,7 +33,7 @@ setup_cactus_rt_target_options(main_${PROJECT_NAME})
 
 
 # Control Executables
-add_executable(control_${PROJECT_NAME} control/IDPControlOld.cpp)
+add_executable(control_${PROJECT_NAME} control/IDPControlPosition.cpp)
 target_link_libraries(control_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
 add_executable(csvReaderTest_${PROJECT_NAME} control/csvReader.cpp)

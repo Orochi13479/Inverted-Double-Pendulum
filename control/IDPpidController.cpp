@@ -127,8 +127,8 @@ int main(int argc, char** argv) {
     }
 
     moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 0.0;
-    cmd.kd_scale = 0.0;
+    cmd.kp_scale = 5.0;
+    cmd.kd_scale = 1.5;
     // cmd.velocity_limit = 0.1;
     cmd.feedforward_torque = 0.0;
     // cmd.velocity = 1.0;
@@ -152,11 +152,6 @@ int main(int argc, char** argv) {
     while (!ctrl_c_pressed) {
         for (std::size_t i = 0; i < timestamp.size(); ++i) {
             ::usleep(10);
-
-            kp_scale[0] = 5.0;
-            kd_scale[0] = 1.5;
-            kp_scale[1] = 5.0;
-            kd_scale[1] = 1.5;
             torque_command[0] = tau1[i];
             torque_command[1] = tau2[i];
             velocity[0] = q1_dot[i];

@@ -6,6 +6,10 @@
 #include <csignal>  // For signal handling
 #include <iostream>
 #include <optional>
+#include <fstream>
+#include <vector>
+#include <ctime>
+#include <iomanip>
 
 #include "moteus.h"
 #include "pinocchio/algorithm/joint-configuration.hpp"
@@ -19,6 +23,16 @@ volatile sig_atomic_t ctrl_c_pressed = 0;
 void signalHandler(int signal) {
     ctrl_c_pressed = 1;  // Set flag to indicate Ctrl+C was pressed
 }
+
+// Define a struct to hold data for each timestamp
+struct DataPoint {
+    std::chrono::system_clock::time_point timestamp;
+    double position;
+    double torque1;
+    double torque2;
+    double velocity1;
+    double velocity2;
+};
 
 namespace {
 template <typename Scalar, int Options,
@@ -101,6 +115,10 @@ double revolutionsToDegrees(double revolutions) {
 int main(int argc, char** argv) {
     // Set up signal handler for Ctrl+C (SIGINT)
     std::signal(SIGINT, signalHandler);
+
+    std::vector<DataPoint> dataPoints; // Vector to store data points
+
+    std::chrono::system_clock::time_point startTime = std::chrono::system_clock::now();
 
     using namespace mjbots;
     moteus::Controller::DefaultArgProcess(argc, argv);
@@ -185,6 +203,15 @@ int main(int argc, char** argv) {
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
     while (!ctrl_c_pressed) {
+
+        // Get current time
+        std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
+        // Calculate elapsed time
+        std::chrono::duration<double> elapsedTime = currentTime - startTime;
+
+        DataPoint currentDataPoint;
+        currentDataPoint.timestamp = currentTime;
+
         ::usleep(10);
 
         send_frames.clear();
@@ -221,6 +248,14 @@ int main(int argc, char** argv) {
         const auto& v1 = *maybe_servo1;
         const auto& v2 = *maybe_servo2;
 
+        currentDataPoint.position = revolutionsToDegrees(v1.position + v2.position);
+        currentDataPoint.torque1 = v1.torque;
+        currentDataPoint.torque2 = v2.torque;  
+        currentDataPoint.velocity1 = v1.velocity;
+        currentDataPoint.velocity2 = v2.velocity;
+
+        dataPoints.push_back(currentDataPoint);
+
         q(0) = WrapAround0(v1.position) * 2 * M_PI;
         q(1) = WrapAround0(v2.position) * 2 * M_PI;
 
@@ -238,6 +273,34 @@ int main(int argc, char** argv) {
 
             status_count = 0;
         }
+    }
+    std::string outputDirectory = "../control/";
+    // Save data to CSV file
+    std::string outputFilePath = outputDirectory + "test_position1.csv"; // Construct full path
+
+    // Save data to CSV file
+    std::ofstream outputFile(outputFilePath);
+    if (outputFile.is_open()) {
+        // Write CSV header
+        outputFile << "Timestamp,pos,tau1,tau2,vel1,vel2\n";
+        // Write data to CSV
+        for (const auto& dataPoint : dataPoints) {
+            std::time_t timestamp = std::chrono::system_clock::to_time_t(dataPoint.timestamp);
+            // Format timestamp as string
+            std::ostringstream timestampStr;
+            timestampStr << std::put_time(std::localtime(&timestamp), "%Y-%m-%d %H:%M:%S");
+            // Write data to CSV
+            outputFile << timestampStr.str() << ","
+                       << dataPoint.position << ","
+                       << dataPoint.torque1 << ","
+                       << dataPoint.torque2 << ","
+                       << dataPoint.velocity1 << ","
+                       << dataPoint.velocity2 <<"\n";
+        }
+        outputFile.close();
+        std::cout << "Data saved to data.csv" << std::endl;
+    } else {
+        std::cerr << "Error: Unable to open file for writing" << std::endl;
     }
 
     std::cout << "Entering fault mode!" << std::endl;
