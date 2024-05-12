@@ -76,8 +76,8 @@ public:
                        std::shared_ptr<mjbots::moteus::Transport> transport)
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0)
     {
-        cmd_.kp_scale = 0.0;
-        cmd_.kd_scale = 0.0;
+        cmd_.kp_scale = 5.0;
+        cmd_.kd_scale = 1.5;
         cmd_.feedforward_torque = 0.0;
         cmd_.velocity_limit = 0.1; // Hertz revolutions / s
     }
