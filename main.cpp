@@ -178,17 +178,11 @@ int main(int argc, char **argv)
         c->SetStop();
     }
 
-    std::vector<std::vector<double>> torque_commands = {
-        {0.05, -0.05},
-        {-0.05, 0.05},
-        {0.05, -0.05},
-        {-0.05, 0.05},
-        {0.05, -0.05},
-        {-0.05, 0.05},
-        {0.05, -0.05},
-        {-0.05, 0.05},
-        {0.05, -0.05},
-    };
+    std::vector<std::vector<double>> torque_commands;
+    for (size_t i = 0; i < torque_commands.size(); ++i)
+    {
+        torque_commands.push_back({tau1[i], tau2[i]});
+    }
 
     // Calculate time intervals as differences between timestamps
     std::vector<int> time_intervals;

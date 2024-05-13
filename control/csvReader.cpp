@@ -45,6 +45,11 @@ void readCSV(const std::string &filename)
             tau2.push_back(tau2_val);
         }
     }
+    std::cout << "Using for loop:" << std::endl;
+    for (size_t i = 0; i < tau1.size(); ++i) {
+        std::cout << tau1[i] << " ";
+    }
+    std::cout << std::endl;
 }
 
 int main()
