@@ -1,10 +1,15 @@
 #include <cactus_rt/rt.h>
 #include "moteus.h"
+
 #include <vector>
 #include <memory>
 #include <iostream>
 #include <chrono>
 #include <signal.h>
+#include <algorithm>
+#include <map>
+#include <string>
+#include <vector>
 
 // Global flag for indicating if Ctrl+C was pressed
 volatile sig_atomic_t ctrl_c_pressed = 0;
@@ -56,6 +61,15 @@ void readCSV(const std::string &filename)
     }
 }
 
+// A simple way to get the current time accurately as a double.
+static double GetNow()
+{
+    struct timespec ts = {};
+    ::clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+    return static_cast<double>(ts.tv_sec) +
+           static_cast<double>(ts.tv_nsec) / 1e9;
+}
+
 class MotorControlThread : public cactus_rt::CyclicThread
 {
 private:
@@ -67,6 +81,9 @@ private:
     std::vector<int> time_intervals_;
     size_t index_;
     int interval_index_;
+    std::map<int, bool> responses_;
+    int total_count_;
+    double total_hz_;
 
 public:
     MotorControlThread(const char *name, cactus_rt::CyclicThreadConfig config,
@@ -74,12 +91,17 @@ public:
                        std::vector<std::vector<double>> torque_commands,
                        std::vector<int> time_intervals,
                        std::shared_ptr<mjbots::moteus::Transport> transport)
-        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0)
+        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
     {
         cmd_.kp_scale = 5.0;
         cmd_.kd_scale = 1.5;
         cmd_.feedforward_torque = 0.0;
         cmd_.velocity_limit = 0.1; // Hertz revolutions / s
+
+        // Measuring Frequency
+        int id = 0;
+        for (const auto &controller : controllers_)
+            responses_[id++] = false;
     }
     long long GetAverageLoopDuration() const
     {
@@ -126,8 +148,42 @@ protected:
             index_++;
         }
 
+        // Measuring frequency below
+
+        for (const auto &frame : receive_frames)
+            responses_[frame.source] = true;
+
+        const int count = std::count_if(responses_.begin(), responses_.end(),
+                                        [](const auto &pair)
+                                        { return pair.second; });
+
+        constexpr double kStatusPeriodS = 0.1;
+        static double status_time = GetNow() + kStatusPeriodS;
+        static int hz_count = 0;
+
+        hz_count++;
+
+        const auto now = GetNow();
+        if (now > status_time)
+        {
+            printf("                 %6.1fHz  rx_count=%2d   \r",
+                   hz_count / kStatusPeriodS, count);
+            fflush(stdout);
+
+            total_count_++;
+            total_hz_ += (hz_count / kStatusPeriodS);
+
+            hz_count = 0;
+            status_time += kStatusPeriodS;
+        }
+
+        ::usleep(10);
+
         return false;
     }
+
+public:
+    double GetAverageHz() const { return total_hz_ / total_count_; }
 };
 
 int main(int argc, char **argv)
@@ -141,8 +197,8 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 2'500'000; // Target Time in ns
-    config.SetFifoScheduler(98);  // Priority 0-100
+    config.period_ns = 100'000;  // Target Time in ns
+    config.SetFifoScheduler(98); // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -238,6 +294,9 @@ int main(int argc, char **argv)
 
     std::cout << "Average Loop Duration: " << loopDuration << "ns" << std::endl;
     std::cout << "Average Loop Frequency: " << 1 / (loopDuration / 1e9) << "Hz" << std::endl;
+
+    // Output average speed
+    std::cout << "\nAverage speed: " << motor_thread->GetAverageHz() << " Hz\n";
 
     return 0;
 }
