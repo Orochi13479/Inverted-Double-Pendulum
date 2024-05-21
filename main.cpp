@@ -23,6 +23,7 @@ void signalHandler(int signal)
 // Arrays to store data for each column
 std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
 
+// Function to read CSV data into arrays
 void readCSV(const std::string &filename)
 {
     std::string filepath = "../trajGen/" + filename;
@@ -70,6 +71,7 @@ static double GetNow()
            static_cast<double>(ts.tv_nsec) / 1e9;
 }
 
+// Class for controlling motors in a cyclic thread
 class MotorControlThread : public cactus_rt::CyclicThread
 {
 private:
@@ -86,6 +88,7 @@ private:
     double total_hz_;
 
 public:
+    // Constructor
     MotorControlThread(const char *name, cactus_rt::CyclicThreadConfig config,
                        std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers,
                        std::vector<std::vector<double>> torque_commands,
@@ -103,6 +106,8 @@ public:
         for (const auto &controller : controllers_)
             responses_[id++] = false;
     }
+
+    // Function to calculate average loop duration
     long long GetAverageLoopDuration() const
     {
         long long total_duration = 0;
@@ -114,6 +119,7 @@ public:
     }
 
 protected:
+    // Main loop function that executes cyclically
     bool Loop(int64_t /*now*/) noexcept final
     {
         auto start_time = std::chrono::steady_clock::now(); // Start timing
@@ -149,7 +155,6 @@ protected:
         }
 
         // Measuring frequency below
-
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
 
@@ -183,9 +188,11 @@ protected:
     }
 
 public:
+    // Function to calculate average frequency
     double GetAverageHz() const { return total_hz_ / total_count_; }
 };
 
+// Main function
 int main(int argc, char **argv)
 {
     // Signal handling setup
@@ -269,24 +276,31 @@ int main(int argc, char **argv)
     auto motor_thread = std::make_shared<MotorControlThread>(
         "MotorControlThread", config, controllers, torque_commands, time_intervals, transport);
 
+    // Create an application to manage the real-time thread
     cactus_rt::App app;
     app.RegisterThread(motor_thread);
     cactus_rt::SetUpTerminationSignalHandler();
 
+    // Inform the user that the real-time loop is starting and will run until interrupted
     std::cout << "Testing RT loop until CTRL+C\n";
 
+    // Start the application (and thus the motor control thread)
     app.Start();
 
+    // Wait for a termination signal (e.g., Ctrl+C) and handle it appropriately
     cactus_rt::WaitForAndHandleTerminationSignal();
 
+    // Request the application to stop and wait for it to join (clean exit)
     app.RequestStop();
     app.Join();
 
+    // Ensure all controllers are set to stop, deactivating the mjbots
     for (auto &c : controllers)
     {
         c->SetStop();
     }
 
+    // Calculate the average loop duration from the motor control thread
     auto loopDuration = motor_thread->GetAverageLoopDuration();
 
     std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
@@ -295,7 +309,7 @@ int main(int argc, char **argv)
     std::cout << "Average Loop Duration: " << loopDuration << "ns" << std::endl;
     std::cout << "Average Loop Frequency: " << 1 / (loopDuration / 1e9) << "Hz" << std::endl;
 
-    // Output average speed
+    // Output the average speed of the motor control thread
     std::cout << "\nAverage speed: " << motor_thread->GetAverageHz() << " Hz\n";
 
     return 0;
