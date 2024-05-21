@@ -196,7 +196,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data.csv";
+    std::string filename = "../trajGen/RTTestTraj.csv";
 
     readCSV(filename);
 
