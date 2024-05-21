@@ -24,10 +24,8 @@ void signalHandler(int signal)
 std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
 
 // Function to read CSV data into arrays
-void readCSV(const std::string &filename)
+void readCSV(const std::string &filepath)
 {
-    std::string filepath = "../trajGen/" + filename;
-
     // Open the file
     std::ifstream file(filepath);
 
@@ -198,7 +196,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "trajectory_data.csv";
+    std::string filename = "../trajGen/trajectory_data.csv";
 
     readCSV(filename);
 
