@@ -53,8 +53,12 @@ protected:
         cmd.position = NaN;
         cmd.velocity = 0.0;
 
-        for (auto &controller : controllers_)
-            send_frames.push_back(controller->MakePosition(cmd));
+        // for (auto &controller : controllers_)
+        //     send_frames.push_back(controller->MakePosition(cmd));
+        for (size_t i = 0; i < controllers_.size(); i++)
+        {
+            send_frames.push_back(controllers_[i]->MakePosition(cmd));
+        }
 
         for (auto &pair : responses_)
             pair.second = false;
