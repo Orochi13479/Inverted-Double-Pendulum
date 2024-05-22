@@ -73,6 +73,8 @@ private:
     std::vector<int> time_intervals_;
     size_t index_;
     int interval_index_;
+
+    // RT Additions
     std::map<int, bool> responses_;
     int total_count_;
     double total_hz_;
@@ -86,10 +88,8 @@ public:
                        std::shared_ptr<mjbots::moteus::Transport> transport)
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
     {
-        cmd_.kp_scale = 5.0;
-        cmd_.kd_scale = 1.5;
-        cmd_.feedforward_torque = 0.0;
-        cmd_.velocity_limit = 0.1; // Hertz revolutions / s
+        cmd_.kp_scale = 1.0;
+        cmd_.kd_scale = 1.0;
 
         // Measuring Frequency
         int id = 0;
@@ -97,23 +97,10 @@ public:
             responses_[id++] = false;
     }
 
-    // Function to calculate average loop duration
-    long long GetAverageLoopDuration() const
-    {
-        long long total_duration = 0;
-        for (auto duration : loop_durations_)
-        {
-            total_duration += duration;
-        }
-        return loop_durations_.empty() ? 0 : static_cast<long long unsigned int>(total_duration) / loop_durations_.size();
-    }
-
 protected:
     // Main loop function that executes cyclically
     bool Loop(int64_t /*now*/) noexcept final
     {
-        auto start_time = std::chrono::steady_clock::now(); // Start timing
-
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
@@ -130,19 +117,11 @@ protected:
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
+        for (auto &pair : responses_)
+            pair.second = false;
+
         // Perform the cycle with error handling
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
-
-        auto end_time = std::chrono::steady_clock::now(); // End timing
-        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-        loop_durations_.push_back(duration.count());
-
-        interval_index_++;
-        if (interval_index_ >= time_intervals_[index_])
-        {
-            interval_index_ = 0;
-            index_++;
-        }
 
         // Measuring frequency below
         for (const auto &frame : receive_frames)
@@ -161,7 +140,7 @@ protected:
         const auto now = GetNow();
         if (now > status_time)
         {
-            printf("                 %6.1fHz  rx_count=%2d   \r",
+            printf("             %6.1fHz  rx_count=%2d   \r",
                    hz_count / kStatusPeriodS, count);
             fflush(stdout);
 
@@ -170,6 +149,13 @@ protected:
 
             hz_count = 0;
             status_time += kStatusPeriodS;
+        }
+
+        interval_index_++;
+        if (interval_index_ >= time_intervals_[index_])
+        {
+            interval_index_ = 0;
+            index_++;
         }
 
         ::usleep(10);
@@ -194,7 +180,7 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 100'000;  // Target Time in ns
+    config.period_ns = 150'000;  // Target Time in ns
     config.SetFifoScheduler(98); // Priority 0-100
 
     // Set up controllers and transport
@@ -295,13 +281,8 @@ int main(int argc, char **argv)
     }
 
     // Calculate the average loop duration from the motor control thread
-    auto loopDuration = motor_thread->GetAverageLoopDuration();
-
     std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
     std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
-
-    std::cout << "Average Loop Duration: " << loopDuration << "ns" << std::endl;
-    std::cout << "Average Loop Frequency: " << 1 / (loopDuration / 1e9) << "Hz" << std::endl;
 
     // Output the average speed of the motor control thread
     std::cout << "\nAverage speed: " << motor_thread->GetAverageHz() << " Hz\n";
