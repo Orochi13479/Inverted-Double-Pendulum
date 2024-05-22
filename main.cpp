@@ -69,7 +69,6 @@ private:
     std::shared_ptr<mjbots::moteus::Transport> transport_;
     mjbots::moteus::PositionMode::Command cmd_;
     std::vector<std::vector<double>> torque_commands_;
-    std::vector<long long> loop_durations_;
     std::vector<int> time_intervals_;
     size_t index_;
     int interval_index_;
