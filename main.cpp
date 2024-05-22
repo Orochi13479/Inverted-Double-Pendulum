@@ -125,7 +125,7 @@ protected:
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
-        if (index_ >= time_intervals_.size())
+        if (index_ >= torque_commands_.size())
         {
             // Stop the thread if all torque commands have been sent
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
