@@ -23,10 +23,11 @@ void signalHandler(int signal)
 // Arrays to store data for each column
 std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
 
-// Function to read CSV data into arrays
-void readCSV(const std::string &filepath)
+// Function to read CSV data
+std::vector<std::vector<float>> readCSV(const std::string &filename)
 {
-    // Open the file
+    std::vector<std::vector<float>> data;
+    std::string filepath = "../trajGen/" + filename;
     std::ifstream file(filepath);
 
     if (!file.is_open())
@@ -34,30 +35,21 @@ void readCSV(const std::string &filepath)
         throw std::runtime_error("Error: Unable to open file " + filepath);
     }
 
-    // Skip the first line (column headings)
     std::string line;
-    std::getline(file, line);
+    std::getline(file, line); // Skip the first line (column headings)
 
-    // Read and process the CSV data
     while (std::getline(file, line))
     {
         std::istringstream iss(line);
-        float t, q1_val, q1_dot_val, q1_dot_dot_val, tau1_val, q2_val, q2_dot_val, q2_dot_dot_val, tau2_val;
+        std::vector<float> row(9);
         char comma;
-        if (iss >> t >> comma >> q1_val >> comma >> q1_dot_val >> comma >> q2_val >> comma >> q2_dot_val)
+        if (iss >> row[0] >> comma >> row[1] >> comma >> row[2] >> comma >> row[3] >> comma >> row[4] >> comma >> row[5] >> comma >> row[6] >> comma >> row[7] >> comma >> row[8])
         {
-            // Add data to arrays
-            timestamp.push_back(t);
-            q1.push_back(q1_val);
-            q1_dot.push_back(q1_dot_val);
-            q1_dot_dot.push_back(q1_dot_dot_val);
-            tau1.push_back(tau1_val);
-            q2.push_back(q2_val);
-            q2_dot.push_back(q2_dot_val);
-            q2_dot_dot.push_back(q2_dot_dot_val);
-            tau2.push_back(tau2_val);
+            data.push_back(row);
         }
     }
+
+    return data;
 }
 
 // A simple way to get the current time accurately as a double.
@@ -198,7 +190,7 @@ int main(int argc, char **argv)
     // Specify the full path to the CSV file
     std::string filename = "../trajGen/RTTestTraj.csv";
 
-    readCSV(filename);
+    std::vector<std::vector<float>> data = readCSV(filename);
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
@@ -239,18 +231,21 @@ int main(int argc, char **argv)
         c->SetStop();
     }
 
+    // Extract torque commands, disregarding the first command
     std::vector<std::vector<double>> torque_commands;
-    for (size_t i = 0; i < torque_commands.size(); ++i)
+    for (size_t i = 1; i < data.size(); ++i)
     {
-        torque_commands.push_back({tau1[i], tau2[i]});
+        torque_commands.push_back({data[i][4], data[i][8]});
     }
 
     // Calculate time intervals as differences between timestamps
     std::vector<int> time_intervals;
-    for (size_t i = 1; i < timestamp.size(); ++i)
+    for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back(timestamp[i] - timestamp[i - 1]);
+        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
     }
+    std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
+    std::cout << "Torquesize " << torque_commands.size() << std::endl;
 
     // Printing torque commands
     std::cout << "Torque Commands:\n";
@@ -259,7 +254,7 @@ int main(int argc, char **argv)
         std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
     }
 
-    // Print time_intervals
+    // Print time intervals
     std::cout << "\nTime Intervals (in milliseconds):\n";
     for (size_t i = 0; i < time_intervals.size(); ++i)
     {
@@ -267,6 +262,7 @@ int main(int argc, char **argv)
     }
 
     // Prompt the user to press enter
+    std::cout << "CAREFULLY CHECK TORQUE VALUES";
     std::cout << "Press Enter to start the real-time loop...";
     std::cin.get();
 

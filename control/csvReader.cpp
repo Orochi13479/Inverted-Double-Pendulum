@@ -3,17 +3,13 @@
 #include <sstream>
 #include <vector>
 #include <string>
-#include <tuple>
 #include <stdexcept>
 
-// Arrays to store data for each column
-std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
-
-void readCSV(const std::string &filename)
+// Function to read CSV data
+std::vector<std::vector<float>> readCSV(const std::string &filename)
 {
+    std::vector<std::vector<float>> data;
     std::string filepath = "../trajGen/" + filename;
-
-    // Open the file
     std::ifstream file(filepath);
 
     if (!file.is_open())
@@ -21,57 +17,70 @@ void readCSV(const std::string &filename)
         throw std::runtime_error("Error: Unable to open file " + filepath);
     }
 
-    // Skip the first line (column headings)
     std::string line;
-    std::getline(file, line);
+    std::getline(file, line); // Skip the first line (column headings)
 
-    // Read and process the CSV data
     while (std::getline(file, line))
     {
         std::istringstream iss(line);
-        float t, q1_val, q1_dot_val, q1_dot_dot_val, tau1_val, q2_val, q2_dot_val, q2_dot_dot_val, tau2_val;
+        std::vector<float> row(9);
         char comma;
-        if (iss >> t >> comma >> q1_val >> comma >> q1_dot_val >> comma >> q2_val >> comma >> q2_dot_val)
+        if (iss >> row[0] >> comma >> row[1] >> comma >> row[2] >> comma >> row[3] >> comma >> row[4] >> comma >> row[5] >> comma >> row[6] >> comma >> row[7] >> comma >> row[8])
         {
-            // Add data to arrays
-            timestamp.push_back(t);
-            q1.push_back(q1_val);
-            q1_dot.push_back(q1_dot_val);
-            q1_dot_dot.push_back(q1_dot_dot_val);
-            tau1.push_back(tau1_val);
-            q2.push_back(q2_val);
-            q2_dot.push_back(q2_dot_val);
-            q2_dot_dot.push_back(q2_dot_dot_val);
-            tau2.push_back(tau2_val);
+            data.push_back(row);
         }
     }
-    std::cout << "Using for loop:" << std::endl;
-    for (size_t i = 0; i < tau1.size(); ++i) {
-        std::cout << tau1[i] << " ";
-    }
-    std::cout << std::endl;
+
+    return data;
 }
 
 int main()
 {
-    // Specify the full path to the CSV file
-    std::string filename = "trajectory_data.csv";
-
-    readCSV(filename);
+    std::string filename = "RTTestTraj.csv";
+    std::vector<std::vector<float>> data = readCSV(filename);
 
     // Print the data (for testing)
-    for (std::size_t i = 0; i < timestamp.size(); ++i)
+    for (const auto &row : data)
     {
-        std::cout << "timestamp: " << timestamp[i] << " ";
-        std::cout << "pos1: " << q1[i] << " ";
-        std::cout << "velocity1: " << q1_dot[i] << " ";
-        std::cout << "acc1: " << q1_dot_dot[i] << " ";
-        std::cout << "torque1: " << tau1[i] << " ";
-        std::cout << "pos2: " << q2[i] << " ";
-        std::cout << "velocity2: " << q2_dot[i] << " ";
-        std::cout << "acc2: " << q2_dot_dot[i] << " ";
-        std::cout << "torque2: " << tau2[i] << " ";
-        std::cout << std::endl;
+        std::cout << "timestamp: " << row[0] << " "
+                  << "pos1: " << row[1] << " "
+                  << "velocity1: " << row[2] << " "
+                  << "acc1: " << row[3] << " "
+                  << "torque1: " << row[4] << " "
+                  << "pos2: " << row[5] << " "
+                  << "velocity2: " << row[6] << " "
+                  << "acc2: " << row[7] << " "
+                  << "torque2: " << row[8] << std::endl;
+    }
+
+    // Extract torque commands, disregarding the first command
+    std::vector<std::vector<double>> torque_commands;
+    for (size_t i = 1; i < data.size(); ++i)
+    {
+        torque_commands.push_back({data[i][4], data[i][8]});
+    }
+
+    // Calculate time intervals as differences between timestamps
+    std::vector<int> time_intervals;
+    for (size_t i = 1; i < data.size(); ++i) // Start from the second element
+    {
+        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
+    }
+    std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
+    std::cout << "Torquesize " << torque_commands.size() << std::endl;
+
+    // Printing torque commands
+    std::cout << "Torque Commands:\n";
+    for (size_t i = 0; i < torque_commands.size(); ++i)
+    {
+        std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
+    }
+
+    // Print time intervals
+    std::cout << "\nTime Intervals (in milliseconds):\n";
+    for (size_t i = 0; i < time_intervals.size(); ++i)
+    {
+        std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
     }
 
     return 0;
