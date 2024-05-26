@@ -106,9 +106,24 @@ double revolutionsToDegrees(double revolutions) {
 
 double torque_error;
 
-void TorqueFeedback(double desired_torque, double actual_torque, double kp, double kd) {
-    torque_error = actual_torque - desired_torque;
-}
+float ControlSignal(float desired_torque, float current_torque) {
+        auto current_time = std::chrono::steady_clock::now();
+        std::chrono::duration<float> elapsed_time = current_time - previous_time_;
+        float delta_time = elapsed_time.count();
+
+        float torque_error = desired_torque - current_torque;
+        float derivative = (delta_time > 0) ? torque_error / delta_time : 0.0;
+
+        float kp_ = 0;
+        float kd_ = 0;
+
+        float control_signal = kp_ * torque_error + kd_ * derivative;
+
+        previous_error_ = torque_error;
+        previous_time_ = current_time;
+
+        return control_signal;
+    }
 
 }  // namespace
 
