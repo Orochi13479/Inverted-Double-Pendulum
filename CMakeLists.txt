@@ -53,8 +53,8 @@ target_link_libraries(csvReaderTest_${PROJECT_NAME} pinocchio::pinocchio moteus:
 add_executable(rnea_${PROJECT_NAME} control/rnea.cpp)
 target_link_libraries(rnea_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
-# add_executable(torqueError_${PROJECT_NAME} control/torqueError.cpp)
-# target_link_libraries(torqueError_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
+add_executable(torqueError_${PROJECT_NAME} control/torqueError.cpp)
+target_link_libraries(torqueError_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
 
 # Driver Executables
 add_executable(manualTorque_${PROJECT_NAME} driver/manualTorque.cpp)
