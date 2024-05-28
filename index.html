@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Data Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>Motor Data Dashboard</h1>
+    <canvas id="torqueChart"></canvas>
+    <canvas id="positionChart"></canvas>
+    <canvas id="speedChart"></canvas>
+    <canvas id="accelerationChart"></canvas>
+
+    <script>
+        var socket = new WebSocket('ws://localhost:3000/ws');
+
+        var torqueChart = new Chart(document.getElementById('torqueChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Torque Motor 1',
+                    data: [],
+                    borderColor: 'red',
+                    fill: false
+                }, {
+                    label: 'Torque Motor 2',
+                    data: [],
+                    borderColor: 'blue',
+                    fill: false
+                }]
+            }
+        });
+
+        var positionChart = new Chart(document.getElementById('positionChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Position Motor 1',
+                    data: [],
+                    borderColor: 'green',
+                    fill: false
+                }, {
+                    label: 'Position Motor 2',
+                    data: [],
+                    borderColor: 'orange',
+                    fill: false
+                }]
+            }
+        });
+
+        var speedChart = new Chart(document.getElementById('speedChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Speed Motor 1',
+                    data: [],
+                    borderColor: 'purple',
+                    fill: false
+                }, {
+                    label: 'Speed Motor 2',
+                    data: [],
+                    borderColor: 'yellow',
+                    fill: false
+                }]
+            }
+        });
+
+        var accelerationChart = new Chart(document.getElementById('accelerationChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Acceleration Motor 1',
+                    data: [],
+                    borderColor: 'cyan',
+                    fill: false
+                }, {
+                    label: 'Acceleration Motor 2',
+                    data: [],
+                    borderColor: 'magenta',
+                    fill: false
+                }]
+            }
+        });
+
+        socket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            var timestamp = new Date(data.timestamp * 1000).toLocaleTimeString();
+
+            torqueChart.data.labels.push(timestamp);
+            torqueChart.data.datasets[0].data.push(data.torque1);
+            torqueChart.data.datasets[1].data.push(data.torque2);
+            torqueChart.update();
+
+            positionChart.data.labels.push(timestamp);
+            positionChart.data.datasets[0].data.push(data.position1);
+            positionChart.data.datasets[1].data.push(data.position2);
+            positionChart.update();
+
+            speedChart.data.labels.push(timestamp);
+            speedChart.data.datasets[0].data.push(data.speed1);
+            speedChart.data.datasets[1].data.push(data.speed2);
+            speedChart.update();
+
+            accelerationChart.data.labels.push(timestamp);
+            accelerationChart.data.datasets[0].data.push(data.acceleration1);
+            accelerationChart.data.datasets[1].data.push(data.acceleration2);
+            accelerationChart.update();
+        };
+    </script>
+</body>
+</html>

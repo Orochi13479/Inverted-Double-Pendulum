@@ -9,27 +9,38 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/mjbots/moteus.git
   GIT_TAG        d37918b4286d8654dff320a250534bb901edfa8f
 )
-
 FetchContent_MakeAvailable(moteus)
 
-include(FetchContent)
 FetchContent_Declare(
   cactus_rt
   GIT_REPOSITORY https://github.com/cactusdynamics/cactus-rt.git
   GIT_TAG        efb41a5f4c59223bded1ad367eb0908ac8e147e2
 )
-
 FetchContent_MakeAvailable(cactus_rt)
+
+FetchContent_Declare(
+  websocketpp
+  GIT_REPOSITORY https://github.com/zaphoyd/websocketpp.git
+  GIT_TAG        1b11fd301531e6df35a6107c1e8665b1e77a2d8e
+)
+FetchContent_MakeAvailable(websocketpp)
 
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/openrobots")
 
-find_package(pinocchio)
+find_package(pinocchio REQUIRED)
+
+# Include directories
+include_directories(${websocketpp_SOURCE_DIR})
 
 # Main Executable
 add_executable(main_${PROJECT_NAME} main.cpp)
 target_link_libraries(main_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread cactus_rt)
 
 setup_cactus_rt_target_options(main_${PROJECT_NAME})
+
+add_executable(mainWebsoc_${PROJECT_NAME} mainWebsoc.cpp)
+target_link_libraries(mainWebsoc_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread cactus_rt)
+target_include_directories(mainWebsoc_${PROJECT_NAME} PRIVATE ${websocketpp_SOURCE_DIR})
 
 
 # Control Executables
