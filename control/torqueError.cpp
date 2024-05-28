@@ -1,15 +1,15 @@
+#include <stdio.h>
+#include <unistd.h>
+
+#include <boost/optional.hpp>
+#include <chrono>
+#include <csignal>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdio.h>
-#include <unistd.h>
-#include <boost/optional.hpp>
-#include <chrono>
-#include <csignal>
-
 
 #include "moteus.h"
 #include "pinocchio/algorithm/joint-configuration.hpp"
@@ -104,26 +104,18 @@ double revolutionsToDegrees(double revolutions) {
     return revolutions * degreesPerRevolution;
 }
 
-double torque_error;
+float torque_error;
 
-float ControlSignal(float desired_torque, float current_torque) {
-        auto current_time = std::chrono::steady_clock::now();
-        std::chrono::duration<float> elapsed_time = current_time - previous_time_;
-        float delta_time = elapsed_time.count();
+float PDControl(float desired_torque, float current_torque, float previous_error, float kp, float kd, float delta_time) {
+    torque_error = desired_torque - current_torque;
+    float derivative = (delta_time > 0) ? (torque_error - previous_error) / delta_time : 0.0;
 
-        float torque_error = desired_torque - current_torque;
-        float derivative = (delta_time > 0) ? torque_error / delta_time : 0.0;
+    float control_signal = kp * torque_error + kd * derivative;
 
-        float kp_ = 0;
-        float kd_ = 0;
+    previous_error = torque_error;
 
-        float control_signal = kp_ * torque_error + kd_ * derivative;
-
-        previous_error_ = torque_error;
-        previous_time_ = current_time;
-
-        return control_signal;
-    }
+    return control_signal;
+}
 
 }  // namespace
 
@@ -217,27 +209,24 @@ int main(int argc, char** argv) {
 
     std::cout << "Press Ctrl+C to Stop Test" << std::endl;
 
+    double kp = 5.0;
+    double kd = 1.5;
+    float prev_error1;
+    float prev_error2;
+    float control_signal1;
+    float control_signal2;
+
     while (!ctrl_c_pressed) {
         // Get current time
         std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
         // Calculate elapsed time
         std::chrono::duration<double> elapsedTime = currentTime - startTime;
+        double deltaTime = elapsedTime.count();
 
         DataPoint currentDataPoint;
         currentDataPoint.timestamp = currentTime;
 
         ::usleep(10);
-
-        send_frames.clear();
-        receive_frames.clear();
-
-        for (size_t i = 0; i < controllers.size(); i++) {
-            cmd.feedforward_torque = torque_command[i];
-            cmd.velocity = velocity_count[i];
-            // cmd.kp_scale = 5.0;
-            // cmd.kd_scale = 1.5;
-            send_frames.push_back(controllers[i]->MakePosition(cmd));
-        }
 
         transport->BlockingCycle(
             &send_frames[0], send_frames.size(),
@@ -265,6 +254,32 @@ int main(int argc, char** argv) {
         torque_command[0] = tau(0);
         torque_command[1] = tau(1);
 
+        double torque_check1 = v1.torque - tau(0);
+        double torque_check2 = v2.torque - tau(1);
+
+        if (torque_check1 < 0 || torque_check1 > 0) {
+            prev_error1 = torque_check1;
+            control_signal1 = PDControl(tau(0), v1.torque, prev_error1, kp, kd, deltaTime);
+            torque_command[0] = tau(0) + control_signal1;
+        }
+
+        if (torque_check2 < 0 || torque_check2 > 0) {
+            prev_error2 = torque_check2;
+            control_signal2 = PDControl(tau(1), v2.torque, prev_error2, kp, kd, deltaTime);
+            torque_command[1] = tau(1) + control_signal2;
+        }
+
+        send_frames.clear();
+        receive_frames.clear();
+
+        for (size_t i = 0; i < controllers.size(); i++) {
+            cmd.feedforward_torque = torque_command[i];
+            cmd.velocity = velocity_count[i];
+            // cmd.kp_scale = 5.0;
+            // cmd.kd_scale = 1.5;
+            send_frames.push_back(controllers[i]->MakePosition(cmd));
+        }
+
         currentDataPoint.position = revolutionsToDegrees(v1.position + v2.position);
         currentDataPoint.torque1 = v1.torque;
         currentDataPoint.torque2 = v2.torque;
@@ -275,11 +290,11 @@ int main(int argc, char** argv) {
 
         status_count++;
         if (status_count > kStatusPeriod) {
-            printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+            printf("MODE: %2d/%2d POSITION IN DEGREES: %6.3f TORQUE: %6.3f/%6.3f VELOCITY: %6.3f/%6.3f CONTROL_SIGNAL: %6.3f/%6.3f\r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                    revolutionsToDegrees(v1.position + v2.position),
                    v1.torque, v2.torque,
-                   v1.temperature, v2.temperature, v1.velocity, v2.velocity);
+                   v1.velocity, v2.velocity, control_signal1, control_signal2);
             fflush(stdout);
 
             status_count = 0;
