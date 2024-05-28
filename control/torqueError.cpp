@@ -228,6 +228,17 @@ int main(int argc, char** argv) {
 
         ::usleep(10);
 
+        send_frames.clear();
+        receive_frames.clear();
+
+        for (size_t i = 0; i < controllers.size(); i++) {
+            cmd.feedforward_torque = torque_command[i];
+            cmd.velocity = velocity_count[i];
+            // cmd.kp_scale = 5.0;
+            // cmd.kd_scale = 1.5;
+            send_frames.push_back(controllers[i]->MakePosition(cmd));
+        }
+
         transport->BlockingCycle(
             &send_frames[0], send_frames.size(),
             &receive_frames);
@@ -267,17 +278,6 @@ int main(int argc, char** argv) {
             prev_error2 = torque_check2;
             control_signal2 = PDControl(tau(1), v2.torque, prev_error2, kp, kd, deltaTime);
             torque_command[1] = tau(1) + control_signal2;
-        }
-
-        send_frames.clear();
-        receive_frames.clear();
-
-        for (size_t i = 0; i < controllers.size(); i++) {
-            cmd.feedforward_torque = torque_command[i];
-            cmd.velocity = velocity_count[i];
-            // cmd.kp_scale = 5.0;
-            // cmd.kd_scale = 1.5;
-            send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 
         currentDataPoint.position = revolutionsToDegrees(v1.position + v2.position);
