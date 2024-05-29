@@ -206,20 +206,19 @@ protected:
                 auto position = maybe_result->values.position;
                 auto velocity = maybe_result->values.velocity;
                 auto torque = maybe_result->values.torque;
-                auto q_current = maybe_result->values.q_current;
-                auto d_current = maybe_result->values.d_current;
-                auto abs_position = maybe_result->values.abs_position;
                 auto motor_temperature = maybe_result->values.motor_temperature;
                 auto trajectory_complete = maybe_result->values.trajectory_complete;
                 auto temperature = maybe_result->values.temperature;
                 auto fault = maybe_result->values.fault;
-                oss << ",motor" << i + 1 << "_torque:" << torque_commands_[index_][i];
+               
+                oss << ",motor" << i + 1 << "_mode:" << static_cast<int>(mode);
                 oss << ",motor" << i + 1 << "_position:" << position;
-            }
-            else
-            {
-                oss << ",motor" << i + 1 << "_torque:" << torque_commands_[index_][i];
-                oss << ",motor" << i + 1 << "_position:" << "N/A";
+                oss << ",motor" << i + 1 << "_velocity:" << velocity;
+                oss << ",motor" << i + 1 << "_torque:" << torque;
+                oss << ",motor" << i + 1 << "_motor_temperature:" << motor_temperature;
+                oss << ",motor" << i + 1 << "_trajectory_complete:" << trajectory_complete;
+                oss << ",motor" << i + 1 << "_temperature:" << temperature;
+                oss << ",motor" << i + 1 << "_fault:" << static_cast<int>(fault);
             }
         }
         std::string data = oss.str();

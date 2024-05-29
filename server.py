@@ -6,6 +6,7 @@ from aiohttp import web
 async def handle_websocket(request):
     ws = web.WebSocketResponse()
     await ws.prepare(request)
+    request.app["websocket"] = ws
 
     async for msg in ws:
         if msg.type == web.WSMsgType.text:
@@ -19,14 +20,16 @@ async def send_data(app):
         # Simulate data from the C++ application
         data = {
             "timestamp": asyncio.get_event_loop().time(),
-            "torque1": 0.0,  # Replace with actual data
-            "torque2": 0.0,  # Replace with actual data
-            "position1": 0.0,  # Replace with actual data
-            "position2": 0.0,  # Replace with actual data
-            "speed1": 0.0,  # Replace with actual data
-            "speed2": 0.0,  # Replace with actual data
-            "acceleration1": 0.0,  # Replace with actual data
-            "acceleration2": 0.0,  # Replace with actual data
+            "motor1_torque": 0.0,  # Replace with actual data
+            "motor1_position": 0.0,  # Replace with actual data
+            "motor1_velocity": 0.0,  # Replace with actual data
+            "motor1_temperature": 0.0,  # Replace with actual data
+            "motor1_fault": False,  # Replace with actual data
+            "motor2_torque": 0.0,  # Replace with actual data
+            "motor2_position": 0.0,  # Replace with actual data
+            "motor2_velocity": 0.0,  # Replace with actual data
+            "motor2_temperature": 0.0,  # Replace with actual data
+            "motor2_fault": False,  # Replace with actual data
         }
         if app["websocket"]:
             await app["websocket"].send_str(json.dumps(data))
