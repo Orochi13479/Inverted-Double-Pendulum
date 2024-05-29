@@ -251,8 +251,8 @@ int main(int argc, char** argv) {
         const auto& v1 = *maybe_servo1;
         const auto& v2 = *maybe_servo2;
 
-        torque_command[0] = tau(0);
-        torque_command[1] = tau(1);
+        // torque_command[0] = tau(0);
+        // torque_command[1] = tau(1);
 
         double torque_check1 = tau(0) - v1.torque;
         double torque_check2 = tau(1) - v2.torque;
