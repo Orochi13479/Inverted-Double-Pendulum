@@ -3,95 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inverted Double Pendulum Dashboard</title>
+    <title>Motor Control Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 600px;
+        }
+        #charts {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .chart-container {
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Inverted Double Pendulum Dashboard</h1>
-    <canvas id="torqueChart" width="400" height="200"></canvas>
-    <canvas id="positionChart" width="400" height="200"></canvas>
-    <canvas id="velocityChart" width="400" height="200"></canvas>
-    <canvas id="temperatureChart" width="400" height="200"></canvas>
-
+    <h1>Motor Control Dashboard</h1>
+    <div id="charts">
+        <div class="chart-container">
+            <canvas id="positionChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="velocityChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="torqueChart"></canvas>
+        </div>
+    </div>
     <script>
-        const torqueCtx = document.getElementById('torqueChart').getContext('2d');
-        const positionCtx = document.getElementById('positionChart').getContext('2d');
-        const velocityCtx = document.getElementById('velocityChart').getContext('2d');
-        const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+        // Setup WebSocket connection
+        const socket = new WebSocket("ws://localhost:9003");
 
-        const createChart = (ctx, label1, label2, borderColor1, borderColor2) => {
-            return new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: label1,
-                        data: [],
-                        borderColor: borderColor1,
-                        borderWidth: 1,
+        // Data arrays
+        const labels = [];
+        const motor1Data = {
+            position: [],
+            velocity: [],
+            torque: []
+        };
+        const motor2Data = {
+            position: [],
+            velocity: [],
+            torque: []
+        };
+
+        // Chart configurations
+        const config = (label, motor1Data, motor2Data) => ({
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Motor 1',
+                        data: motor1Data,
+                        borderColor: 'rgb(255, 99, 132)',
                         fill: false
-                    }, {
-                        label: label2,
-                        data: [],
-                        borderColor: borderColor2,
-                        borderWidth: 1,
+                    },
+                    {
+                        label: 'Motor 2',
+                        data: motor2Data,
+                        borderColor: 'rgb(54, 162, 235)',
                         fill: false
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'linear',
-                            position: 'bottom'
-                        }
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
                     }
                 }
-            });
-        };
+            }
+        });
 
-        const torqueChart = createChart(torqueCtx, 'Motor 1 Torque', 'Motor 2 Torque', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)');
-        const positionChart = createChart(positionCtx, 'Motor 1 Position', 'Motor 2 Position', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)');
-        const velocityChart = createChart(velocityCtx, 'Motor 1 Velocity', 'Motor 2 Velocity', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)');
-        const temperatureChart = createChart(temperatureCtx, 'Motor 1 Temperature', 'Motor 2 Temperature', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)');
+        // Initialize charts
+        const positionCtx = document.getElementById('positionChart').getContext('2d');
+        const velocityCtx = document.getElementById('velocityChart').getContext('2d');
+        const torqueCtx = document.getElementById('torqueChart').getContext('2d');
 
-        const ws = new WebSocket('ws://localhost:3000/ws');
+        const positionChart = new Chart(positionCtx, config('Position', motor1Data.position, motor2Data.position));
+        const velocityChart = new Chart(velocityCtx, config('Velocity', motor1Data.velocity, motor2Data.velocity));
+        const torqueChart = new Chart(torqueCtx, config('Torque', motor1Data.torque, motor2Data.torque));
 
-        ws.onmessage = function(event) {
+        // WebSocket message handler
+        socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             const timestamp = data.timestamp;
-            const motor1Torque = data.motor1_torque;
-            const motor2Torque = data.motor2_torque;
-            const motor1Position = data.motor1_position;
-            const motor2Position = data.motor2_position;
-            const motor1Velocity = data.motor1_velocity;
-            const motor2Velocity = data.motor2_velocity;
-            const motor1Temperature = data.motor1_temperature;
-            const motor2Temperature = data.motor2_temperature;
 
-            torqueChart.data.labels.push(timestamp);
-            torqueChart.data.datasets[0].data.push(motor1Torque);
-            torqueChart.data.datasets[1].data.push(motor2Torque);
+            labels.push(timestamp);
 
-            positionChart.data.labels.push(timestamp);
-            positionChart.data.datasets[0].data.push(motor1Position);
-            positionChart.data.datasets[1].data.push(motor2Position);
+            motor1Data.position.push(data.motor1_position);
+            motor1Data.velocity.push(data.motor1_velocity);
+            motor1Data.torque.push(data.motor1_torque);
 
-            velocityChart.data.labels.push(timestamp);
-            velocityChart.data.datasets[0].data.push(motor1Velocity);
-            velocityChart.data.datasets[1].data.push(motor2Velocity);
+            motor2Data.position.push(data.motor2_position);
+            motor2Data.velocity.push(data.motor2_velocity);
+            motor2Data.torque.push(data.motor2_torque);
 
-            temperatureChart.data.labels.push(timestamp);
-            temperatureChart.data.datasets[0].data.push(motor1Temperature);
-            temperatureChart.data.datasets[1].data.push(motor2Temperature);
-
-            torqueChart.update();
             positionChart.update();
             velocityChart.update();
-            temperatureChart.update();
-        };
-
-        ws.onclose = function() {
-            console.log('WebSocket connection closed');
+            torqueChart.update();
         };
     </script>
 </body>

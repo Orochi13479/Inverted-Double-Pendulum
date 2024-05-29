@@ -1,51 +1,69 @@
 import asyncio
-import json
+import websockets
+import signal
 from aiohttp import web
 
-
-async def handle_websocket(request):
-    ws = web.WebSocketResponse()
-    await ws.prepare(request)
-    request.app["websocket"] = ws
-
-    async for msg in ws:
-        if msg.type == web.WSMsgType.text:
-            await ws.send_str(msg.data)
-
-    return ws
+# Global flag for indicating if Ctrl+C was pressed
+ctrl_c_pressed = False
 
 
-async def send_data(app):
-    while True:
-        # Simulate data from the C++ application
-        data = {
-            "timestamp": asyncio.get_event_loop().time(),
-            "motor1_torque": 0.0,  # Replace with actual data
-            "motor1_position": 0.0,  # Replace with actual data
-            "motor1_velocity": 0.0,  # Replace with actual data
-            "motor1_temperature": 0.0,  # Replace with actual data
-            "motor1_fault": False,  # Replace with actual data
-            "motor2_torque": 0.0,  # Replace with actual data
-            "motor2_position": 0.0,  # Replace with actual data
-            "motor2_velocity": 0.0,  # Replace with actual data
-            "motor2_temperature": 0.0,  # Replace with actual data
-            "motor2_fault": False,  # Replace with actual data
-        }
-        if app["websocket"]:
-            await app["websocket"].send_str(json.dumps(data))
-        await asyncio.sleep(0.1)  # Adjust the frequency as needed
+# Signal handler function
+def signal_handler(signal, frame):
+    global ctrl_c_pressed
+    ctrl_c_pressed = True
+    print("\nCtrl+C pressed. Shutting down...")
 
 
-async def init_app():
-    app = web.Application()
-    app["websocket"] = None
-    app.router.add_get("/ws", handle_websocket)
-    app.on_startup.append(start_background_tasks)
-    return app
+signal.signal(signal.SIGINT, signal_handler)
+
+# WebSocket handler for forwarding data to clients
+clients = set()
 
 
-async def start_background_tasks(app):
-    app["send_data"] = asyncio.create_task(send_data(app))
+async def websocket_handler(websocket, path):
+    clients.add(websocket)
+    try:
+        async for message in websocket:
+            pass
+    finally:
+        clients.remove(websocket)
 
 
-web.run_app(init_app(), port=3000)
+# Function to broadcast data to all connected clients
+async def broadcast_data(data):
+    if clients:
+        await asyncio.wait([client.send(data) for client in clients])
+
+
+# Function to receive data from the C++ WebSocket server and forward it
+async def forward_data():
+    uri = "ws://localhost:9002"  # Assuming C++ server is running on localhost:9002
+    async with websockets.connect(uri) as websocket:
+        async for message in websocket:
+            await broadcast_data(message)
+
+
+# HTTP handler to serve the HTML file
+async def index(request):
+    return web.FileResponse("index.html")
+
+
+# Setup the HTTP server
+app = web.Application()
+app.router.add_get("/", index)
+
+
+async def main():
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "localhost", 8080)
+    await site.start()
+
+    websocket_server = websockets.serve(
+        websocket_handler, "localhost", 9003
+    )  # Clients connect to this server
+
+    await asyncio.gather(websocket_server, forward_data())
+
+
+asyncio.run(main())
