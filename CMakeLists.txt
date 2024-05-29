@@ -29,10 +29,10 @@ set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/openrobots")
 
 find_package(pinocchio REQUIRED)
 
-# Include directories
+# Include Directories
 include_directories(${websocketpp_SOURCE_DIR})
 
-# Main Executable
+# Main Executables
 add_executable(main_${PROJECT_NAME} main.cpp)
 target_link_libraries(main_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread cactus_rt)
 
@@ -41,6 +41,8 @@ setup_cactus_rt_target_options(main_${PROJECT_NAME})
 add_executable(mainWebsoc_${PROJECT_NAME} mainWebsoc.cpp)
 target_link_libraries(mainWebsoc_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread cactus_rt)
 target_include_directories(mainWebsoc_${PROJECT_NAME} PRIVATE ${websocketpp_SOURCE_DIR})
+
+setup_cactus_rt_target_options(mainWebsoc_${PROJECT_NAME})
 
 
 # Control Executables
@@ -55,6 +57,7 @@ target_link_libraries(rnea_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthr
 
 add_executable(torqueError_${PROJECT_NAME} control/torqueError.cpp)
 target_link_libraries(torqueError_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread)
+
 
 # Driver Executables
 add_executable(manualTorque_${PROJECT_NAME} driver/manualTorque.cpp)

@@ -1,128 +1,392 @@
+#include <cactus_rt/rt.h>
+#include "moteus.h"
+
+#include <vector>
+#include <memory>
+#include <iostream>
+#include <chrono>
+#include <signal.h>
+#include <algorithm>
+#include <map>
+#include <string>
+#include <vector>
+#include <thread>
+
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
-#include <websocketpp/client.hpp>
 
-#include <iostream>
-#include <thread>
-#include <chrono>
+// Global flag for indicating if Ctrl+C was pressed
+volatile sig_atomic_t ctrl_c_pressed = 0;
 
 typedef websocketpp::server<websocketpp::config::asio> server;
-typedef websocketpp::client<websocketpp::config::asio> client;
 
-// Define a custom handler for the server
-class websocket_server
+server ws_server;
+std::set<websocketpp::connection_hdl, std::owner_less<websocketpp::connection_hdl>> ws_connections;
+
+// Signal handler function
+void signalHandler(int signal)
 {
-public:
-    websocket_server()
-    {
-        // Initialize the server
-        m_server.init_asio();
-
-        // Set the open handler
-        m_server.set_open_handler(bind(&websocket_server::on_open, this, std::placeholders::_1));
-        // Set the message handler
-        m_server.set_message_handler(bind(&websocket_server::on_message, this, std::placeholders::_1, std::placeholders::_2));
-    }
-
-    void on_open(websocketpp::connection_hdl hdl)
-    {
-        std::cout << "Server: Connection opened." << std::endl;
-        m_hdl = hdl;
-    }
-
-    void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg)
-    {
-        std::cout << "Server: Received message: " << msg->get_payload() << std::endl;
-        m_server.send(hdl, msg->get_payload(), msg->get_opcode());
-    }
-
-    void run(uint16_t port)
-    {
-        // Listen on the specified port
-        m_server.listen(port);
-        // Start accepting connections
-        m_server.start_accept();
-        // Start the ASIO io_service run loop
-        m_server.run();
-    }
-
-private:
-    server m_server;
-    websocketpp::connection_hdl m_hdl;
-};
-
-void run_server()
-{
-    websocket_server server_instance;
-    server_instance.run(9002);
+    ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
 }
 
-// Define a custom handler for the client
-class websocket_client
+// Arrays to store data for each column
+std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
+
+// Function to read CSV data
+std::vector<std::vector<float>> readCSV(const std::string &filename)
 {
-public:
-    websocket_client()
-    {
-        // Initialize the client
-        m_client.init_asio();
+    std::vector<std::vector<float>> data;
+    std::string filepath = "../trajGen/" + filename;
+    std::ifstream file(filepath);
 
-        // Set the open handler
-        m_client.set_open_handler(bind(&websocket_client::on_open, this, std::placeholders::_1));
-        // Set the message handler
-        m_client.set_message_handler(bind(&websocket_client::on_message, this, std::placeholders::_1, std::placeholders::_2));
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Error: Unable to open file " + filepath);
     }
 
-    void on_open(websocketpp::connection_hdl hdl)
-    {
-        std::cout << "Client: Connection opened." << std::endl;
-        m_hdl = hdl;
-        m_client.send(hdl, "Hello, WebSocket++!", websocketpp::frame::opcode::text);
-    }
+    std::string line;
+    std::getline(file, line); // Skip the first line (column headings)
 
-    void on_message(websocketpp::connection_hdl hdl, client::message_ptr msg)
+    while (std::getline(file, line))
     {
-        std::cout << "Client: Received message: " << msg->get_payload() << std::endl;
-    }
-
-    void run(const std::string &uri)
-    {
-        websocketpp::lib::error_code ec;
-        client::connection_ptr con = m_client.get_connection(uri, ec);
-
-        if (ec)
+        std::istringstream iss(line);
+        std::vector<float> row(9);
+        char comma;
+        if (iss >> row[0] >> comma >> row[1] >> comma >> row[2] >> comma >> row[3] >> comma >> row[4] >> comma >> row[5] >> comma >> row[6] >> comma >> row[7] >> comma >> row[8])
         {
-            std::cout << "Client: Could not create connection: " << ec.message() << std::endl;
-            return;
+            data.push_back(row);
+        }
+    }
+
+    return data;
+}
+
+// A simple way to get the current time accurately as a double.
+static double GetNow()
+{
+    struct timespec ts = {};
+    ::clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+    return static_cast<double>(ts.tv_sec) +
+           static_cast<double>(ts.tv_nsec) / 1e9;
+}
+
+void broadcastData(const std::string &data)
+{
+    for (auto hdl : ws_connections)
+    {
+        ws_server.send(hdl, data, websocketpp::frame::opcode::text);
+    }
+}
+
+void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg)
+{
+    // Handle incoming messages if needed
+}
+
+void initWebSocket()
+{
+    ws_server.init_asio();
+
+    ws_server.set_message_handler(&on_message);
+    ws_server.set_open_handler([](websocketpp::connection_hdl hdl)
+                               { ws_connections.insert(hdl); });
+    ws_server.set_close_handler([](websocketpp::connection_hdl hdl)
+                                { ws_connections.erase(hdl); });
+
+    ws_server.listen(9002);
+    ws_server.start_accept();
+
+    std::thread([]()
+                { ws_server.run(); })
+        .detach();
+}
+
+// Class for controlling motors in a cyclic thread
+class MotorControlThread : public cactus_rt::CyclicThread
+{
+private:
+    std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers_;
+    std::shared_ptr<mjbots::moteus::Transport> transport_;
+    mjbots::moteus::PositionMode::Command cmd_;
+    std::vector<std::vector<double>> torque_commands_;
+    std::vector<int> time_intervals_;
+    size_t index_;
+    int interval_index_;
+
+    // RT Additions
+    std::map<int, bool> responses_;
+    int total_count_;
+    double total_hz_;
+
+public:
+    // Constructor
+    MotorControlThread(const char *name, cactus_rt::CyclicThreadConfig config,
+                       std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers,
+                       std::vector<std::vector<double>> torque_commands,
+                       std::vector<int> time_intervals,
+                       std::shared_ptr<mjbots::moteus::Transport> transport)
+        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
+    {
+        cmd_.kp_scale = 1.0;
+        cmd_.kd_scale = 1.0;
+
+        // Measuring Frequency
+        int id = 0;
+        for (const auto &controller : controllers_)
+            responses_[id++] = false;
+    }
+
+protected:
+    // Main loop function that executes cyclically
+    bool Loop(int64_t /*now*/) noexcept final
+    {
+        // Start time for profiling the entire loop
+        auto loop_start_time = std::chrono::high_resolution_clock::now();
+
+        // Section 1: Initialization
+        auto section_start_time = std::chrono::high_resolution_clock::now();
+
+        std::vector<mjbots::moteus::CanFdFrame> send_frames;
+        std::vector<mjbots::moteus::CanFdFrame> receive_frames;
+
+        if (index_ >= torque_commands_.size())
+        {
+            std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
+            return true;
         }
 
-        m_client.connect(con);
-        m_client.run();
+        for (size_t i = 0; i < controllers_.size(); i++)
+        {
+            cmd_.feedforward_torque = torque_commands_[index_][i];
+            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+        }
+
+        for (auto &pair : responses_)
+            pair.second = false;
+
+        // Section 1 end time and duration
+        auto section_end_time = std::chrono::high_resolution_clock::now();
+        auto section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
+        std::cout << "Section 1 (Initialization) duration: " << section_duration << " microseconds\n";
+
+        // Section 2: Transport Cycle
+        section_start_time = std::chrono::high_resolution_clock::now();
+
+        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
+
+        section_end_time = std::chrono::high_resolution_clock::now();
+        section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
+        std::cout << "Section 2 (Transport Cycle) duration: " << section_duration << " microseconds\n";
+
+        // Section 3: Response Handling and Frequency Measurement
+        section_start_time = std::chrono::high_resolution_clock::now();
+
+        for (const auto &frame : receive_frames)
+            responses_[frame.source] = true;
+
+        const int count = std::count_if(responses_.begin(), responses_.end(),
+                                        [](const auto &pair)
+                                        { return pair.second; });
+
+        constexpr double kStatusPeriodS = 0.1;
+        static double status_time = GetNow() + kStatusPeriodS;
+        static int hz_count = 0;
+
+        hz_count++;
+
+        const auto now = GetNow();
+        if (now > status_time)
+        {
+            printf("             %6.1fHz  rx_count=%2d   \r",
+                   hz_count / kStatusPeriodS, count);
+            fflush(stdout);
+
+            total_count_++;
+            total_hz_ += (hz_count / kStatusPeriodS);
+
+            hz_count = 0;
+            status_time += kStatusPeriodS;
+        }
+
+        section_end_time = std::chrono::high_resolution_clock::now();
+        section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
+        std::cout << "Section 3 (Response Handling and Frequency Measurement) duration: " << section_duration << " microseconds\n";
+
+        // Section 4: Time Interval Handling and Sleeping
+        section_start_time = std::chrono::high_resolution_clock::now();
+
+        interval_index_++;
+        if (interval_index_ >= time_intervals_[index_])
+        {
+            interval_index_ = 0;
+            index_++;
+        }
+
+        std::ostringstream oss;
+        oss << "timestamp:" << index_;
+        for (size_t i = 0; i < controllers_.size(); ++i)
+        {
+            oss << ",motor" << i + 1 << "_torque:" << torque_commands_[index_][i];
+            // Add other data as needed
+        }
+        std::string data = oss.str();
+
+        // Broadcast data via WebSocket
+        broadcastData(data);
+
+        ::usleep(10);
+
+        section_end_time = std::chrono::high_resolution_clock::now();
+        section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
+        std::cout << "Section 4 (Time Interval Handling and Sleeping) duration: " << section_duration << " microseconds\n";
+
+        // End time for profiling the entire loop
+        auto loop_end_time = std::chrono::high_resolution_clock::now();
+        auto loop_duration = std::chrono::duration_cast<std::chrono::microseconds>(loop_end_time - loop_start_time).count();
+
+        // Print the duration of the entire loop iteration
+        std::cout << "Total loop duration: " << loop_duration << " microseconds\n";
+
+        // Calculate and print the average loop duration every 100 iterations
+        static int loop_count = 0;
+        static int64_t total_loop_duration = 0;
+        loop_count++;
+        total_loop_duration += loop_duration;
+
+        if (loop_count % 100 == 0)
+        {
+            std::cout << "Average loop duration: " << total_loop_duration / 100 << " microseconds\n";
+            total_loop_duration = 0;
+        }
+
+        return false;
     }
 
-private:
-    client m_client;
-    websocketpp::connection_hdl m_hdl;
+public:
+    // Function to calculate average frequency
+    double GetAverageHz() const { return total_hz_ / total_count_; }
 };
 
-void run_client()
+// Main function
+int main(int argc, char **argv)
 {
-    websocket_client client_instance;
-    client_instance.run("ws://localhost:9002");
-}
+    // Signal handling setup
+    std::signal(SIGINT, signalHandler);
+    // Specify the full path to the CSV file
+    std::string filename = "../trajGen/trajectory_data.csv";
 
-int main()
-{
-    // Start the server in a separate thread
-    std::thread server_thread(run_server);
+    std::vector<std::vector<float>> data = readCSV(filename);
 
-    // Give the server some time to start
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    initWebSocket();
 
-    // Start the client
-    run_client();
+    // Real-time thread configuration
+    cactus_rt::CyclicThreadConfig config;
+    config.period_ns = 150'000;  // Target Time in ns
+    config.SetFifoScheduler(98); // Priority 0-100
 
-    // Wait for the server thread to finish
-    server_thread.join();
+    // Set up controllers and transport
+    mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
+    auto transport = mjbots::moteus::Controller::MakeSingletonTransport({});
+
+    // Options for setting up controllers
+    mjbots::moteus::Controller::Options options_common;
+
+    // Set position format
+    auto &pf = options_common.position_format;
+    pf.position = mjbots::moteus::kIgnore;
+    pf.velocity = mjbots::moteus::kIgnore;
+    pf.feedforward_torque = mjbots::moteus::kFloat;
+    pf.kp_scale = mjbots::moteus::kInt8;
+    pf.kd_scale = mjbots::moteus::kInt8;
+
+    // Create two controllers
+    std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
+        std::make_shared<mjbots::moteus::Controller>([&]()
+                                                     {
+                                                 auto options = options_common;
+                                                 options.id = 1;
+                                                 return options; }()),
+        std::make_shared<mjbots::moteus::Controller>([&]()
+                                                     {
+                                                 auto options = options_common;
+                                                 options.id = 2;
+                                                 return options; }()),
+    };
+
+    for (auto &c : controllers)
+    {
+        c->SetStop();
+    }
+
+    // Extract torque commands, disregarding the first command
+    std::vector<std::vector<double>> torque_commands;
+    for (size_t i = 1; i < data.size(); ++i)
+    {
+        torque_commands.push_back({data[i][4], data[i][8]});
+    }
+
+    // Calculate time intervals as differences between timestamps
+    std::vector<int> time_intervals;
+    for (size_t i = 1; i < data.size(); ++i) // Start from the second element
+    {
+        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
+    }
+    std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
+    std::cout << "Torquesize " << torque_commands.size() << std::endl;
+
+    // Printing torque commands
+    std::cout << "Torque Commands:\n";
+    for (size_t i = 0; i < torque_commands.size(); ++i)
+    {
+        std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
+    }
+
+    // Print time intervals
+    std::cout << "\nTime Intervals (in milliseconds):\n";
+    for (size_t i = 0; i < time_intervals.size(); ++i)
+    {
+        std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
+    }
+
+    // Prompt the user to press enter
+    std::cout << "CAREFULLY CHECK TORQUE VALUES";
+    std::cout << "Press Enter to start the real-time loop...";
+    std::cin.get();
+
+    // Create the motor control thread
+    auto motor_thread = std::make_shared<MotorControlThread>(
+        "MotorControlThread", config, controllers, torque_commands, time_intervals, transport);
+
+    // Create an application to manage the real-time thread
+    cactus_rt::App app;
+    app.RegisterThread(motor_thread);
+    cactus_rt::SetUpTerminationSignalHandler();
+
+    // Inform the user that the real-time loop is starting and will run until interrupted
+    std::cout << "Testing RT loop until CTRL+C\n";
+
+    // Start the application (and thus the motor control thread)
+    app.Start();
+
+    // Wait for a termination signal (e.g., Ctrl+C) and handle it appropriately
+    cactus_rt::WaitForAndHandleTerminationSignal();
+
+    // Request the application to stop and wait for it to join (clean exit)
+    app.RequestStop();
+    app.Join();
+
+    // Ensure all controllers are set to stop, deactivating the mjbots
+    for (auto &c : controllers)
+    {
+        c->SetStop();
+    }
+
+    // Calculate the average loop duration from the motor control thread
+    std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
+    std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
+
+    // Output the average speed of the motor control thread
+    std::cout << "\nAverage speed: " << motor_thread->GetAverageHz() << " Hz\n";
 
     return 0;
 }
