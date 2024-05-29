@@ -140,12 +140,6 @@ protected:
     // Main loop function that executes cyclically
     bool Loop(int64_t /*now*/) noexcept final
     {
-        // Start time for profiling the entire loop
-        auto loop_start_time = std::chrono::high_resolution_clock::now();
-
-        // Section 1: Initialization
-        auto section_start_time = std::chrono::high_resolution_clock::now();
-
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
@@ -164,22 +158,7 @@ protected:
         for (auto &pair : responses_)
             pair.second = false;
 
-        // Section 1 end time and duration
-        auto section_end_time = std::chrono::high_resolution_clock::now();
-        auto section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
-        std::cout << "Section 1 (Initialization) duration: " << section_duration << " microseconds\n";
-
-        // Section 2: Transport Cycle
-        section_start_time = std::chrono::high_resolution_clock::now();
-
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
-
-        section_end_time = std::chrono::high_resolution_clock::now();
-        section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
-        std::cout << "Section 2 (Transport Cycle) duration: " << section_duration << " microseconds\n";
-
-        // Section 3: Response Handling and Frequency Measurement
-        section_start_time = std::chrono::high_resolution_clock::now();
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
@@ -208,13 +187,6 @@ protected:
             status_time += kStatusPeriodS;
         }
 
-        section_end_time = std::chrono::high_resolution_clock::now();
-        section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
-        std::cout << "Section 3 (Response Handling and Frequency Measurement) duration: " << section_duration << " microseconds\n";
-
-        // Section 4: Time Interval Handling and Sleeping
-        section_start_time = std::chrono::high_resolution_clock::now();
-
         interval_index_++;
         if (interval_index_ >= time_intervals_[index_])
         {
@@ -226,8 +198,29 @@ protected:
         oss << "timestamp:" << index_;
         for (size_t i = 0; i < controllers_.size(); ++i)
         {
-            oss << ",motor" << i + 1 << "_torque:" << torque_commands_[index_][i];
-            // Add other data as needed
+            // Query the current position of the motor
+            auto maybe_result = controllers_[i]->SetQuery();
+            if (maybe_result)
+            {
+                auto mode = maybe_result->values.mode;
+                auto position = maybe_result->values.position;
+                auto velocity = maybe_result->values.velocity;
+                auto torque = maybe_result->values.torque;
+                auto q_current = maybe_result->values.q_current;
+                auto d_current = maybe_result->values.d_current;
+                auto abs_position = maybe_result->values.abs_position;
+                auto motor_temperature = maybe_result->values.motor_temperature;
+                auto trajectory_complete = maybe_result->values.trajectory_complete;
+                auto temperature = maybe_result->values.temperature;
+                auto fault = maybe_result->values.fault;
+                oss << ",motor" << i + 1 << "_torque:" << torque_commands_[index_][i];
+                oss << ",motor" << i + 1 << "_position:" << position;
+            }
+            else
+            {
+                oss << ",motor" << i + 1 << "_torque:" << torque_commands_[index_][i];
+                oss << ",motor" << i + 1 << "_position:" << "N/A";
+            }
         }
         std::string data = oss.str();
 
@@ -235,29 +228,6 @@ protected:
         broadcastData(data);
 
         ::usleep(10);
-
-        section_end_time = std::chrono::high_resolution_clock::now();
-        section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
-        std::cout << "Section 4 (Time Interval Handling and Sleeping) duration: " << section_duration << " microseconds\n";
-
-        // End time for profiling the entire loop
-        auto loop_end_time = std::chrono::high_resolution_clock::now();
-        auto loop_duration = std::chrono::duration_cast<std::chrono::microseconds>(loop_end_time - loop_start_time).count();
-
-        // Print the duration of the entire loop iteration
-        std::cout << "Total loop duration: " << loop_duration << " microseconds\n";
-
-        // Calculate and print the average loop duration every 100 iterations
-        static int loop_count = 0;
-        static int64_t total_loop_duration = 0;
-        loop_count++;
-        total_loop_duration += loop_duration;
-
-        if (loop_count % 100 == 0)
-        {
-            std::cout << "Average loop duration: " << total_loop_duration / 100 << " microseconds\n";
-            total_loop_duration = 0;
-        }
 
         return false;
     }
