@@ -104,19 +104,6 @@ double revolutionsToDegrees(double revolutions) {
     return revolutions * degreesPerRevolution;
 }
 
-float torque_error;
-
-float PDControl(float desired_torque, float current_torque, float previous_error, float kp, float kd, float delta_time) {
-    torque_error = desired_torque - current_torque;
-    float derivative = (delta_time > 0) ? (torque_error - previous_error) / delta_time : 0.0;
-
-    float control_signal = kp * torque_error + kd * derivative;
-
-    previous_error = torque_error;
-
-    return control_signal;
-}
-
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -211,10 +198,12 @@ int main(int argc, char** argv) {
 
     double kp = 5.0;
     double kd = 1.5;
-    float prev_error1;
-    float prev_error2;
+    float prev_error1 = 0;
+    float prev_error2 = 0;
     float control_signal1;
     float control_signal2;
+    float derivative1;
+    float derivative2;
 
     while (!ctrl_c_pressed) {
         // Get current time
@@ -265,18 +254,20 @@ int main(int argc, char** argv) {
         torque_command[0] = tau(0);
         torque_command[1] = tau(1);
 
-        double torque_check1 = v1.torque - tau(0);
-        double torque_check2 = v2.torque - tau(1);
+        double torque_check1 = tau(0) - v1.torque;
+        double torque_check2 = tau(1) - v2.torque;
 
         if (torque_check1 < 0 || torque_check1 > 0) {
+            derivative1 = (deltaTime > 0) ? (torque_check1 - prev_error1) / deltaTime : 0.0;
+            control_signal1 = kp * torque_check1 + kd * derivative1;
             prev_error1 = torque_check1;
-            control_signal1 = PDControl(tau(0), v1.torque, prev_error1, kp, kd, deltaTime);
             torque_command[0] = tau(0) + control_signal1;
         }
 
         if (torque_check2 < 0 || torque_check2 > 0) {
+            derivative2 = (deltaTime > 0) ? (torque_check2 - prev_error2) / deltaTime : 0.0;
+            control_signal2 = kp * torque_check2 + kd * derivative2;
             prev_error2 = torque_check2;
-            control_signal2 = PDControl(tau(1), v2.torque, prev_error2, kp, kd, deltaTime);
             torque_command[1] = tau(1) + control_signal2;
         }
 
