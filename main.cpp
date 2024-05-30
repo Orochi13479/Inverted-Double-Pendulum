@@ -115,11 +115,11 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
         std::vector<double> cmd_kp = {6.0, 1.5};
         std::vector<double> cmd_kd = {3.0, 0.5};
-        std::vector<double> cmd_pos = {0.0, 0.0};
+        std::vector<double> cmd_pos = {0.5, 0.0};
 
         for (size_t i = 0; i < controllers_.size(); i++) {
             if (index_ >= torque_commands_.size()) {
-                // std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
+                std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
                 // cmd_.velocity = mjbots::moteus::kIgnore;
                 cmd_.maximum_torque = 1.0;
