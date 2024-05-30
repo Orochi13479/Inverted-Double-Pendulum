@@ -244,7 +244,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
+        time_intervals.push_back((data[i][0] * 100) - (data[i - 1][0] * 100));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
