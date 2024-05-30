@@ -19,7 +19,7 @@ g = 9.8;          % gravity (m/s^2)
 %% SECTION 2: Initialising simulation variables
 
 % Time vector for simulation
-t_sim = linspace(0, 5, 200);                                          % Time vector for simulation
+t_sim = linspace(0, 5, 100);                                          % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
 tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
@@ -34,23 +34,48 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 %% SECTION 3: Desired Trajectory - Positions, Velocities and Accelerations
 
 % Original trajectory points (TRAJECTORY 2)
-% TRAJECTORY 4
+% % TRAJECTORY 4
+% q1_a = linspace(0, -0.5236, 50);
+% q1_b = linspace(-0.5079, 1.0472, 50);
+% q1_c = linspace(1.0210, -1.5708, 50);
+% q1_d = linspace(-1.5237, pi, 50);
+% 
+% q2_a = linspace(0, -0.5236, 50);
+% q2_b = linspace(-0.5183, 0.5236, 50);
+% q2_c = linspace(0.5183, -0.5236, 50);
+% q2_d = linspace(-0.5183, 0, 50);
+% 
+% % Concatenate the segments
+% q1_desired = [q1_a, q1_b, q1_c, q1_d];
+% q2_desired = [q2_a, q2_b, q2_c, q2_d];
+
+% TRAJECTORY 7
 q1_a = linspace(0, -0.5236, 50);
-q1_b = linspace(-0.5079, 1.0472, 50);
-q1_c = linspace(1.0210, -1.5708, 50);
-q1_d = linspace(-1.5237, pi, 50);
+q1_b = linspace(-0.5079, 0, 50);
+% q1_c = linspace(1.0210, -1.5708, 50);
+% q1_d = linspace(-1.5237, pi, 50);
+% q1_e = linspace(0,0, 50);
+% q1_f = linspace(0,0, 50);
+% q1_g = linspace(0,0, 50);
+% q1_h = linspace(0,0, 50);
+
 
 q2_a = linspace(0, -0.5236, 50);
-q2_b = linspace(-0.5183, 0.5236, 50);
-q2_c = linspace(0.5183, -0.5236, 50);
-q2_d = linspace(-0.5183, 0, 50);
+q2_b = linspace(-0.5183, 0, 50);
+% q2_c = linspace(0.5183, -0.5236, 50);
+% q2_d = linspace(-0.5183, 0, 50);
+% q2_e = linspace(0,0, 50);
+% q2_f = linspace(0,0, 50);
+% q2_g = linspace(0,0, 50);
+% q2_h = linspace(0,0, 50);
 
 % Concatenate the segments
-q1_desired = [q1_a, q1_b, q1_c, q1_d];
-q2_desired = [q2_a, q2_b, q2_c, q2_d];
-%q1_desired = linspace(0, pi, 150);
-%q2_desired = linspace(0, 0, 150);
+q1_desired = [q1_a, q1_b];
+q2_desired = [q2_a, q2_b];
 
+% Concatenate the segments
+% q1_desired = [q1_a, q1_b, q1_c, q1_d, q1_e, q1_f, q1_g, q1_h];
+% q2_desired = [q2_a, q2_b, q2_c, q2_d, q2_e, q2_f, q2_g, q2_h];
 
 % Create a new time vector for the smooth trajectory
 t_original = linspace(0, 3, length(q1_desired));
