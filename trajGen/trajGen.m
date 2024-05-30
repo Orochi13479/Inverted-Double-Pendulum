@@ -6,6 +6,8 @@ m2 = 0.21;        % Link 2 mass (kg)
 g = 9.8;          % gravity (m/s^2)
 
 % Define time span and initial conditions for simulation
+% *** Simulation Time needs to be in seconds e.g. 5s
+
 tspan = [0 0.55];   % Time span for simulation
 q1_0 = 0;         % Initial angle for the first joint
 q2_0 = 0;         % Initial angle for the second joint
@@ -14,6 +16,9 @@ q2_dot_0 = 0;     % Initial angular velocity for the second joint
 
 % Define feedforward torques (example: time-varying)
 t_sim = linspace(tspan(1), tspan(2), 100);  % Time vector for simulation
+
+% *** Currently hand inputting torques. Need to generate based on hand
+% designed positions and velocities
 tau1 = 0.028*sin(t_sim); % Time varying torque acting on joint 1
 tau2 = 0.394*cos(t_sim); % Time varying torque acting on joint 2
 
