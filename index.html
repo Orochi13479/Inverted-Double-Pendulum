@@ -27,6 +27,9 @@
     <div id="debug"></div>
 
     <script>
+        const MAX_POINTS = 100;
+        const BATCH_SIZE = 10;
+
         const debugDiv = document.getElementById('debug');
 
         const positionCtx = document.getElementById('positionChart').getContext('2d');
@@ -102,6 +105,8 @@
 
         const socket = new WebSocket('ws://localhost:9003');
 
+        let pendingData = [];
+
         socket.onopen = function() {
             console.log('WebSocket connection opened');
         };
@@ -110,13 +115,13 @@
             const data = event.data;
             debugDiv.textContent += `Received: ${data}\n`;
 
-            // Assuming data format: "timestamp:<index>,motor1_position:<value>,motor2_position:<value>,motor1_torque:<value>,motor2_torque:<value>"
             const parsedData = parseData(data);
             if (parsedData) {
-                updateChart(positionChart, parsedData.timestamp, parsedData.motor1_position, 0);
-                updateChart(positionChart, parsedData.timestamp, parsedData.motor2_position, 1);
-                updateChart(torqueChart, parsedData.timestamp, parsedData.motor1_torque, 0);
-                updateChart(torqueChart, parsedData.timestamp, parsedData.motor2_torque, 1);
+                pendingData.push(parsedData);
+                if (pendingData.length >= BATCH_SIZE) {
+                    processBatch(pendingData);
+                    pendingData = [];
+                }
             }
         };
 
@@ -156,9 +161,24 @@
             return null;
         }
 
+        function processBatch(dataArray) {
+            dataArray.forEach(data => {
+                updateChart(positionChart, data.timestamp, data.motor1_position, 0);
+                updateChart(positionChart, data.timestamp, data.motor2_position, 1);
+                updateChart(torqueChart, data.timestamp, data.motor1_torque, 0);
+                updateChart(torqueChart, data.timestamp, data.motor2_torque, 1);
+            });
+        }
+
         function updateChart(chart, timestamp, value, datasetIndex) {
             chart.data.labels.push(timestamp);
             chart.data.datasets[datasetIndex].data.push(value);
+
+            if (chart.data.labels.length > MAX_POINTS) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach(dataset => dataset.data.shift());
+            }
+
             chart.update();
         }
     </script>

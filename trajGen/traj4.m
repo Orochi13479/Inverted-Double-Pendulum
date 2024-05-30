@@ -87,8 +87,8 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 % q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2
 
 % TRAJECTORY 6
-q1_a = linspace(0, -pi/10, 25);
-q1_b = linspace(-pi/10, pi/10, 50);
+q1_a = linspace(0, 0, 25);
+q1_b = linspace(0, 0 , 50);
 
 
 q2_a = linspace(0, -pi/6, 25);

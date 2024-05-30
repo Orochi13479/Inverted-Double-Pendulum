@@ -19,7 +19,7 @@ g = 9.8;          % gravity (m/s^2)
 %% SECTION 2: Initialising simulation variables
 
 % Time vector for simulation
-t_sim = linspace(0, 5, 250);                                          % Time vector for simulation
+t_sim = linspace(0, 5, 200);                                          % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
 tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
@@ -35,15 +35,15 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 
 % Original trajectory points (TRAJECTORY 2)
 % TRAJECTORY 4
-q1_a = linspace(0, -0.5236, 25);
+q1_a = linspace(0, -0.5236, 50);
 q1_b = linspace(-0.5079, 1.0472, 50);
-q1_c = linspace(1.0210, -1.5708, 75);
-q1_d = linspace(-1.5237, pi, 100);
+q1_c = linspace(1.0210, -1.5708, 50);
+q1_d = linspace(-1.5237, pi, 50);
 
-q2_a = linspace(0, -0.5236, 25);
+q2_a = linspace(0, -0.5236, 50);
 q2_b = linspace(-0.5183, 0.5236, 50);
-q2_c = linspace(0.5183, -0.5236, 75);
-q2_d = linspace(-0.5183, 0, 100);
+q2_c = linspace(0.5183, -0.5236, 50);
+q2_d = linspace(-0.5183, 0, 50);
 
 % Concatenate the segments
 q1_desired = [q1_a, q1_b, q1_c, q1_d];
@@ -194,7 +194,7 @@ for i = 1:length(t_sim)
     set(tau2_text, 'String', sprintf('tau2: %.2f N.m', tau2(i)));
     
     % Pause to create animation effect
-    pause(0.1);
+    pause(0.01);
 end
 
 %% Generate Graphs for Joint 1 and Joint 2 Angular Position, Velocity, Acceleration, and Torque
