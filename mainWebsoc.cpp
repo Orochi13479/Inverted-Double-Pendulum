@@ -148,7 +148,11 @@ protected:
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
 
             std::ostringstream oss;
-            oss << "timestamp:" << index_;
+            auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                              std::chrono::system_clock::now().time_since_epoch())
+                              .count();
+            oss << "timestamp:" << now_ms;
+
             for (size_t i = 0; i < controllers_.size(); ++i)
             {
                 // Query the current position of the motor
@@ -233,7 +237,10 @@ protected:
         }
 
         std::ostringstream oss;
-        oss << "timestamp:" << index_;
+        auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                     std::chrono::system_clock::now().time_since_epoch())
+                     .count();
+        oss << "timestamp:" << now_ms;
         for (size_t i = 0; i < controllers_.size(); ++i)
         {
             // Query the current position of the motor
