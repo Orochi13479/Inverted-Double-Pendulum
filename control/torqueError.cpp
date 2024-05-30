@@ -24,7 +24,7 @@ void signalHandler(int signal) {
     ctrl_c_pressed = 1;  // Set flag to indicate Ctrl+C was pressed
 }
 
-// Define a struct to hold data for each timestamp
+// A struct to hold data for each timestamp
 struct DataPoint {
     std::chrono::system_clock::time_point timestamp;
     double position;
@@ -258,18 +258,18 @@ int main(int argc, char** argv) {
         double torque_check2 = tau(1) - v2.torque;
 
         if (torque_check1 < 0 || torque_check1 > 0) {
-            // derivative1 = (deltaTime > 0) ? (torque_check1 - prev_error1) / deltaTime : 0.0;
-            // control_signal1 = kp * torque_check1 + kd * derivative1;
-            // prev_error1 = torque_check1;
-            control_signal1 = torque_check1;
+            derivative1 = (deltaTime > 0) ? (torque_check1 - prev_error1) / deltaTime : 0.0;
+            control_signal1 = kp * torque_check1 + kd * derivative1;
+            prev_error1 = torque_check1;
+            // control_signal1 = torque_check1;
             torque_command[0] = tau(0) + control_signal1;
         }
 
         if (torque_check2 < 0 || torque_check2 > 0) {
-            // derivative2 = (deltaTime > 0) ? (torque_check2 - prev_error2) / deltaTime : 0.0;
-            // control_signal2 = kp * torque_check2 + kd * derivative2;
-            // prev_error2 = torque_check2;
-            control_signal2 = torque_check2;
+            derivative2 = (deltaTime > 0) ? (torque_check2 - prev_error2) / deltaTime : 0.0;
+            control_signal2 = kp * torque_check2 + kd * derivative2;
+            prev_error2 = torque_check2;
+            // control_signal2 = torque_check2;
             torque_command[1] = tau(1) + control_signal2;
         }
 
