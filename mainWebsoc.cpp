@@ -177,6 +177,13 @@ protected:
             std::string data = oss.str();
             broadcastData(data);
 
+            index_++;
+
+            if (index_ == 1000)
+            {
+                return true;
+            }
+
             // return true;
         }
 
