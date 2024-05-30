@@ -19,7 +19,7 @@ g = 9.8;          % gravity (m/s^2)
 %% SECTION 2: Initialising simulation variables
 
 % Time vector for simulation
-t_sim = linspace(0, 5, 300);                                          % Time vector for simulation
+t_sim = linspace(0, 5, 200);                                          % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
 tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
@@ -50,33 +50,57 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 % q2_desired = [q2_a, q2_b, q2_c, q2_d];
 
 % TRAJECTORY 7
-q1_a = linspace(0, -0.5, 20);
-q1_b = linspace(-0.501, 0.6, 30);
-q1_c = linspace(0.599, -0.8, 40);
-q1_d = linspace(-0.799, 1.1, 50);
-q1_e = linspace(1.101, -1.4, 60);
-q1_f = linspace(-1.399,2.0, 70);
-q1_g = linspace(1.99,-2.5, 80);
-q1_h = linspace(-2.499,3.1416, 100);
-
-
-q2_a = linspace(0, -0.5236, 20);
-q2_b = linspace(-0.5183, 0.5236, 30);
-q2_c = linspace(0.5183, -0.5236, 40);
-q2_d = linspace(-0.5183, 0.5236, 50);
-q2_e = linspace(0.5183, -0.5236, 60);
-q2_f = linspace(-0.5183, 0.5236, 70);
-q2_g = linspace(0.5183, -0.5236, 80);
-q2_h = linspace(-0.5183,0, 100);
-
-% Concatenate the segments
-q1_desired = [q1_a, q1_b, q1_c, q1_d, q1_e, q1_f, q1_g, q1_h];
-q2_desired = [q2_a, q2_b, q2_c, q2_d, q2_e, q2_f, q2_g, q2_h];
-
-
-% Concatenate the segments
+% q1_a = linspace(0, -0.5, 20);
+% q1_b = linspace(-0.501, 0.6, 30);
+% q1_c = linspace(0.599, -0.8, 40);
+% q1_d = linspace(-0.799, 1.1, 50);
+% q1_e = linspace(1.101, -1.4, 60);
+% q1_f = linspace(-1.399,2.0, 70);
+% q1_g = linspace(1.99,-2.5, 80);
+% q1_h = linspace(-2.499,3.1416, 100);
+% 
+% 
+% q2_a = linspace(0, -0.5236, 20);
+% q2_b = linspace(-0.5183, 0.5236, 30);
+% q2_c = linspace(0.5183, -0.5236, 40);
+% q2_d = linspace(-0.5183, 0.5236, 50);
+% q2_e = linspace(0.5183, -0.5236, 60);
+% q2_f = linspace(-0.5183, 0.5236, 70);
+% q2_g = linspace(0.5183, -0.5236, 80);
+% q2_h = linspace(-0.5183,0, 100);
+% % Concatenate the segments
 % q1_desired = [q1_a, q1_b, q1_c, q1_d, q1_e, q1_f, q1_g, q1_h];
 % q2_desired = [q2_a, q2_b, q2_c, q2_d, q2_e, q2_f, q2_g, q2_h];
+
+% %TRAJECTORY 8
+q1_a = linspace(0, -0.5, 20);
+q1_b = linspace(-0.501, 0.6, 20);
+q1_c = linspace(0.599, -0.8, 20);
+q1_d = linspace(-0.799, 1.1, 20);
+q1_e = linspace(1.101, -1.4, 20);
+q1_f = linspace(-1.399,2.0, 20);
+q1_g = linspace(1.99,-2.5, 20);
+q1_h = linspace(-2.499,3.1416, 20);
+q1_i = linspace(-2.499,3.1416, 20);
+q1_j = linspace(-2.499,3.1416, 20);
+
+q2_a = linspace(0, -0.5236, 20);
+q2_b = linspace(-0.5183, 0.5236, 20);
+q2_c = linspace(0.5183, -0.5236, 20);
+q2_d = linspace(-0.5183, 0.5236, 20);
+q2_e = linspace(0.5183, -0.5236, 20);
+q2_f = linspace(-0.5183, 0.5236, 20);
+q2_g = linspace(0.5183, -0.5236, 20);
+q2_h = linspace(-0.5183, 0.5236, 20);
+q2_i = linspace(0.5183, -0.5236, 20);
+q2_j = linspace(-0.5183,0, 20);
+
+% % Concatenate the segments
+% q1_desired = [q1_a, q1_b, q1_c, q1_d, q1_e, q1_f, q1_g, q1_h, q1_i, q1_j];
+% q2_desired = [q2_a, q2_b, q2_c, q2_d, q2_e, q2_f, q2_g, q2_h, q2_i, q2_j];
+
+
+
 
 % Create a new time vector for the smooth trajectory
 t_original = linspace(0, 3, length(q1_desired));
@@ -164,7 +188,7 @@ end
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_4.csv';
+filename = 'trajectory_data_8.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
