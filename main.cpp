@@ -121,7 +121,7 @@ class MotorControlThread : public cactus_rt::CyclicThread {
             if (index_ >= torque_commands_.size()) {
                 // std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
                 cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                cmd_.velocity = 0.0;
+                cmd_.velocity = mjbots::moteus::kIgnore;
                 cmd_.maximum_torque = 1.0;
                 cmd_.position = cmd_pos[i];
                 // return true;
@@ -151,9 +151,9 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
         status_count++;
         if (status_count > kStatusPeriod) {
-            printf("MODE: %2d/%2d POSITION IN DEGREES: %6.3f TORQUE: %6.3f/%6.3f VELOCITY: %6.3f/%6.3f CONTROL_SIGNAL: %6.3f/%6.3f\r",
+            printf("MODE: %2d/%2d POSITION IN DEGREES: %6.3f/%6.3f TORQUE: %6.3f/%6.3f VELOCITY: %6.3f/%6.3f CONTROL_SIGNAL: %6.3f/%6.3f\r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                   revolutionsToDegrees(v1.position + v2.position),
+                   v1.position, v2.position,
                    v1.torque, v2.torque,
                    v1.velocity, v2.velocity);
             fflush(stdout);
