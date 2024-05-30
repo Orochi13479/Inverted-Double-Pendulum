@@ -127,7 +127,7 @@ class MotorControlThread : public cactus_rt::CyclicThread {
                 // return true;
 
             } else {
-                cmd_.feedforward_torque = torque_commands_[index_][i];\
+                cmd_.feedforward_torque = torque_commands_[index_][i];
                 cmd_.velocity = mjbots::moteus::kIgnore;
                 cmd_.maximum_torque = mjbots::moteus::kIgnore;
                 cmd_.position = mjbots::moteus::kIgnore;
