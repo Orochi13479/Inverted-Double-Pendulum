@@ -121,7 +121,7 @@ protected:
             // cmd_.velocity = 0.0;
             // cmd_.maximum_torque = mjbots::moteus::kIgnore;
 
-            // return true;
+            return true;
         }
 
         for (size_t i = 0; i < controllers_.size(); i++)
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_4.csv";
+    std::string filename = "../trajGen/VERY_TESTY.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
