@@ -37,11 +37,16 @@ async def broadcast_data(data):
 
 # Function to receive data from the C++ WebSocket server and forward it
 async def forward_data():
-    uri = "ws://localhost:9002"  # Assuming C++ server is running on localhost:9002
-    async with websockets.connect(uri) as websocket:
-        async for message in websocket:
-            print("Received from C++ server:", message)  # Debug print
-            await broadcast_data(message)
+    uri = "ws://localhost:9002"
+    while not ctrl_c_pressed:
+        try:
+            async with websockets.connect(uri) as websocket:
+                async for message in websocket:
+                    print("Received from C++ server:", message)  # Debug print
+                    await broadcast_data(message)
+        except (websockets.ConnectionClosed, OSError) as e:
+            print(f"Connection lost: {e}. Reconnecting in 2 seconds...")
+            await asyncio.sleep(2)
 
 
 # HTTP handler to serve the HTML file

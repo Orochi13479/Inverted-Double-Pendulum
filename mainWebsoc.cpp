@@ -210,7 +210,7 @@ protected:
                 auto trajectory_complete = maybe_result->values.trajectory_complete;
                 auto temperature = maybe_result->values.temperature;
                 auto fault = maybe_result->values.fault;
-               
+
                 oss << ",motor" << i + 1 << "_mode:" << static_cast<int>(mode);
                 oss << ",motor" << i + 1 << "_position:" << position;
                 oss << ",motor" << i + 1 << "_velocity:" << velocity;
@@ -320,7 +320,7 @@ int main(int argc, char **argv)
     // Prompt the user to press enter
     std::cout << "CAREFULLY CHECK TORQUE VALUES";
     std::cout << "Press Enter to start the real-time loop...";
-    std::cin.get();
+    // std::cin.get();
 
     // Create the motor control thread
     auto motor_thread = std::make_shared<MotorControlThread>(
