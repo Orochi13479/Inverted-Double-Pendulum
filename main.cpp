@@ -115,6 +115,9 @@ protected:
             cmd_.velocity = 0.0;
             cmd_.maximum_torque = 1.0;
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
+            for (size_t i = 0; i < controllers_.size(); i++){
+                cmd_.position = cmd_pos[i];
+            }
 
             // return true;
         }
@@ -124,9 +127,6 @@ protected:
             cmd_.feedforward_torque = torque_commands_[index_][i];
             cmd_.kp_scale = cmd_kp[i];
             cmd_.kd_scale = cmd_kd[i];
-            if(index_ >= torque_commands_.size()){
-                cmd_.position = cmd_pos[i];
-            }
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
