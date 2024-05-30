@@ -46,7 +46,7 @@ std::vector<std::vector<float>> readCSV(const std::string &filename)
         std::istringstream iss(line);
         std::vector<float> row(9);
         char comma;
-        if (iss >> row[0] >> comma >> row[1] >> comma >> row[2] >> comma >> row[3] >> comma >> row[4] >> comma >> row[5] >> comma >> row[6] >> comma >> row[7] >> comma >> row[8])
+        if (iss >> row[0] >> comma >> row[1] >> comma >> row[2] >> comma >> row[3] >> comma >> row[9] >> comma >> row[5] >> comma >> row[6] >> comma >> row[7] >> comma >> row[4])
         {
             data.push_back(row);
         }
