@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 #include <thread>
-#include <variant>
 
 // Global flag for indicating if Ctrl+C was pressed
 volatile sig_atomic_t ctrl_c_pressed = 0;

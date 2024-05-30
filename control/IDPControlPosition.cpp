@@ -1,9 +1,16 @@
-#include <iostream>
+#include <stdio.h>
+#include <unistd.h>
+
+#include <boost/optional.hpp>
+#include <chrono>
+#include <csignal>
 #include <fstream>
+#include <iostream>
 #include <sstream>
-#include <vector>
-#include <string>
 #include <stdexcept>
+#include <string>
+#include <vector>
+
 #include "moteus.h"
 #include "pinocchio/algorithm/joint-configuration.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
@@ -171,7 +178,8 @@ int main(int argc, char** argv) {
     // cmd.maximum_torque = 2.0;
 
     double torque_command[2] = {};
-    double velocity_count[2] = {};
+    double kp[2] = {5.0, 1.0};
+    double kd[2] = {2.5, 0.025};
     std::vector<moteus::CanFdFrame> send_frames;
     std::vector<moteus::CanFdFrame> receive_frames;
 
@@ -212,9 +220,8 @@ int main(int argc, char** argv) {
 
         for (size_t i = 0; i < controllers.size(); i++) {
             cmd.feedforward_torque = torque_command[i];
-            cmd.velocity = velocity_count[i];
-            // cmd.kp_scale = 5.0;
-            // cmd.kd_scale = 1.5;
+            cmd.kp_scale = kp[i];
+            cmd.kd_scale = kd[i];
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 
