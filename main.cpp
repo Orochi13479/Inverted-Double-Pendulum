@@ -90,8 +90,8 @@ public:
                        std::shared_ptr<mjbots::moteus::Transport> transport)
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
     {
-        cmd_.kp_scale = 2.5;
-        cmd_.kd_scale = 1.5;
+        cmd_.kp_scale = 0;
+        cmd_.kd_scale = 0;
 
         // Measuring Frequency
         int id = 0;
@@ -106,28 +106,33 @@ protected:
 
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
-        std::vector<double> cmd_pos;
-        std::vector<double> cmd_vel;
-        std::vector<double> cmd_max_torque;
-        std::vector<double> cmd_kp;
-        std::vector<double> cmd_kd;
+
+        std::vector<double> cmd_kp = {5.0, 1.0};
+        std::vector<double> cmd_kd = {2.5, 0.025};
+        std::vector<double> cmd_pos = {mjbots::moteus::kIgnore, 0};
 
         if (index_ >= torque_commands_.size())
         {
-        
-
+            cmd_.velocity = 0.0;
+            cmd_.maximum_torque = 1.0;
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
-            // cmd_.position = mjbots::moteus::kIgnore;
-            // cmd_.velocity = 0.0;
-            // cmd_.maximum_torque = mjbots::moteus::kIgnore;
 
-            return true;
+            // return true;
         }
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
             cmd_.feedforward_torque = torque_commands_[index_][i];
+            cmd_.kp_scale = cmd_kp[i];
+            cmd_.kd_scale = cmd_kd[i];
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+            if (index_ >= torque_commands_.size())
+            {
+                cmd_.position = cmd_pos[i];
+                std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
+
+                // return true;
+            }
         }
 
         for (auto &pair : responses_)
@@ -185,13 +190,13 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_4.csv";
+    std::string filename = "../trajGen/VERY_TESTY.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 15000'000;  // Target Time in ns
+    config.period_ns = 2000000;  // Target Time in ns
     config.SetFifoScheduler(98); // Priority 0-100
 
     // Set up controllers and transport
