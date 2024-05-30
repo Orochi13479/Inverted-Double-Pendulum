@@ -124,14 +124,10 @@ protected:
             cmd_.feedforward_torque = torque_commands_[index_][i];
             cmd_.kp_scale = cmd_kp[i];
             cmd_.kd_scale = cmd_kd[i];
+            if(index_ >= torque_commands_.size()){
+                cmd_.position = cmd_pos[i];
+            }
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-            // if (index_ >= torque_commands_.size())
-            // {
-            //     cmd_.position = cmd_pos[i];
-            //     std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
-
-            //     // return true;
-            // }
         }
 
         for (auto &pair : responses_)
