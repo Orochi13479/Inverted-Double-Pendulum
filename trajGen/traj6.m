@@ -32,21 +32,9 @@ q1_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise acceleration array of second motor to zero
 
 %% SECTION 3: Desired Trajectory - Positions, Velocities and Accelerations
-%TRAJECTORY 1
-% q1_a = linspace(0, -pi/6, 50);
-% q1_b = linspace(-pi/6, pi/2, 50);
-% q1_c = linspace(pi/2, pi, 50);
-% 
-% q2_a = linspace(0, -pi/6, 50);
-% q2_b = linspace(-pi/6, 0, 50);
-% q2_c = linspace(0, 0, 50);
-% 
-% q1_desired = [q1_a, q1_b, q1_c];                     % Desired position for q1
-% q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2
- q1_desired = linspace(0, pi, 150);
- d2_desired = linspace(0, 0, 150);
 
- %%TRAJECTORY
+% Original trajectory points (TRAJECTORY 2)
+% % TRAJECTORY 4
 % q1_a = linspace(0, -pi/6, 50);
 % q1_b = linspace(-pi/6, pi/2, 50);
 % q1_c = linspace(pi/2, -pi, 50);
@@ -55,10 +43,27 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 % q2_b = linspace(-pi/6, pi/6, 50);
 % q2_c = linspace(pi/6, 0, 50);
 % 
-% q1_desired = [q1_a, q1_b, q1_c];                     % Desired position for q1
-% q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2
+% % Concatenate the segments
+% q1_desired = [q1_a, q1_b, q1_c];
+% q2_desired = [q2_a, q2_b, q2_c];
+q1_desired = linspace(0, pi, 150);
+q2_desired = linspace(0, 0, 150);
+
+
+% Create a new time vector for the smooth trajectory
+t_original = linspace(0, 3, length(q1_desired));
+t_smooth = linspace(0, 3, length(t_sim));
+
+% Generate spline interpolations
+q1_smooth = spline(t_original, q1_desired, t_smooth);
+q2_smooth = spline(t_original, q2_desired, t_smooth);
+
+% Use the smoothed trajectories
+q1_desired = q1_smooth;
+q2_desired = q2_smooth;
+
 % Compute velocities using finite differences
-dt = t_sim(2) - t_sim(1);  % Time step
+dt = t_smooth(2) - t_smooth(1);  % Time step
 q1_dot_desired = diff(q1_desired) / dt;
 q2_dot_desired = diff(q2_desired) / dt;
 
@@ -126,7 +131,7 @@ end
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_3.csv';
+filename = 'trajectory_data_4.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];

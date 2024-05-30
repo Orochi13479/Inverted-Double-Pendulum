@@ -21,7 +21,7 @@ g = 9.8;          % gravity (m/s^2)
 %% SECTION 2: Initialising simulation variables
 
 % Time vector for simulation
-t_sim = linspace(0, 15, 150);                                          % Time vector for simulation
+t_sim = linspace(0, 5, 150);                                          % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
 tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
