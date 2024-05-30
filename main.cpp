@@ -113,8 +113,8 @@ class MotorControlThread : public cactus_rt::CyclicThread {
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
-        std::vector<double> cmd_kp = {5.0, 1.0};
-        std::vector<double> cmd_kd = {2.5, 0.025};
+        std::vector<double> cmd_kp = {6.0, 1.5};
+        std::vector<double> cmd_kd = {3.0, 0.5};
         std::vector<double> cmd_pos = {0.5, 0};
 
         for (size_t i = 0; i < controllers_.size(); i++) {
@@ -127,7 +127,10 @@ class MotorControlThread : public cactus_rt::CyclicThread {
                 // return true;
 
             } else {
-                cmd_.feedforward_torque = torque_commands_[index_][i];
+                cmd_.feedforward_torque = torque_commands_[index_][i];\
+                cmd_.velocity = mjbots::moteus::kIgnore;
+                cmd_.maximum_torque = mjbots::moteus::kIgnore;
+                cmd_.position = mjbots::moteus::kIgnore;
             }
             cmd_.kp_scale = cmd_kp[i];
             cmd_.kd_scale = cmd_kd[i];
