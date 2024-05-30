@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 150'000;  // Target Time in ns
+    config.period_ns = 15000'000;  // Target Time in ns
     config.SetFifoScheduler(98); // Priority 0-100
 
     // Set up controllers and transport
