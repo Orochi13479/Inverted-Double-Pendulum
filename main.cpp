@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <variant>
+
 
 // Global flag for indicating if Ctrl+C was pressed
 volatile sig_atomic_t ctrl_c_pressed = 0;
@@ -104,13 +106,20 @@ protected:
 
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
+        std::vector<double> cmd_pos;
+        std::vector<double> cmd_vel;
+        std::vector<double> cmd_max_torque;
+        std::vector<double> cmd_kp;
+        std::vector<double> cmd_kd;
 
         if (index_ >= torque_commands_.size())
         {
+        
+
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
-            cmd_.position = mjbots::moteus::kIgnore;
-            cmd_.velocity = 0.0;
-            cmd_.maximum_torque = mjbots::moteus::kIgnore;
+            // cmd_.position = mjbots::moteus::kIgnore;
+            // cmd_.velocity = 0.0;
+            // cmd_.maximum_torque = mjbots::moteus::kIgnore;
 
             // return true;
         }
