@@ -63,13 +63,25 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 % q2_desired = [q2_a, q2_b];                     % Desired position for q2
 
 % TRAJECTORY 4
+% q1_a = linspace(0, -pi/6, 50);
+% q1_b = linspace(-pi/6, pi/2, 50);
+% q1_c = linspace(pi/2, -pi, 50);
+% 
+% q2_a = linspace(0, -pi/6, 50);
+% q2_b = linspace(-pi/6, pi/6, 50);
+% q2_c = linspace(pi/6, 0, 50);
+% 
+% q1_desired = [q1_a, q1_b, q1_c];                     % Desired position for q1
+% q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2
+
+% TRAJECTORY 4
 q1_a = linspace(0, -pi/6, 50);
 q1_b = linspace(-pi/6, pi/2, 50);
 q1_c = linspace(pi/2, -pi, 50);
 
-q2_a = linspace(0, -pi/6, 50);
-q2_b = linspace(-pi/6, pi/6, 50);
-q2_c = linspace(pi/6, 0, 50);
+q2_a = linspace(0, -pi, 50);
+q2_b = linspace(-pi, -pi, 50);
+q2_c = linspace(-pi, 0, 50);
 
 q1_desired = [q1_a, q1_b, q1_c];                     % Desired position for q1
 q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2

@@ -19,7 +19,7 @@ g = 9.8;          % gravity (m/s^2)
 %% SECTION 2: Initialising simulation variables
 
 % Time vector for simulation
-t_sim = linspace(0, 15, 150);                                          % Time vector for simulation
+t_sim = linspace(0, 5, 150);                                          % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
 tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
@@ -43,9 +43,19 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 % 
 % q1_desired = [q1_a, q1_b, q1_c];                     % Desired position for q1
 % q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2
- q1_desired = linspace(0, pi, 150);
- d2_desired = linspace(0, 0, 150);
+ % q1_desired = linspace(0, pi, 150);
+ % d2_desired = linspace(0, 0, 150);
 
+q1_a = linspace(0, -pi/6, 50);
+q1_b = linspace(-pi/6, pi/2, 50);
+q1_c = linspace(pi/2, -pi, 50);
+
+q2_a = linspace(0, -pi/6, 50);
+q2_b = linspace(-pi/6, pi/6, 50);
+q2_c = linspace(pi/6, 0, 50);
+
+q1_desired = [q1_a, q1_b, q1_c];                     % Desired position for q1
+q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2
 % Compute velocities using finite differences
 dt = t_sim(2) - t_sim(1);  % Time step
 q1_dot_desired = diff(q1_desired) / dt;
