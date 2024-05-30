@@ -90,6 +90,7 @@
 
         // WebSocket message handler
         socket.onmessage = (event) => {
+            console.log("Received data:", event.data);  // Debug print
             const data = JSON.parse(event.data);
             const timestamp = data.timestamp;
 

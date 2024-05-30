@@ -40,6 +40,7 @@ async def forward_data():
     uri = "ws://localhost:9002"  # Assuming C++ server is running on localhost:9002
     async with websockets.connect(uri) as websocket:
         async for message in websocket:
+            print("Received from C++ server:", message)  # Debug print
             await broadcast_data(message)
 
 
