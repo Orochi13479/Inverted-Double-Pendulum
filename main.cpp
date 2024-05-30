@@ -2,10 +2,12 @@
 #include <signal.h>
 
 #include <algorithm>
+#include <boost/optional.hpp>
 #include <chrono>
 #include <iostream>
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -46,6 +48,22 @@ std::vector<std::vector<float>> readCSV(const std::string &filename) {
     }
 
     return data;
+}
+
+boost::optional<mjbots::moteus::Query::Result> FindServo(
+    const std::vector<mjbots::moteus::CanFdFrame> &frames,
+    int id) {
+    for (auto it = frames.rbegin(); it != frames.rend(); ++it) {
+        if (it->source == id) {
+            return mjbots::moteus::Query::Parse(it->data, it->size);
+        }
+    }
+    return {};
+}
+
+double revolutionsToDegrees(double revolutions) {
+    const double degreesPerRevolution = 360.0;
+    return revolutions * degreesPerRevolution;
 }
 
 // A simple way to get the current time accurately as a double.
@@ -101,7 +119,7 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
         for (size_t i = 0; i < controllers_.size(); i++) {
             if (index_ >= torque_commands_.size()) {
-                std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
+                // std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
                 cmd_.feedforward_torque = mjbots::moteus::kIgnore;
                 cmd_.velocity = 0.0;
                 cmd_.maximum_torque = 1.0;
@@ -120,6 +138,28 @@ class MotorControlThread : public cactus_rt::CyclicThread {
             pair.second = false;
 
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
+
+        auto maybe_servo1 = FindServo(receive_frames, 1);
+        auto maybe_servo2 = FindServo(receive_frames, 2);
+
+        int missed_replies = 0;
+        int status_count = 0;
+        constexpr int kStatusPeriod = 0;
+
+        const auto& v1 = *maybe_servo1;
+        const auto& v2 = *maybe_servo2;
+
+        status_count++;
+        if (status_count > kStatusPeriod) {
+            printf("MODE: %2d/%2d POSITION IN DEGREES: %6.3f TORQUE: %6.3f/%6.3f VELOCITY: %6.3f/%6.3f CONTROL_SIGNAL: %6.3f/%6.3f\r",
+                   static_cast<int>(v1.mode), static_cast<int>(v2.mode),
+                   revolutionsToDegrees(v1.position + v2.position),
+                   v1.torque, v2.torque,
+                   v1.velocity, v2.velocity);
+            fflush(stdout);
+
+            status_count = 0;
+        }
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
@@ -217,7 +257,7 @@ int main(int argc, char **argv) {
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i)  // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 200) - (data[i - 1][0] * 200));
+        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
