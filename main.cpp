@@ -13,7 +13,6 @@
 #include <thread>
 #include <variant>
 
-
 // Global flag for indicating if Ctrl+C was pressed
 volatile sig_atomic_t ctrl_c_pressed = 0;
 
@@ -114,7 +113,6 @@ protected:
 
         if (index_ >= torque_commands_.size())
         {
-        
 
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
             // cmd_.position = mjbots::moteus::kIgnore;
@@ -191,7 +189,7 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 15000'000;  // Target Time in ns
+    config.period_ns = 200'000;  // Target Time in ns
     config.SetFifoScheduler(98); // Priority 0-100
 
     // Set up controllers and transport
