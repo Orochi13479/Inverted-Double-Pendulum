@@ -146,7 +146,7 @@ protected:
         if (index_ >= torque_commands_.size())
         {
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
-            return true;
+            // return true;
         }
 
         for (size_t i = 0; i < controllers_.size(); i++)
