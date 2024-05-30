@@ -20,27 +20,36 @@
 </head>
 <body>
     <h1>Real-Time Dashboard</h1>
-    <canvas id="chart1"></canvas>
-    <canvas id="chart2"></canvas>
+    <canvas id="positionChart"></canvas>
+    <canvas id="torqueChart"></canvas>
     <div id="debug"></div>
 
     <script>
         const debugDiv = document.getElementById('debug');
 
-        const ctx1 = document.getElementById('chart1').getContext('2d');
-        const ctx2 = document.getElementById('chart2').getContext('2d');
+        const ctxPosition = document.getElementById('positionChart').getContext('2d');
+        const ctxTorque = document.getElementById('torqueChart').getContext('2d');
 
-        const chart1 = new Chart(ctx1, {
+        const positionChart = new Chart(ctxPosition, {
             type: 'line',
             data: {
                 labels: [],
-                datasets: [{
-                    label: 'Motor 1 Torque',
-                    data: [],
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1,
-                    fill: false
-                }]
+                datasets: [
+                    {
+                        label: 'Motor 1 Position',
+                        data: [],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    },
+                    {
+                        label: 'Motor 2 Position',
+                        data: [],
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }
+                ]
             },
             options: {
                 scales: {
@@ -55,17 +64,26 @@
             }
         });
 
-        const chart2 = new Chart(ctx2, {
+        const torqueChart = new Chart(ctxTorque, {
             type: 'line',
             data: {
                 labels: [],
-                datasets: [{
-                    label: 'Motor 2 Torque',
-                    data: [],
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    borderWidth: 1,
-                    fill: false
-                }]
+                datasets: [
+                    {
+                        label: 'Motor 1 Torque',
+                        data: [],
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    },
+                    {
+                        label: 'Motor 2 Torque',
+                        data: [],
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }
+                ]
             },
             options: {
                 scales: {
@@ -90,11 +108,12 @@
             const data = event.data;
             debugDiv.textContent += `Received: ${data}\n`;
 
-            // Assuming data format: "timestamp:<index>,motor1_torque:<value>,motor2_torque:<value>"
             const parsedData = parseData(data);
             if (parsedData) {
-                updateChart(chart1, parsedData.timestamp, parsedData.motor1_torque);
-                updateChart(chart2, parsedData.timestamp, parsedData.motor2_torque);
+                updateChart(positionChart, parsedData.timestamp, parsedData.motor1_position, 0);
+                updateChart(positionChart, parsedData.timestamp, parsedData.motor2_position, 1);
+                updateChart(torqueChart, parsedData.timestamp, parsedData.motor1_torque, 0);
+                updateChart(torqueChart, parsedData.timestamp, parsedData.motor2_torque, 1);
             }
         };
 
@@ -111,16 +130,22 @@
         function parseData(data) {
             const parts = data.split(',');
             const timestampPart = parts.find(part => part.startsWith('timestamp:'));
-            const motor1Part = parts.find(part => part.startsWith('motor1_torque:'));
-            const motor2Part = parts.find(part => part.startsWith('motor2_torque:'));
+            const motor1PositionPart = parts.find(part => part.startsWith('motor1_position:'));
+            const motor2PositionPart = parts.find(part => part.startsWith('motor2_position:'));
+            const motor1TorquePart = parts.find(part => part.startsWith('motor1_torque:'));
+            const motor2TorquePart = parts.find(part => part.startsWith('motor2_torque:'));
 
-            if (timestampPart && motor1Part && motor2Part) {
+            if (timestampPart && motor1PositionPart && motor2PositionPart && motor1TorquePart && motor2TorquePart) {
                 const timestamp = parseFloat(timestampPart.split(':')[1]);
-                const motor1_torque = parseFloat(motor1Part.split(':')[1]);
-                const motor2_torque = parseFloat(motor2Part.split(':')[1]);
+                const motor1_position = parseFloat(motor1PositionPart.split(':')[1]);
+                const motor2_position = parseFloat(motor2PositionPart.split(':')[1]);
+                const motor1_torque = parseFloat(motor1TorquePart.split(':')[1]);
+                const motor2_torque = parseFloat(motor2TorquePart.split(':')[1]);
 
                 return {
                     timestamp: timestamp,
+                    motor1_position: motor1_position,
+                    motor2_position: motor2_position,
                     motor1_torque: motor1_torque,
                     motor2_torque: motor2_torque
                 };
@@ -128,9 +153,9 @@
             return null;
         }
 
-        function updateChart(chart, timestamp, value) {
+        function updateChart(chart, timestamp, value, datasetIndex) {
             chart.data.labels.push(timestamp);
-            chart.data.datasets[0].data.push(value);
+            chart.data.datasets[datasetIndex].data.push(value);
             chart.update();
         }
     </script>
