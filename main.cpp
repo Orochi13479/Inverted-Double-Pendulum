@@ -108,7 +108,11 @@ protected:
         if (index_ >= torque_commands_.size())
         {
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
-            return true;
+            cmd_.position = mjbots::moteus::kIgnore;
+            cmd_.velocity = 0.0;
+            cmd_.maximum_torque = mjbots::moteus::kIgnore;
+
+            // return true;
         }
 
         for (size_t i = 0; i < controllers_.size(); i++)

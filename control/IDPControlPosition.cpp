@@ -1,16 +1,9 @@
-#include <stdio.h>
-#include <unistd.h>
-
-#include <boost/optional.hpp>
-#include <chrono>
-#include <csignal>  // For signal handling
 #include <iostream>
-#include <optional>
 #include <fstream>
+#include <sstream>
 #include <vector>
-#include <ctime>
-#include <iomanip>
-
+#include <string>
+#include <stdexcept>
 #include "moteus.h"
 #include "pinocchio/algorithm/joint-configuration.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
@@ -220,8 +213,8 @@ int main(int argc, char** argv) {
         for (size_t i = 0; i < controllers.size(); i++) {
             cmd.feedforward_torque = torque_command[i];
             cmd.velocity = velocity_count[i];
-            cmd.kp_scale = 5.0;
-            cmd.kd_scale = 1.5;
+            // cmd.kp_scale = 5.0;
+            // cmd.kd_scale = 1.5;
             send_frames.push_back(controllers[i]->MakePosition(cmd));
         }
 
