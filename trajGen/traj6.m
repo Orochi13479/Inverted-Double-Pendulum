@@ -1,14 +1,12 @@
 %% INVERTED DOUBLE PENDULUM SYSTEM TRAJECTORY GENERATION
 % This file uses hand-designed angular positions, velocities and
 % accelerations and inverse dynamics to determine the necessary
-% feedforword torques to achieve the desired trajectory.
+% feedforward torques to achieve the desired trajectory.
 % LIMITS OF THE SYSTEM
 % (1) Angular Velocity Range: 7500 [rpm] = 785.3981633974482 [rad/s]
 % (2) Angular Acceleration Range:125.663706 [rad /(s^2)]
 % (3) Angular Position Range:
-% (4) Torque Limit: 1.7 [N.m] Peak Torque
-
-
+% (4) Torque Limit: 1 [N.m] Peak Torque
 
 %% SECTION 1: Physical parameters of the system
 % Define parameters of double inverted pendulum system
@@ -34,7 +32,7 @@ q1_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise acceleration array of second motor to zero
 
 %% SECTION 3: Desired Trajectory - Positions, Velocities and Accelerations
-% TRAJECTORY 1
+%TRAJECTORY 1
 % q1_a = linspace(0, -pi/6, 50);
 % q1_b = linspace(-pi/6, pi/2, 50);
 % q1_c = linspace(pi/2, pi, 50);
@@ -45,34 +43,9 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 % 
 % q1_desired = [q1_a, q1_b, q1_c];                     % Desired position for q1
 % q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2
+ q1_desired = linspace(0, pi, 150);
+ d2_desired = linspace(0, 0, 150);
 
-% % TRAJECTORY 2
-% q1_a = linspace(0, pi, 150);
-% q2_a = linspace(0, 0, 150);
-% q1_desired = q1_a;                     % Desired position for q1
-% q2_desired = q2_a;                     % Desired position for q2
-
-% TRAJECTORY 3
-% q1_a = linspace(0, -pi/6, 50);
-% q1_b = linspace(-pi/6, pi, 100);
-% 
-% q2_a = linspace(0, -pi/6, 50);
-% q2_b = linspace(-pi/6, 0, 100);
-% 
-% q1_desired = [q1_a, q1_b];                     % Desired position for q1
-% q2_desired = [q2_a, q2_b];                     % Desired position for q2
-
-% TRAJECTORY 4
-q1_a = linspace(0, -pi/6, 50);
-q1_b = linspace(-pi/6, pi/2, 50);
-q1_c = linspace(pi/2, -pi, 50);
-
-q2_a = linspace(0, -pi/6, 50);
-q2_b = linspace(-pi/6, pi/6, 50);
-q2_c = linspace(pi/6, 0, 50);
-
-q1_desired = [q1_a, q1_b, q1_c];                     % Desired position for q1
-q2_desired = [q2_a, q2_b, q2_c];                     % Desired position for q2
 % Compute velocities using finite differences
 dt = t_sim(2) - t_sim(1);  % Time step
 q1_dot_desired = diff(q1_desired) / dt;
@@ -124,6 +97,9 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     q_dot_dot = [q1_dot_dot; q2_dot_dot];
     tau = M * q_dot_dot + c + g_q;
     
+    % Enforce torque limits
+    tau = min(max(tau, -1), 1);
+    
     % Store results
     tau1(i) = tau(1);
     tau2(i) = tau(2);
@@ -135,13 +111,11 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     q2_dot_dot_sim(i) = q2_dot_dot;
 end
 
-
-
 %% GENERATE CSV FILE OF TRAJECTORY
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_1.csv';
+filename = 'trajectory_data_3.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
@@ -157,39 +131,6 @@ fclose(fid);
 % Append data to the CSV file
 writematrix(data, filename, 'WriteMode', 'append');
 
-%% SIMULATE SYSTEM
-% % Animation of the double inverted pendulum
-% figure;
-% hold on;
-% axis equal;
-% xlim([-0.5 0.5]);
-% ylim([-0.5 0.5]);
-% xlabel('X Position (m)');
-% ylabel('Y Position (m)');
-% title('Double Inverted Pendulum Animation');
-% 
-% % Define the pendulum links
-% pendulum1 = plot([0, L1 * sin(q1_sim(1))], [0, -L1 * cos(q1_sim(1))], 'r-', 'LineWidth', 2);
-% pendulum2 = plot([L1 * sin(q1_sim(1)), L1 * sin(q1_sim(1)) + L2 * sin(q1_sim(1) + q2_sim(1))], ...
-%                  [-L1 * cos(q1_sim(1)), -L1 * cos(q1_sim(1)) - L2 * cos(q1_sim(1) + q2_sim(1))], 'b-', 'LineWidth', 2);
-% 
-% % Animate the pendulum
-% for i = 1:length(t_sim)
-%     x1 = L1 * sin(q1_sim(i));
-%     y1 = -L1 * cos(q1_sim(i));
-%     x2 = x1 + L2 * sin(q1_sim(i) + q2_sim(i));
-%     y2 = y1 - L2 * cos(q1_sim(i) + q2_sim(i));
-% 
-%     set(pendulum1, 'XData', [0, x1], 'YData', [0, y1]);
-%     set(pendulum2, 'XData', [x1, x2], 'YData', [y1, y2]);
-% 
-%     drawnow;
-% 
-%     % Pause to control animation speed
-%     pause(0.01);
-% end
-
-%% Simulation 2
 %% SIMULATE SYSTEM
 % Animation of the double inverted pendulum
 figure;
@@ -211,54 +152,26 @@ q1_text = text(0.3, 0.4, sprintf('q1: %.2f rad', q1_sim(1)), 'FontSize', 10, 'Co
 q2_text = text(0.3, 0.35, sprintf('q2: %.2f rad', q2_sim(1)), 'FontSize', 10, 'Color', 'k');
 q1_dot_text = text(0.3, 0.3, sprintf('q1_dot: %.2f rad/s', q1_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
 q2_dot_text = text(0.3, 0.25, sprintf('q2_dot: %.2f rad/s', q2_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
-q1_ddot_text = text(0.3, 0.2, sprintf('q1_ddot: %.2f rad/s^2', q1_dot_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
-q2_ddot_text = text(0.3, 0.15, sprintf('q2_ddot: %.2f rad/s^2', q2_dot_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
-tau1_text = text(0.3, 0.1, sprintf('tau1: %.2f N.m', tau1(1)), 'FontSize', 10, 'Color', 'k');
-tau2_text = text(0.3, 0.05, sprintf('tau2: %.2f N.m', tau2(1)), 'FontSize', 10, 'Color', 'k');
+tau1_text = text(0.3, 0.2, sprintf('tau1: %.2f N.m', tau1(1)), 'FontSize', 10, 'Color', 'k');
+tau2_text = text(0.3, 0.15, sprintf('tau2: %.2f N.m', tau2(1)), 'FontSize', 10, 'Color', 'k');
 
-% Initialize arrows for velocities and accelerations
-velocity_arrow1 = quiver(0, 0, 0, 0, 'r', 'MaxHeadSize', 1, 'LineWidth', 1.5, 'AutoScale', 'off');
-velocity_arrow2 = quiver(0, 0, 0, 0, 'r', 'MaxHeadSize', 1, 'LineWidth', 1.5, 'AutoScale', 'off');
-acceleration_arrow1 = quiver(0, 0, 0, 0, 'b', 'MaxHeadSize', 1, 'LineWidth', 1.5, 'AutoScale', 'off');
-acceleration_arrow2 = quiver(0, 0, 0, 0, 'b', 'MaxHeadSize', 1, 'LineWidth', 1.5, 'AutoScale', 'off');
-
-% Scale factors for arrows (for visualization purposes)
-velocity_scale = 0.01;
-acceleration_scale = 0.001;
-
-% Animate the pendulum
+% Update the animation in a loop
 for i = 1:length(t_sim)
-    % Update pendulum positions
-    x1 = L1 * sin(q1_sim(i));
-    y1 = -L1 * cos(q1_sim(i));
-    x2 = x1 + L2 * sin(q1_sim(i) + q2_sim(i));
-    y2 = y1 - L2 * cos(q1_sim(i) + q2_sim(i));
+    % Update the pendulum links
+    set(pendulum1, 'XData', [0, L1 * sin(q1_sim(i))], 'YData', [0, -L1 * cos(q1_sim(i))]);
+    set(pendulum2, 'XData', [L1 * sin(q1_sim(i)), L1 * sin(q1_sim(i)) + L2 * sin(q1_sim(i) + q2_sim(i))], ...
+                   'YData', [-L1 * cos(q1_sim(i)), -L1 * cos(q1_sim(i)) - L2 * cos(q1_sim(i) + q2_sim(i))]);
     
-    set(pendulum1, 'XData', [0, x1], 'YData', [0, y1]);
-    set(pendulum2, 'XData', [x1, x2], 'YData', [y1, y2]);
-    
-    % Update text annotations
+    % Update the text annotations
     set(q1_text, 'String', sprintf('q1: %.2f rad', q1_sim(i)));
     set(q2_text, 'String', sprintf('q2: %.2f rad', q2_sim(i)));
     set(q1_dot_text, 'String', sprintf('q1_dot: %.2f rad/s', q1_dot_sim(i)));
     set(q2_dot_text, 'String', sprintf('q2_dot: %.2f rad/s', q2_dot_sim(i)));
-    set(q1_ddot_text, 'String', sprintf('q1_ddot: %.2f rad/s^2', q1_dot_dot_sim(i)));
-    set(q2_ddot_text, 'String', sprintf('q2_ddot: %.2f rad/s^2', q2_dot_dot_sim(i)));
     set(tau1_text, 'String', sprintf('tau1: %.2f N.m', tau1(i)));
     set(tau2_text, 'String', sprintf('tau2: %.2f N.m', tau2(i)));
     
-    % Update velocity arrows
-    set(velocity_arrow1, 'XData', x1, 'YData', y1, 'UData', velocity_scale * q1_dot_sim(i) * cos(q1_sim(i)), 'VData', velocity_scale * q1_dot_sim(i) * sin(q1_sim(i)));
-    set(velocity_arrow2, 'XData', x2, 'YData', y2, 'UData', velocity_scale * q2_dot_sim(i) * cos(q1_sim(i) + q2_sim(i)), 'VData', velocity_scale * q2_dot_sim(i) * sin(q1_sim(i) + q2_sim(i)));
-    
-    % Update acceleration arrows
-    set(acceleration_arrow1, 'XData', x1, 'YData', y1, 'UData', acceleration_scale * q1_dot_dot_sim(i) * cos(q1_sim(i)), 'VData', acceleration_scale * q1_dot_dot_sim(i) * sin(q1_sim(i)));
-    set(acceleration_arrow2, 'XData', x2, 'YData', y2, 'UData', acceleration_scale * q2_dot_dot_sim(i) * cos(q1_sim(i) + q2_sim(i)), 'VData', acceleration_scale * q2_dot_dot_sim(i) * sin(q1_sim(i) + q2_sim(i)));
-    
-    drawnow;
-    
-    % Pause to control animation speed
-    pause(0.01);
+    % Pause to create animation effect
+    pause(0.1);
 end
 
 %% Generate Graphs for Joint 1 and Joint 2 Angular Position, Velocity, Acceleration, and Torque
@@ -329,4 +242,3 @@ title('Joint 2 Torque');
 xlabel('Time (s)');
 ylabel('Torque (N.m)');
 grid on;
-
