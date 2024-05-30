@@ -143,10 +143,48 @@ protected:
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
-        if (index_ >= torque_commands_.size())
+        while (index_ >= torque_commands_.size())
         {
             std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
-            return true;
+
+            std::ostringstream oss;
+            oss << "timestamp:" << index_;
+            for (size_t i = 0; i < controllers_.size(); ++i)
+            {
+                // Query the current position of the motor
+                auto maybe_result = controllers_[i]->SetQuery();
+                if (maybe_result)
+                {
+                    auto mode = maybe_result->values.mode;
+                    auto position = maybe_result->values.position;
+                    auto velocity = maybe_result->values.velocity;
+                    auto torque = maybe_result->values.torque;
+                    auto motor_temperature = maybe_result->values.motor_temperature;
+                    auto trajectory_complete = maybe_result->values.trajectory_complete;
+                    auto temperature = maybe_result->values.temperature;
+                    auto fault = maybe_result->values.fault;
+
+                    oss << ",motor" << i + 1 << "_mode:" << static_cast<int>(mode);
+                    oss << ",motor" << i + 1 << "_position:" << position;
+                    oss << ",motor" << i + 1 << "_velocity:" << velocity;
+                    oss << ",motor" << i + 1 << "_torque:" << torque;
+                    oss << ",motor" << i + 1 << "_motor_temperature:" << motor_temperature;
+                    oss << ",motor" << i + 1 << "_trajectory_complete:" << trajectory_complete;
+                    oss << ",motor" << i + 1 << "_temperature:" << temperature;
+                    oss << ",motor" << i + 1 << "_fault:" << static_cast<int>(fault);
+                }
+            }
+            std::string data = oss.str();
+            broadcastData(data);
+
+            index_++;
+
+            if (index_ == 1000)
+            {
+                return true;
+            }
+
+            // return true;
         }
 
         for (size_t i = 0; i < controllers_.size(); i++)

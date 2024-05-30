@@ -19,7 +19,7 @@ g = 9.8;          % gravity (m/s^2)
 %% SECTION 2: Initialising simulation variables
 
 % Time vector for simulation
-t_sim = linspace(0, 3, 150);                                          % Time vector for simulation
+t_sim = linspace(0, 5, 250);                                          % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
 tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
@@ -34,20 +34,22 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 %% SECTION 3: Desired Trajectory - Positions, Velocities and Accelerations
 
 % Original trajectory points (TRAJECTORY 2)
-% % TRAJECTORY 4
-% q1_a = linspace(0, -pi/6, 50);
-% q1_b = linspace(-pi/6, pi/2, 50);
-% q1_c = linspace(pi/2, -pi, 50);
-% 
-% q2_a = linspace(0, -pi/6, 50);
-% q2_b = linspace(-pi/6, pi/6, 50);
-% q2_c = linspace(pi/6, 0, 50);
-% 
-% % Concatenate the segments
-% q1_desired = [q1_a, q1_b, q1_c];
-% q2_desired = [q2_a, q2_b, q2_c];
-q1_desired = linspace(0, pi, 150);
-q2_desired = linspace(0, 0, 150);
+% TRAJECTORY 4
+q1_a = linspace(0, -0.5236, 25);
+q1_b = linspace(-0.5079, 1.0472, 50);
+q1_c = linspace(1.0210, -1.5708, 75);
+q1_d = linspace(-1.5237, pi, 100);
+
+q2_a = linspace(0, -0.5236, 25);
+q2_b = linspace(-0.5183, 0.5236, 50);
+q2_c = linspace(0.5183, -0.5236, 75);
+q2_d = linspace(-0.5183, 0, 100);
+
+% Concatenate the segments
+q1_desired = [q1_a, q1_b, q1_c, q1_d];
+q2_desired = [q2_a, q2_b, q2_c, q2_d];
+%q1_desired = linspace(0, pi, 150);
+%q2_desired = linspace(0, 0, 150);
 
 
 % Create a new time vector for the smooth trajectory
@@ -92,6 +94,10 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     q1_dot_dot = q1_dot_dot_desired(i);
     q2_dot_dot = q2_dot_dot_desired(i);
     
+    % Enforce acceleration limits
+    q1_dot_dot = min(max(q1_dot_dot, -125), 125);
+    q2_dot_dot = min(max(q2_dot_dot, -125), 125);
+    
     % Mass matrix
     M11 = m1 * L1^2 + m2 * (L1^2 + 2 * L1 * L2 * cos(q2) + L2^2);
     M12 = m2 * (L1 * L2 * cos(q2) + L2^2);
@@ -126,6 +132,7 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     q1_dot_dot_sim(i) = q1_dot_dot;
     q2_dot_dot_sim(i) = q2_dot_dot;
 end
+
 
 %% GENERATE CSV FILE OF TRAJECTORY
 % Create CSV file of Trajectory Generation Data

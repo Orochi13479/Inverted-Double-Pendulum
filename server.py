@@ -32,7 +32,7 @@ async def websocket_handler(websocket, path):
 # Function to broadcast data to all connected clients
 async def broadcast_data(data):
     if clients:
-        await asyncio.wait([client.send(data) for client in clients])
+        await asyncio.gather(*[client.send(data) for client in clients])
 
 
 # Function to receive data from the C++ WebSocket server and forward it
@@ -69,6 +69,7 @@ async def main():
         websocket_handler, "localhost", 9003
     )  # Clients connect to this server
 
+    # Create tasks for the websocket server and forward_data function
     await asyncio.gather(websocket_server, forward_data())
 
 
