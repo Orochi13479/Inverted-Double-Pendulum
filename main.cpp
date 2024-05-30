@@ -115,22 +115,20 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
         std::vector<double> cmd_kp = {6.0, 1.5};
         std::vector<double> cmd_kd = {3.0, 0.5};
-        std::vector<double> cmd_pos = {0.5, 0};
+        std::vector<double> cmd_pos = {0.0, 0.0};
 
         for (size_t i = 0; i < controllers_.size(); i++) {
             if (index_ >= torque_commands_.size()) {
                 // std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
-                cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                cmd_.velocity = mjbots::moteus::kIgnore;
+                // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
+                // cmd_.velocity = mjbots::moteus::kIgnore;
                 cmd_.maximum_torque = 1.0;
                 cmd_.position = cmd_pos[i];
                 // return true;
 
             } else {
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-                cmd_.velocity = mjbots::moteus::kIgnore;
-                cmd_.maximum_torque = mjbots::moteus::kIgnore;
-                cmd_.position = mjbots::moteus::kIgnore;
+
             }
             cmd_.kp_scale = cmd_kp[i];
             cmd_.kd_scale = cmd_kd[i];
@@ -154,7 +152,7 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
         status_count++;
         if (status_count > kStatusPeriod) {
-            printf("MODE: %2d/%2d POSITION IN DEGREES: %6.3f/%6.3f TORQUE: %6.3f/%6.3f VELOCITY: %6.3f/%6.3f CONTROL_SIGNAL: %6.3f/%6.3f\r",
+            printf("MODE: %2d/%2d POSITION IN DEGREES: %6.3f/%6.3f TORQUE: %6.3f/%6.3f VELOCITY: %6.3f/%6.3f\r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                    v1.position, v2.position,
                    v1.torque, v2.torque,
