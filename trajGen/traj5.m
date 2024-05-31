@@ -4,12 +4,11 @@
 % feedforward torques to achieve the desired trajectory.
 % LIMITS OF THE SYSTEM
 % (1) Angular Velocity Range: 7500 [rpm] = 785.3981633974482 [rad/s]
-% (2) Angular Acceleration Range:
+% (2) Angular Acceleration Range:125.663706 [rad /(s^2)]
 % (3) Angular Position Range:
-% (4) Torque Limit: 1.7 [N.m] Peak Torque
+% (4) Torque Limit: 1 [N.m] Peak Torque
 
-% Uses Cubic Spline to interpolate the desired angular velocities and
-% accelerations
+% USE INVERTED DAMPED COSINE WAVE TO DETERMINE JOINT 1 POSITIONS
 
 %% SECTION 1: Physical parameters of the system
 % Define parameters of double inverted pendulum system
@@ -20,82 +19,61 @@ m2 = 0.21;        % Link 2 mass (kg)
 g = 9.8;          % gravity (m/s^2)
 
 %% SECTION 2: Initialising simulation variables
-
+% Read data from CSV file - generated in trajTool
+data = readmatrix('inverted_damped_cosine_wave.csv');
+ 
 % Time vector for simulation
-t_sim = linspace(0, 10, 150); % Time vector for simulation
+t_sim = data(:, 1);  % First column contains time values                                         % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
-tau1 = zeros(size(t_sim)); % Initialise torque array of first motor to zero
-tau2 = zeros(size(t_sim)); % Initialise torque array of Second motor to zero
-q1_sim = zeros(size(t_sim)); % Initialise position array of first motor to zero
-q2_sim = zeros(size(t_sim)); % Initialise position array of second motor to zero
-q1_dot_sim = zeros(size(t_sim)); % Initialise velocity array of first motor to zero
-q2_dot_sim = zeros(size(t_sim)); % Initialise velocity array of second motor to zero
-q1_dot_dot_sim = zeros(size(t_sim)); % Initialise acceleration array of first motor to zero
-q2_dot_dot_sim = zeros(size(t_sim)); % Initialise acceleration array of second motor to zero
+tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
+tau2 = zeros(size(t_sim));                                          % Initialise torque array of Second motor to zero
+q1_sim = zeros(size(t_sim));                                        % Initialise position array of first motor to zero
+q2_sim = zeros(size(t_sim));                                        % Initialise position array of second motor to zero
+q1_dot_sim = zeros(size(t_sim));                                    % Initialise velocity array of first motor to zero
+q2_dot_sim = zeros(size(t_sim));                                    % Initialise velocity array of second motor to zero
+q1_dot_dot_sim = zeros(size(t_sim));                                % Initialise acceleration array of first motor to zero
+q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise acceleration array of second motor to zero
 
 %% SECTION 3: Desired Trajectory - Positions, Velocities and Accelerations
-q1_a = linspace(0, -pi/6, 50);
-q1_b = linspace(-pi/6, pi/2, 50);
-q1_c = linspace(pi/2, pi, 50);
 
-q2_a = linspace(0, -pi/6, 50);
-q2_b = linspace(-pi/6, pi, 50);
-q2_c = linspace(pi, 0, 50);
+%TRAJECTORY 1
+q1_desired = data(:, 2);  % Second column contains inverted y values
+q2_desired = data(:, 3);
 
-q1_desired = [q1_a, q1_b, q1_c]; % Desired position for q1
-q2_desired = [q2_a, q2_b, q2_c]; % Desired position for q2
+% Create a new time vector for the smooth trajectory
+t_original = linspace(0, 3, length(q1_desired));
+t_smooth = linspace(0, 3, length(t_sim));
 
-% Use cubic splines to interpolate the positions
-pp_q1 = spline(t_sim, q1_desired);
-pp_q2 = spline(t_sim, q2_desired);
+% Generate spline interpolations
+q1_smooth = spline(t_original, q1_desired, t_smooth);
+q2_smooth = spline(t_original, q2_desired, t_smooth);
 
-% Manually calculate the first and second derivatives of the splines
-% Get the break points and coefficients of the piecewise polynomials
-breaks_q1 = pp_q1.breaks;
-coefs_q1 = pp_q1.coefs;
+% Use the smoothed trajectories
+q1_desired = q1_smooth;
+q2_desired = q2_smooth;
 
-breaks_q2 = pp_q2.breaks;
-coefs_q2 = pp_q2.coefs;
+% Compute velocities using finite differences
+dt = t_smooth(2) - t_smooth(1);  % Time step
+q1_dot_desired = diff(q1_desired) / dt;
+q2_dot_desired = diff(q2_desired) / dt;
 
-% Initialize arrays for derivatives
-q1_dot_desired = zeros(size(t_sim));
-q1_dot_dot_desired = zeros(size(t_sim));
-q2_dot_desired = zeros(size(t_sim));
-q2_dot_dot_desired = zeros(size(t_sim));
-
-% Loop through each segment and calculate the derivatives
-for i = 1:length(breaks_q1) - 1
-    % Define time range for the current segment
-    t_range = t_sim(t_sim >= breaks_q1(i) & t_sim < breaks_q1(i + 1));
-    
-    % Get the coefficients for the current segment
-    c_q1 = coefs_q1(i, :);
-    c_q2 = coefs_q2(i, :);
-    
-    % Calculate the first and second derivatives of the polynomials
-    c_q1_dot = polyder(c_q1);
-    c_q1_dot_dot = polyder(c_q1_dot);
-    c_q2_dot = polyder(c_q2);
-    c_q2_dot_dot = polyder(c_q2_dot);
-    
-    % Evaluate the derivatives at the time points in the current segment
-    q1_dot_desired(t_sim >= breaks_q1(i) & t_sim < breaks_q1(i + 1)) = polyval(c_q1_dot, t_range - breaks_q1(i));
-    q1_dot_dot_desired(t_sim >= breaks_q1(i) & t_sim < breaks_q1(i + 1)) = polyval(c_q1_dot_dot, t_range - breaks_q1(i));
-    q2_dot_desired(t_sim >= breaks_q2(i) & t_sim < breaks_q2(i + 1)) = polyval(c_q2_dot, t_range - breaks_q2(i));
-    q2_dot_dot_desired(t_sim >= breaks_q2(i) & t_sim < breaks_q2(i + 1)) = polyval(c_q2_dot_dot, t_range - breaks_q2(i));
-end
-
-% Handle the last break point separately
-q1_dot_desired(end) = polyval(polyder(coefs_q1(end, :)), t_sim(end) - breaks_q1(end - 1));
-q1_dot_dot_desired(end) = polyval(polyder(polyder(coefs_q1(end, :))), t_sim(end) - breaks_q1(end - 1));
-q2_dot_desired(end) = polyval(polyder(coefs_q2(end, :)), t_sim(end) - breaks_q2(end - 1));
-q2_dot_dot_desired(end) = polyval(polyder(polyder(coefs_q2(end, :))), t_sim(end) - breaks_q2(end - 1));
+% Pad the velocities arrays to match the length of the time vector
+q1_dot_desired = [q1_dot_desired, 0];  % Add a zero to the end to match the original length
+q2_dot_desired = [q2_dot_desired, 0];  % Add a zero to the end to match the original length
+% 
+% Compute accelerations using finite differences
+q1_dot_dot_desired = diff(q1_dot_desired) / dt;
+q2_dot_dot_desired = diff(q2_dot_desired) / dt;
+% 
+% % Pad the accelerations arrays to match the length of the time vector
+q1_dot_dot_desired = [q1_dot_dot_desired, 0];  % Add a zero to the end to match the original length
+q2_dot_dot_desired = [q2_dot_dot_desired, 0];  % Add a zero to the end to match the original length
 
 %% SECTION 4: Calculate torques using Inverse Dynamics
 
 % Calculate required torques to achieve desired trajectories
-for i = 1:length(t_sim) % Ensure the loop runs for the correct length
+for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     % Calculate required torques to achieve desired trajectories
     t = t_sim(i);
     q1 = q1_desired(i);
@@ -104,6 +82,10 @@ for i = 1:length(t_sim) % Ensure the loop runs for the correct length
     q2_dot = q2_dot_desired(i);
     q1_dot_dot = q1_dot_dot_desired(i);
     q2_dot_dot = q2_dot_dot_desired(i);
+    
+    % Enforce acceleration limits
+    q1_dot_dot = min(max(q1_dot_dot, -125), 125);
+    q2_dot_dot = min(max(q2_dot_dot, -125), 125);
     
     % Mass matrix
     M11 = m1 * L1^2 + m2 * (L1^2 + 2 * L1 * L2 * cos(q2) + L2^2);
@@ -126,6 +108,9 @@ for i = 1:length(t_sim) % Ensure the loop runs for the correct length
     q_dot_dot = [q1_dot_dot; q2_dot_dot];
     tau = M * q_dot_dot + c + g_q;
     
+    % Enforce torque limits
+    tau = min(max(tau, -1), 1);
+    
     % Store results
     tau1(i) = tau(1);
     tau2(i) = tau(2);
@@ -137,11 +122,12 @@ for i = 1:length(t_sim) % Ensure the loop runs for the correct length
     q2_dot_dot_sim(i) = q2_dot_dot;
 end
 
+
 %% GENERATE CSV FILE OF TRAJECTORY
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_2.csv';
+filename = 'trajectory_data_05.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
@@ -157,46 +143,114 @@ fclose(fid);
 % Append data to the CSV file
 writematrix(data, filename, 'WriteMode', 'append');
 
-%% SECTION 5: Create an animation of the results
-
-% Initialize the figure
+%% SIMULATE SYSTEM
+% Animation of the double inverted pendulum
 figure;
 hold on;
 axis equal;
-axis([-0.5 0.5 -0.5 0.5]);
+xlim([-0.5 0.5]);
+ylim([-0.5 0.5]);
+xlabel('X Position (m)');
+ylabel('Y Position (m)');
+title('Double Inverted Pendulum Animation');
 
-% Plot the pendulum links and joints
-pendulum1 = plot([0, L1 * sin(q1_sim(1))], [0, -L1 * cos(q1_sim(1))], 'LineWidth', 2);
+% Define the pendulum links
+pendulum1 = plot([0, L1 * sin(q1_sim(1))], [0, -L1 * cos(q1_sim(1))], 'r-', 'LineWidth', 2);
 pendulum2 = plot([L1 * sin(q1_sim(1)), L1 * sin(q1_sim(1)) + L2 * sin(q1_sim(1) + q2_sim(1))], ...
-                 [-L1 * cos(q1_sim(1)), -L1 * cos(q1_sim(1)) - L2 * cos(q1_sim(1) + q2_sim(1))], 'LineWidth', 2);
+                 [-L1 * cos(q1_sim(1)), -L1 * cos(q1_sim(1)) - L2 * cos(q1_sim(1) + q2_sim(1))], 'b-', 'LineWidth', 2);
 
-% Text annotations for angles and torques
+% Initialize text annotations
 q1_text = text(0.3, 0.4, sprintf('q1: %.2f rad', q1_sim(1)), 'FontSize', 10, 'Color', 'k');
 q2_text = text(0.3, 0.35, sprintf('q2: %.2f rad', q2_sim(1)), 'FontSize', 10, 'Color', 'k');
 q1_dot_text = text(0.3, 0.3, sprintf('q1_dot: %.2f rad/s', q1_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
 q2_dot_text = text(0.3, 0.25, sprintf('q2_dot: %.2f rad/s', q2_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
-q1_ddot_text = text(0.3, 0.2, sprintf('q1_ddot: %.2f rad/s^2', q1_dot_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
-q2_ddot_text = text(0.3, 0.15, sprintf('q2_ddot: %.2f rad/s^2', q2_dot_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
-tau1_text = text(0.3, 0.1, sprintf('tau1: %.2f N.m', tau1(1)), 'FontSize', 10, 'Color', 'k');
-tau2_text = text(0.3, 0.05, sprintf('tau2: %.2f N.m', tau2(1)), 'FontSize', 10, 'Color', 'k');
+tau1_text = text(0.3, 0.2, sprintf('tau1: %.2f N.m', tau1(1)), 'FontSize', 10, 'Color', 'k');
+tau2_text = text(0.3, 0.15, sprintf('tau2: %.2f N.m', tau2(1)), 'FontSize', 10, 'Color', 'k');
 
+% Update the animation in a loop
 for i = 1:length(t_sim)
     % Update the pendulum links
     set(pendulum1, 'XData', [0, L1 * sin(q1_sim(i))], 'YData', [0, -L1 * cos(q1_sim(i))]);
     set(pendulum2, 'XData', [L1 * sin(q1_sim(i)), L1 * sin(q1_sim(i)) + L2 * sin(q1_sim(i) + q2_sim(i))], ...
                    'YData', [-L1 * cos(q1_sim(i)), -L1 * cos(q1_sim(i)) - L2 * cos(q1_sim(i) + q2_sim(i))]);
-
-    % Update text annotations
+    
+    % Update the text annotations
     set(q1_text, 'String', sprintf('q1: %.2f rad', q1_sim(i)));
     set(q2_text, 'String', sprintf('q2: %.2f rad', q2_sim(i)));
     set(q1_dot_text, 'String', sprintf('q1_dot: %.2f rad/s', q1_dot_sim(i)));
     set(q2_dot_text, 'String', sprintf('q2_dot: %.2f rad/s', q2_dot_sim(i)));
-    set(q1_ddot_text, 'String', sprintf('q1_ddot: %.2f rad/s^2', q1_dot_dot_sim(i)));
-    set(q2_ddot_text, 'String', sprintf('q2_ddot: %.2f rad/s^2', q2_dot_dot_sim(i)));
     set(tau1_text, 'String', sprintf('tau1: %.2f N.m', tau1(i)));
     set(tau2_text, 'String', sprintf('tau2: %.2f N.m', tau2(i)));
-
+    
     % Pause to create animation effect
-    pause(0.1);
+    pause(0.01);
 end
 
+%% Generate Graphs for Joint 1 and Joint 2 Angular Position, Velocity, Acceleration, and Torque
+
+% Create a new figure
+figure;
+
+% Plot Joint 1 Angular Position
+subplot(4, 2, 1);  % Create a 4x2 grid, and use the 1st cell
+plot(t_sim, q1_sim, 'b', 'LineWidth', 1.5);
+title('Joint 1 Angular Position');
+xlabel('Time (s)');
+ylabel('Position (rad)');
+grid on;
+
+% Plot Joint 1 Angular Velocity
+subplot(4, 2, 3);  % Create a 4x2 grid, and use the 3rd cell
+plot(t_sim, q1_dot_sim, 'r', 'LineWidth', 1.5);
+title('Joint 1 Angular Velocity');
+xlabel('Time (s)');
+ylabel('Velocity (rad/s)');
+grid on;
+
+% Plot Joint 1 Angular Acceleration
+subplot(4, 2, 5);  % Create a 4x2 grid, and use the 5th cell
+plot(t_sim, q1_dot_dot_sim, 'g', 'LineWidth', 1.5);
+title('Joint 1 Angular Acceleration');
+xlabel('Time (s)');
+ylabel('Acceleration (rad/s^2)');
+grid on;
+
+% Plot Joint 1 Torque
+subplot(4, 2, 7);  % Create a 4x2 grid, and use the 7th cell
+plot(t_sim, tau1, 'k', 'LineWidth', 1.5);
+title('Joint 1 Torque');
+xlabel('Time (s)');
+ylabel('Torque (N.m)');
+grid on;
+
+% Plot Joint 2 Angular Position
+subplot(4, 2, 2);  % Create a 4x2 grid, and use the 2nd cell
+plot(t_sim, q2_sim, 'b', 'LineWidth', 1.5);
+title('Joint 2 Angular Position');
+xlabel('Time (s)');
+ylabel('Position (rad)');
+grid on;
+
+% Plot Joint 2 Angular Velocity
+subplot(4, 2, 4);  % Create a 4x2 grid, and use the 4th cell
+plot(t_sim, q2_dot_sim, 'r', 'LineWidth', 1.5);
+title('Joint 2 Angular Velocity');
+xlabel('Time (s)');
+ylabel('Velocity (rad/s)');
+grid on;
+
+% Plot Joint 2 Angular Acceleration
+subplot(4, 2, 6);  % Create a 4x2 grid, and use the 6th cell
+plot(t_sim, q2_dot_dot_sim, 'g', 'LineWidth', 1.5);
+title('Joint 2 Angular Acceleration');
+xlabel('Time (s)');
+ylabel('Acceleration (rad/s^2)');
+grid on;
+
+% Plot Joint 2 Torque
+subplot(4, 2, 8);  % Create a 4x2 grid, and use the 8th cell
+plot(t_sim, tau2, 'k', 'LineWidth', 1.5);
+title('Joint 2 Torque');
+xlabel('Time (s)');
+ylabel('Torque (N.m)');
+grid on;
