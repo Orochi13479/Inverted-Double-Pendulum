@@ -251,13 +251,14 @@ int main(int argc, char **argv)
 
     // Set position format
     auto &pf = options_common.position_format;
+    auto &qf = options_common.query_format;
     pf.position = mjbots::moteus::kIgnore;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
-    options_common.position_format.accel_limit = mjbots::moteus::kFloat;
-    options_common.query_format.trajectory_complete = mjbots::moteus::kInt8;
+    pf.accel_limit = mjbots::moteus::kFloat;
+    qf.trajectory_complete = mjbots::moteus::kInt8;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
