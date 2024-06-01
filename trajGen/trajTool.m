@@ -1,10 +1,10 @@
 % Parameters
 lambda1 = 0.5;
-omega1 = 8*pi/5;         % Adjust number of oscillations
+omega1 = 10*pi/5;         % Adjust number of oscillations
 phi1 = pi;          
 
 lambda2 = 0.1;
-omega2 = 8*pi/5;         % Adjust number of oscillations
+omega2 = 10*pi/5;         % Adjust number of oscillations
 phi2 = pi;
 % Time array
 t = linspace(0, 10, 1000)';
