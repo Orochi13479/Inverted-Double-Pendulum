@@ -162,7 +162,6 @@ protected:
                 cmd_.accel_limit = 2;
 
                 // cmd_.stop_position = cmd_pos[i];
-                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
                 // controllers_[i]->SetPositionWaitComplete()
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
@@ -173,8 +172,8 @@ protected:
             {
                 std::cout << "TRAJ MODE" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
             }
+            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
         for (auto &pair : responses_)
