@@ -131,11 +131,11 @@ protected:
         const std::vector<double> &last_torque_command = torque_commands_.back();
         std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
 
-        printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+        printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f FAULTS: %6.3f/%6.3f\r",
                static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                v1.position, v2.position,
                v1.torque, v2.torque, torque_diff[0], torque_diff[1],
-               v1.temperature, v2.temperature, v1.velocity, v2.velocity);
+               v1.temperature, v2.temperature, v1.velocity, v2.velocity, v1.fault, v2.fault);
         fflush(stdout);
 
         for (size_t i = 0; i < controllers_.size(); i++)
@@ -150,7 +150,7 @@ protected:
                 cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.velocity = 0.0;
-                cmd_.position = cmd_pos[i];
+                cmd_.position = 0.1;
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
                 // return true;
