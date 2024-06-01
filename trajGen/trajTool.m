@@ -1,13 +1,13 @@
 % % Parameters
-lambda1 = 0.2;            % Adjust decay
-omega1 = 3*pi/5;         % Adjust number of oscillationsc
+lambda1 = 0.5;            % Adjust decay
+omega1 = 7*pi/5;         % Adjust number of oscillationsc
 phi1 = pi;          
 
-lambda2 = 5;            % Adjust decay
-omega2 = 3*pi/5;         % Adjust number of oscillations
+lambda2 = 3;            % Adjust decay
+omega2 = 7*pi/5;         % Adjust number of oscillations
 phi2 = pi;
 % Time array
-t = linspace(0, 30, 2000)';
+t = linspace(0, 10, 2000)';
 
 % Function
 y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);

@@ -184,7 +184,7 @@ for i = 1:length(t_sim)
     set(tau2_text, 'String', sprintf('tau2: %.2f N.m', tau2(i)));
     
     % Pause to create animation effect
-    pause(0.01);
+    pause(0.0001);
 end
 
 %% Generate Graphs for Joint 1 and Joint 2 Angular Position, Velocity, Acceleration, and Torque
