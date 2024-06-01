@@ -103,9 +103,6 @@ public:
                        std::shared_ptr<mjbots::moteus::Transport> transport)
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
     {
-        // cmd_.maximum_torque = 1.0;
-        // cmd_.accel_limit = 200;
-        // cmd_.velocity_limit = 200;
 
         // Measuring Frequency
         int id = 0;
@@ -125,7 +122,7 @@ protected:
 
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
-        std::vector<double> cmd_pos = {0.0, 0.1};
+        std::vector<double> cmd_pos = {0.5, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -145,6 +142,9 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
+            cmd_.kp_scale = NaN;
+            cmd_.kd_scale = NaN;
+
             if (index_ >= torque_commands_.size())
             {
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
@@ -154,14 +154,16 @@ protected:
                 // cmd_.feedforward_torque = torqueWithError[i];
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
-                cmd_.velocity = 0.0;
+                cmd_.velocity = NaN;
                 cmd_.maximum_torque = NaN;
+                cmd_.feedforward_torque = NaN;
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2;
 
                 // cmd_.stop_position = cmd_pos[i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+                // controllers_[i]->SetPositionWaitComplete()
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 

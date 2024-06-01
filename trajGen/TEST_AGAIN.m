@@ -5,26 +5,21 @@
 % LIMITS OF THE SYSTEM
 % (1) Angular Velocity Range: 7500 [rpm] = 785.3981633974482 [rad/s]
 % (2) Angular Acceleration Range:125.663706 [rad /(s^2)]
+% (3) Angular Position Range:
 % (4) Torque Limit: 1 [N.m] Peak Torque
-
-% USES INVERTED DAMPED COSINE WAVE TO DETERMINE JOINT 1 POSITIONS - from
-% file trajTool.m
-% USES SINE WAVE TO DETERMINE JOINT 2 POSITION - from file trajTool.m
 
 %% SECTION 1: Physical parameters of the system
 % Define parameters of double inverted pendulum system
 L1 = 0.195;       % Link 1 length (m)
 L2 = 0.215;       % Link 2 length (m)
 m1 = 0.36;        % Link 1 mass (kg)
-m2 = 0.037; %0.21;        % Link 2 mass (kg)    0.037 - lighter arm
+m2 = 0.21;        % Link 2 mass (kg)
 g = 9.8;          % gravity (m/s^2)
 
 %% SECTION 2: Initialising simulation variables
-% Read data from CSV file - generated in trajTool
-data = readmatrix('inverted_damped_cosine_wave.csv');
- 
+
 % Time vector for simulation
-t_sim = data(:, 1);  % First column contains time values                                         % Time vector for simulation
+t_sim = linspace(0, 5, 200);                                          % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
 tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
@@ -38,9 +33,74 @@ q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise
 
 %% SECTION 3: Desired Trajectory - Positions, Velocities and Accelerations
 
-%TRAJECTORY 1
-q1_desired = data(:, 2);  % Second column contains inverted y values
-q2_desired = data(:, 3);
+% Original trajectory points (TRAJECTORY 2)
+% % TRAJECTORY 4
+% q1_a = linspace(0, -0.5236, 50);
+% q1_b = linspace(-0.5079, 1.0472, 50);
+% q1_c = linspace(1.0210, -1.5708, 50);
+% q1_d = linspace(-1.5237, pi, 50);
+% 
+% q2_a = linspace(0, -0.5236, 50);
+% q2_b = linspace(-0.5183, 0.5236, 50);
+% q2_c = linspace(0.5183, -0.5236, 50);
+% q2_d = linspace(-0.5183, 0, 50);
+% 
+% % Concatenate the segments
+% q1_desired = [q1_a, q1_b, q1_c, q1_d];
+% q2_desired = [q2_a, q2_b, q2_c, q2_d];
+
+% TRAJECTORY 7
+% q1_a = linspace(0, -0.5, 20);
+% q1_b = linspace(-0.501, 0.6, 30);
+% q1_c = linspace(0.599, -0.8, 40);
+% q1_d = linspace(-0.799, 1.1, 50);
+% q1_e = linspace(1.101, -1.4, 60);
+% q1_f = linspace(-1.399,2.0, 70);
+% q1_g = linspace(1.99,-2.5, 80);
+% q1_h = linspace(-2.499,3.1416, 100);
+% 
+% 
+% q2_a = linspace(0, -0.5236, 20);
+% q2_b = linspace(-0.5183, 0.5236, 30);
+% q2_c = linspace(0.5183, -0.5236, 40);
+% q2_d = linspace(-0.5183, 0.5236, 50);
+% q2_e = linspace(0.5183, -0.5236, 60);
+% q2_f = linspace(-0.5183, 0.5236, 70);
+% q2_g = linspace(0.5183, -0.5236, 80);
+% q2_h = linspace(-0.5183,0, 100);
+% % Concatenate the segments
+% q1_desired = [q1_a, q1_b, q1_c, q1_d, q1_e, q1_f, q1_g, q1_h];
+% q2_desired = [q2_a, q2_b, q2_c, q2_d, q2_e, q2_f, q2_g, q2_h];
+
+% %TRAJECTORY 8
+q1_a = linspace(0, -0.5, 20);
+q1_b = linspace(-0.501, 0.6, 20);
+q1_c = linspace(0.599, -0.8, 20);
+q1_d = linspace(-0.799, 1.1, 20);
+q1_e = linspace(1.101, -1.4, 20);
+q1_f = linspace(-1.399,2.0, 20);
+q1_g = linspace(1.99,-2.5, 20);
+q1_h = linspace(-2.499,3.1416, 20);
+q1_i = linspace(-2.499,3.1416, 20);
+q1_j = linspace(-2.499,3.1416, 20);
+
+q2_a = linspace(0, -0.5236, 20);
+q2_b = linspace(-0.5183, 0.5236, 20);
+q2_c = linspace(0.5183, -0.5236, 20);
+q2_d = linspace(-0.5183, 0.5236, 20);
+q2_e = linspace(0.5183, -0.5236, 20);
+q2_f = linspace(-0.5183, 0.5236, 20);
+q2_g = linspace(0.5183, -0.5236, 20);
+q2_h = linspace(-0.5183, 0.5236, 20);
+q2_i = linspace(0.5183, -0.5236, 20);
+q2_j = linspace(-0.5183,0, 20);
+
+% % Concatenate the segments
+% q1_desired = [q1_a, q1_b, q1_c, q1_d, q1_e, q1_f, q1_g, q1_h, q1_i, q1_j];
+% q2_desired = [q2_a, q2_b, q2_c, q2_d, q2_e, q2_f, q2_g, q2_h, q2_i, q2_j];
+
+
+
 
 % Create a new time vector for the smooth trajectory
 t_original = linspace(0, 3, length(q1_desired));
@@ -62,12 +122,12 @@ q2_dot_desired = diff(q2_desired) / dt;
 % Pad the velocities arrays to match the length of the time vector
 q1_dot_desired = [q1_dot_desired, 0];  % Add a zero to the end to match the original length
 q2_dot_desired = [q2_dot_desired, 0];  % Add a zero to the end to match the original length
-% 
+
 % Compute accelerations using finite differences
 q1_dot_dot_desired = diff(q1_dot_desired) / dt;
 q2_dot_dot_desired = diff(q2_dot_desired) / dt;
-% 
-% % Pad the accelerations arrays to match the length of the time vector
+
+% Pad the accelerations arrays to match the length of the time vector
 q1_dot_dot_desired = [q1_dot_dot_desired, 0];  % Add a zero to the end to match the original length
 q2_dot_dot_desired = [q2_dot_dot_desired, 0];  % Add a zero to the end to match the original length
 
@@ -85,9 +145,9 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     q2_dot_dot = q2_dot_dot_desired(i);
     
     % Enforce acceleration limits
-    % q1_dot_dot = min(max(q1_dot_dot, -125), 125);
-    % q2_dot_dot = min(max(q2_dot_dot, -125), 125);
-    % 
+    q1_dot_dot = min(max(q1_dot_dot, -125), 125);
+    q2_dot_dot = min(max(q2_dot_dot, -125), 125);
+    
     % Mass matrix
     M11 = m1 * L1^2 + m2 * (L1^2 + 2 * L1 * L2 * cos(q2) + L2^2);
     M12 = m2 * (L1 * L2 * cos(q2) + L2^2);
@@ -110,7 +170,7 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     tau = M * q_dot_dot + c + g_q;
     
     % Enforce torque limits
-    tau = min(max(tau, -0.9), 0.9);         % torque limits
+    tau = min(max(tau, -1), 1);
     
     % Store results
     tau1(i) = tau(1);
@@ -128,7 +188,7 @@ end
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_09.csv';
+filename = 'TEST_DLO.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
@@ -184,7 +244,7 @@ for i = 1:length(t_sim)
     set(tau2_text, 'String', sprintf('tau2: %.2f N.m', tau2(i)));
     
     % Pause to create animation effect
-    pause(0.001);
+    pause(0.01);
 end
 
 %% Generate Graphs for Joint 1 and Joint 2 Angular Position, Velocity, Acceleration, and Torque
