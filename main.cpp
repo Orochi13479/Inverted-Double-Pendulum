@@ -158,15 +158,35 @@ protected:
                 // cmd_.velocity = mjbots::moteus::kIgnore;
 
                 std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
-                // cmd_.position = cmd_pos[i];
+
                 cmd_.feedforward_torque = torque_diff[i];
+
                 // return true;
-                printf("HOLD POSITION MODE: %2d/%2d POSITION IN DEGREES: %6.3f/%6.3f TORQUE: %6.3f/%6.3f VELOCITY: %6.3f/%6.3f\r",
-                       static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                       v1.position, v2.position,
-                       v1.torque, v2.torque,
-                       v1.velocity, v2.velocity);
-                fflush(stdout);
+
+                auto maybe_result = controllers_[i]->SetQuery();
+
+                if (maybe_result)
+                {
+                    auto mode = maybe_result->values.mode;
+                    auto position = maybe_result->values.position;
+                    auto velocity = maybe_result->values.velocity;
+                    auto torque = maybe_result->values.torque;
+                    auto motor_temperature = maybe_result->values.motor_temperature;
+                    auto trajectory_complete = maybe_result->values.trajectory_complete;
+                    auto temperature = maybe_result->values.temperature;
+                    auto fault = maybe_result->values.fault;
+                    printf("motor%d_mode:%d,motor%d_position:%.2f,motor%d_velocity:%.2f,motor%d_torque:%.2f,motor%d_motor_temperature:%.2f,motor%d_trajectory_complete:%d,motor%d_temperature:%.2f,motor%d_fault:%d\n",
+                           i + 1, static_cast<int>(mode),
+                           i + 1, position,
+                           i + 1, velocity,
+                           i + 1, torque,
+                           i + 1, motor_temperature,
+                           i + 1, trajectory_complete,
+                           i + 1, temperature,
+                           i + 1, static_cast<int>(fault));
+
+                    fflush(stdout);
+                }
             }
             else
             {
