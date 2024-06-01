@@ -157,12 +157,12 @@ protected:
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
 
-                cmd_.position = 0.1;
+                cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
 
-                auto c1_result = controllers_[0]->SetPosition(cmd_);
-                auto c2_result = controllers_[1]->SetPosition(cmd_);
-                if (c1_result && c2_result && c1_result->values.trajectory_complete && c2_result->values.trajectory_complete)
+                auto c1_result = controllers_[i]->SetPosition(cmd_);
+
+                if (c1_result && c1_result->values.trajectory_complete)
                 {
                     return true;
                 }
