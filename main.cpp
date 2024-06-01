@@ -175,7 +175,7 @@ protected:
                 auto c2_result = controllers_[1]->SetPosition(cmd_);
                 if (c1_result && c2_result && c1_result->values.trajectory_complete && c2_result->values.trajectory_complete)
                 {
-                    break;
+                    return true;
                 }
 
                 // cmd_.position = cmd_pos[i];
