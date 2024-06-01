@@ -137,7 +137,7 @@ protected:
                static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                v1.position, v2.position,
                v1.torque, v2.torque, torque_diff[0], torque_diff[1],
-               v1.temperature, v2.temperature, v1.velocity, v2.velocity, v1.fault, v2.fault);
+               v1.temperature, v2.temperature, v1.velocity, v2.velocity, static_cast<int>(v1.fault), static_cast<int>(v2.fault));
         fflush(stdout);
 
         for (size_t i = 0; i < controllers_.size(); i++)
@@ -212,7 +212,7 @@ protected:
             index_++;
         }
 
-        ::usleep(1000);
+        ::usleep(10);
 
         return false;
     }
@@ -282,7 +282,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 60) - (data[i - 1][0] * 60));
+        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
