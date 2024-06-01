@@ -124,12 +124,8 @@ protected:
         std::vector<double> cmd_kd = {5.0, 0.5};
         std::vector<double> cmd_pos = {0.5, 0.0};
 
-        std::cout << "INIT PASSED 4" << std::endl;
-
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
-
-        std::cout << "INIT PASSED 5" << std::endl;
 
         const auto &v1 = maybe_servo1->values;
         const auto &v2 = maybe_servo2->values;
@@ -151,7 +147,7 @@ protected:
 
             if (index_ >= torque_commands_.size())
             {
-                std::cout << "POSITION MODE POS: " << v1.position << std::endl;
+                std::cout << "POSITION MODE" << std::endl;
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
@@ -165,7 +161,7 @@ protected:
             }
             else
             {
-                std::cout << "TRAJ MODE" << std::endl;
+                std::cout << "TRAJECTORY MODE" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
                 transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
@@ -250,12 +246,7 @@ int main(int argc, char **argv)
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
     pf.accel_limit = mjbots::moteus::kInt16;
-
-    std::cout << "INIT PASSED 0" << std::endl;
-
     qf.trajectory_complete = mjbots::moteus::kIgnore;
-
-    std::cout << "INIT PASSED 1" << std::endl;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
@@ -271,13 +262,11 @@ int main(int argc, char **argv)
                                                  return options; }()),
     };
 
-    std::cout << "INIT PASSED 2" << std::endl;
-
     for (auto &c : controllers)
     {
         c->SetStop();
     }
-    std::cout << "INIT PASSED 3" << std::endl;
+
     // Extract torque commands, disregarding the first command
     std::vector<std::vector<double>> torque_commands;
     for (size_t i = 1; i < data.size(); ++i)
@@ -295,19 +284,19 @@ int main(int argc, char **argv)
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
 
-    // // Printing torque commands
-    // std::cout << "Torque Commands:\n";
-    // for (size_t i = 0; i < torque_commands.size(); ++i)
-    // {
-    //     std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
-    // }
+    // Printing torque commands
+    std::cout << "Torque Commands:\n";
+    for (size_t i = 0; i < torque_commands.size(); ++i)
+    {
+        std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
+    }
 
-    // // Print time intervals
-    // std::cout << "\nTime Intervals (in milliseconds):\n";
-    // for (size_t i = 0; i < time_intervals.size(); ++i)
-    // {
-    //     std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
-    // }
+    // Print time intervals
+    std::cout << "\nTime Intervals (in milliseconds):\n";
+    for (size_t i = 0; i < time_intervals.size(); ++i)
+    {
+        std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
+    }
 
     // Prompt the user to press enter
     std::cout << "CAREFULLY CHECK TORQUE VALUES";
