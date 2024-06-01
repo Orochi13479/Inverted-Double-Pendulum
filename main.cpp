@@ -119,8 +119,8 @@ class MotorControlThread : public cactus_rt::CyclicThread {
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
-        std::vector<double> cmd_kp = {8.0, 2};
-        std::vector<double> cmd_kd = {4.0, 1};
+        std::vector<double> cmd_kp = {10.0, 1};
+        std::vector<double> cmd_kd = {5.0, 0.5};
         std::vector<double> cmd_pos = {0.5, 0.0};
 
         auto maybe_servo1 = FindServo(receive_frames, 1);
@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_05.csv";
+    std::string filename = "../trajGen/RTTestTraj.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
