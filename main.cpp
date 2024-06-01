@@ -151,7 +151,7 @@ protected:
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
                 cmd_.accel_limit = 0.5;
                 cmd_.velocity_limit = 0.5;
-                cmd_.velocity = 0.1;
+                cmd_.velocity = 0.05;
                 cmd_.position = 0.1;
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
@@ -277,7 +277,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 50) - (data[i - 1][0] * 50));
+        time_intervals.push_back((data[i][0] * 200) - (data[i - 1][0] * 200));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
