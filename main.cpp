@@ -153,21 +153,6 @@ protected:
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
 
-                // if (v1.position > 0.5)
-                // {
-                //     std::cout << "POSIIVE " << std::endl;
-
-                //     cmd_.feedforward_torque = -0.1;
-                // }
-                // else
-                // {
-                //     std::cout << "NEGATIVE" << std::endl;
-
-                //     cmd_.feedforward_torque = 0.1;
-                // }
-                // cmd_.velocity = 0.0;
-                // cmd_.maximum_torque = 1.0;
-
                 cmd_.position = 0.5;
                 cmd_.accel_limit = 2.0;
 
