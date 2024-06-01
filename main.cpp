@@ -155,7 +155,7 @@ protected:
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
 
-                cmd_.position = 0.5;
+                cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2;
                 controllers_[i]->SetPositionWaitComplete(cmd_, 3)
 
@@ -167,16 +167,15 @@ protected:
             {
                 std::cout << "TRAJ MODE" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
+                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+                transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
             }
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
-            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
         for (auto &pair : responses_)
             pair.second = false;
-
-        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
