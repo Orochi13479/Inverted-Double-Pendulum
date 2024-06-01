@@ -152,7 +152,7 @@ protected:
                 cmd_.accel_limit = 125;
                 cmd_.velocity_limit = 125;
                 cmd_.velocity = 0.05;
-                cmd_.position = 0.1;
+                cmd_.position = 0.01;
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
                 // return true;
