@@ -110,7 +110,7 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     tau = M * q_dot_dot + c + g_q;
     
     % Enforce torque limits
-    tau = min(max(tau, -0.8), 0.8);         % torque limits
+    tau = min(max(tau, -1), 1);         % torque limits
     
     % Store results
     tau1(i) = tau(1);
