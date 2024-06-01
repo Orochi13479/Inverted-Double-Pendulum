@@ -5,10 +5,11 @@
 % LIMITS OF THE SYSTEM
 % (1) Angular Velocity Range: 7500 [rpm] = 785.3981633974482 [rad/s]
 % (2) Angular Acceleration Range:125.663706 [rad /(s^2)]
-% (3) Angular Position Range:
 % (4) Torque Limit: 1 [N.m] Peak Torque
 
-% USE INVERTED DAMPED COSINE WAVE TO DETERMINE JOINT 1 POSITIONS
+% USES INVERTED DAMPED COSINE WAVE TO DETERMINE JOINT 1 POSITIONS - from
+% file trajTool.m
+% USES SINE WAVE TO DETERMINE JOINT 2 POSITION - from file trajTool.m
 
 %% SECTION 1: Physical parameters of the system
 % Define parameters of double inverted pendulum system
@@ -109,7 +110,7 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     tau = M * q_dot_dot + c + g_q;
     
     % Enforce torque limits
-    tau = min(max(tau, -1), 1);
+    tau = min(max(tau, -1), 1);         % torque limits
     
     % Store results
     tau1(i) = tau(1);

@@ -1,17 +1,17 @@
-% Parameters
-lambda1 = 0.5;
-omega1 = 10*pi/5;         % Adjust number of oscillations
+% % Parameters
+lambda1 = 0.5;            % Adjust decay
+omega1 = 6*pi/5;         % Adjust number of oscillationsc
 phi1 = pi;          
 
-lambda2 = 0.1;
-omega2 = 10*pi/5;         % Adjust number of oscillations
+lambda2 = 5;            % Adjust decay
+omega2 = 6*pi/5;         % Adjust number of oscillations
 phi2 = pi;
 % Time array
-t = linspace(0, 10, 1000)';
+t = linspace(0, 10, 500)';
 
 % Function
 y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
-y2 = pi/6 * sin(omega2 * t + phi2);
+y2 = pi/6* sin(omega2 * t + phi2);
 
 % Invert y values
 y1_inverted = flipud(y1);
