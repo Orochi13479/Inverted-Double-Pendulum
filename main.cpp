@@ -147,6 +147,7 @@ protected:
 
                 // std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
                 // cmd_.feedforward_torque = torqueWithError[i];
+                cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 cmd_.position = std::numeric_limits<double>::quiet_NaN();
                 cmd_.velocity = 0.0;
                 // cmd_.position = cmd_pos[i];
