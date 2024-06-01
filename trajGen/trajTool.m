@@ -7,7 +7,7 @@ lambda2 = 0.1;
 omega2 = 8*pi/5;         % Adjust number of oscillations
 phi2 = pi;
 % Time array
-t = linspace(0, 10, 500)';
+t = linspace(0, 10, 1000)';
 
 % Function
 y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
