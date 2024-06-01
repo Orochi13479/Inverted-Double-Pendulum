@@ -260,6 +260,8 @@ int main(int argc, char **argv)
     pf.accel_limit = mjbots::moteus::kIgnore;
     qf.trajectory_complete = mjbots::moteus::kIgnore;
 
+    std::cout << "INIT PASSED 1";
+
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
         std::make_shared<mjbots::moteus::Controller>([&]()
@@ -273,6 +275,8 @@ int main(int argc, char **argv)
                                                  options.id = 2;
                                                  return options; }()),
     };
+
+    std::cout << "INIT PASSED 2";
 
     for (auto &c : controllers)
     {
