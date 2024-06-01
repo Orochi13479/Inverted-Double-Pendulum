@@ -161,7 +161,8 @@ protected:
             {
                 std::cout << "TRAJ MODE" << std::endl;
 
-                cmd_.feedforward_torque = torque_commands_[index_][i];
+                // cmd_.feedforward_torque = torque_commands_[index_][i];
+                cmd_.position = torque_commands_[index_][i];
             }
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
@@ -270,7 +271,7 @@ int main(int argc, char **argv)
     std::vector<std::vector<double>> torque_commands;
     for (size_t i = 1; i < data.size(); ++i)
     {
-        torque_commands.push_back({data[i][4], data[i][8]});
+        torque_commands.push_back({data[i][1], data[i][5]});
     }
 
     // Calculate time intervals as differences between timestamps
