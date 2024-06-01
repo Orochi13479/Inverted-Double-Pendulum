@@ -149,8 +149,8 @@ protected:
                 // cmd_.feedforward_torque = torqueWithError[i];
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
-                // cmd_.velocity = std::numeric_limits<double>::quiet_NaN();
-                // cmd_.position = 0.1;
+                cmd_.velocity = 0.03;
+                cmd_.position = 0.1;
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
                 // return true;
