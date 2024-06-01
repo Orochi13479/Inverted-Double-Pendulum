@@ -104,8 +104,8 @@ public:
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
     {
         // cmd_.maximum_torque = 1.0;
-        cmd_.accel_limit = 200;
-        cmd_.velocity_limit = 200;
+        // cmd_.accel_limit = 200;
+        // cmd_.velocity_limit = 200;
 
         // Measuring Frequency
         int id = 0;
@@ -157,7 +157,7 @@ protected:
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2;
-                controllers_[i]->SetPositionWaitComplete(cmd_, 3);
+                controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
