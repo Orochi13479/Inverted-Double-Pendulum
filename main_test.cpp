@@ -149,28 +149,20 @@ protected:
 
                 std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
                 cmd_.feedforward_torque = torqueWithError[i];
-                // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
-                // cmd_.position = std::numeric_limits<double>::quiet_NaN();
-
-                cmd_.velocity = 0.3;
-                cmd_.position = 0.1;
-
-
-                // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
                 // return true;
             }
             else
             {
-                // std::cout << "TRAJ MODE" << std::endl;
+                std::cout << "TRAJ MODE" << std::endl;
 
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 // cmd_.velocity = 0.3;
 
                 // cmd_.position = 0.1;
             }
-            // cmd_.kp_scale = cmd_kp[i];
-            // cmd_.kd_scale = cmd_kd[i];
+            cmd_.kp_scale = cmd_kp[i];
+            cmd_.kd_scale = cmd_kd[i];
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
             // controllers_[i]->SetPositionWaitComplete(cmd_, 1);
         }
@@ -230,7 +222,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_07.csv";
+    std::string filename = "../trajGen/RTTestTraj.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
@@ -284,7 +276,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 100) - (data[i - 1][0] * 100));
+        time_intervals.push_back((data[i][0] * 500) - (data[i - 1][0] * 500));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
