@@ -157,10 +157,14 @@ protected:
 
                 if (v1.position > 0.5)
                 {
+                    std::cout << "POSIIVE " << std::endl;
+
                     cmd_.feedforward_torque = -0.1;
                 }
                 else
                 {
+                    std::cout << "NEGATIVE" << std::endl;
+
                     cmd_.feedforward_torque = 0.1;
                 }
                 // cmd_.velocity = 0.0;
@@ -184,6 +188,7 @@ protected:
 
         for (auto &pair : responses_)
             pair.second = false;
+
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
