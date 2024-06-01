@@ -85,9 +85,9 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     q2_dot_dot = q2_dot_dot_desired(i);
     
     % Enforce acceleration limits
-    q1_dot_dot = min(max(q1_dot_dot, -125), 125);
-    q2_dot_dot = min(max(q2_dot_dot, -125), 125);
-    
+    % q1_dot_dot = min(max(q1_dot_dot, -125), 125);
+    % q2_dot_dot = min(max(q2_dot_dot, -125), 125);
+    % 
     % Mass matrix
     M11 = m1 * L1^2 + m2 * (L1^2 + 2 * L1 * L2 * cos(q2) + L2^2);
     M12 = m2 * (L1 * L2 * cos(q2) + L2^2);
