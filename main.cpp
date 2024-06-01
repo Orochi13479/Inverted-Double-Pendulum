@@ -132,6 +132,7 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
         const auto &v1 = *maybe_servo1;
         const auto &v2 = *maybe_servo2;
+        const std::vector<double>& last_torque_command = torque_commands_.back();
 
         for (size_t i = 0; i < controllers_.size(); i++) {
             if (index_ >= torque_commands_.size()) {
@@ -139,7 +140,7 @@ class MotorControlThread : public cactus_rt::CyclicThread {
                 cmd_.maximum_torque = 1.0;
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
                 // cmd_.velocity = mjbots::moteus::kIgnore;
-                const std::vector<double>& last_torque_command = torque_commands_.back();
+
                 std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
                 // cmd_.position = cmd_pos[i];
                 cmd_.feedforward_torque = torque_diff[i];
@@ -266,7 +267,7 @@ int main(int argc, char **argv) {
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i)  // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
+        time_intervals.push_back((data[i][0] * 300) - (data[i - 1][0] * 300));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
