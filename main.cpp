@@ -162,7 +162,7 @@ protected:
                 cmd_.accel_limit = 2;
 
                 // cmd_.stop_position = cmd_pos[i];
-                controllers_[i]->SetPositionWaitComplete(cmd_, 0.01);
+                controllers_[i]->SetPositionWaitComplete(cmd_, 0.0);
 
                 // return true;
             }
