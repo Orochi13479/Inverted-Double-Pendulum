@@ -171,8 +171,8 @@ protected:
                 cmd_.position = 0.5;
                 cmd_.accel_limit = 1.0;
 
-                auto c1_result = controllers_[i]->SetPosition(cmd_);
-                auto c2_result = controllers_[i]->SetPosition(cmd_);
+                auto c1_result = controllers_[0]->SetPosition(cmd_);
+                auto c2_result = controllers_[1]->SetPosition(cmd_);
                 if (c1_result && c2_result && c1_result->values.trajectory_complete && c2_result->values.trajectory_complete)
                 {
                     break;
