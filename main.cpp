@@ -154,8 +154,9 @@ protected:
                 // cmd_.feedforward_torque = torqueWithError[i];
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
-                cmd_.velocity = 0.0;
+                cmd_.velocity = NaN;
                 cmd_.maximum_torque = NaN;
+                cmd_.feedforward_torque = NaN;
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2;
