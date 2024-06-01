@@ -137,16 +137,22 @@ protected:
         std::vector<double> cmd_kd = {5.0, 0.5};
         std::vector<double> cmd_pos = {0.5, 0.0};
 
-        auto maybe_servo1 = FindServo(receive_frames, 1);
-        auto maybe_servo2 = FindServo(receive_frames, 2);
-
         int missed_replies = 0;
         int status_count = 0;
         constexpr int kStatusPeriod = 0;
 
-        const auto &v1 = *maybe_servo1;
-        const auto &v2 = *maybe_servo2;
         const std::vector<double> &last_torque_command = torque_commands_.back();
+
+        auto maybe_servo1 = controllers_[0]->SetQuery();
+        auto maybe_servo2 = controllers_[1]->SetQuery();
+
+        // std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
+        cmd_.maximum_torque = 1.0;
+        // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
+        // cmd_.velocity = mjbots::moteus::kIgnore;
+
+        const auto &v1 = maybe_servo1->values;
+        const auto &v2 = maybe_servo2->values;
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
@@ -165,28 +171,23 @@ protected:
 
                 auto maybe_result = controllers_[i]->SetQuery();
 
-                if (maybe_result)
-                {
-                    auto mode = maybe_result->values.mode;
-                    auto position = maybe_result->values.position;
-                    auto velocity = maybe_result->values.velocity;
-                    auto torque = maybe_result->values.torque;
-                    auto motor_temperature = maybe_result->values.motor_temperature;
-                    auto trajectory_complete = maybe_result->values.trajectory_complete;
-                    auto temperature = maybe_result->values.temperature;
-                    auto fault = maybe_result->values.fault;
-                    printf("motor%d_mode:%d,motor%d_position:%.2f,motor%d_velocity:%.2f,motor%d_torque:%.2f,motor%d_motor_temperature:%.2f,motor%d_trajectory_complete:%d,motor%d_temperature:%.2f,motor%d_fault:%d\n",
-                           i + 1, static_cast<int>(mode),
-                           i + 1, position,
-                           i + 1, velocity,
-                           i + 1, torque,
-                           i + 1, motor_temperature,
-                           i + 1, trajectory_complete,
-                           i + 1, temperature,
-                           i + 1, static_cast<int>(fault));
+                auto position = maybe_result->values.position;
+                auto velocity = maybe_result->values.velocity;
+                auto torque = maybe_result->values.torque;
+                auto temperature = maybe_result->values.temperature;
+                // printf("motor%d_position:%.2f,motor%d_velocity:%.2f,motor%d_torque:%.2f,motor%d_temperature:%.2f\n",
+                //        i + 1, position,
+                //        i + 1, velocity,
+                //        i + 1, torque,
+                //        i + 1, temperature);
 
-                    fflush(stdout);
-                }
+                // fflush(stdout);
+                printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+                       static_cast<int>(v1.mode), static_cast<int>(v2.mode),
+                       revolutionsToDegrees(v1.position + v2.position),
+                       v1.torque, v2.torque,
+                       v1.temperature, v2.temperature, v1.velocity, v2.velocity);
+                fflush(stdout);
             }
             else
             {
