@@ -149,7 +149,9 @@ protected:
                 // cmd_.feedforward_torque = torqueWithError[i];
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
-                cmd_.velocity = 0.03;
+                cmd_.accel_limit = 0.5;
+                cmd_.velocity_limit = 0.5;
+                cmd_.velocity = 0.1;
                 cmd_.position = 0.1;
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
@@ -221,7 +223,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/TEST_DLO.csv";
+    std::string filename = "../trajGen/trajectory_data_06.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
