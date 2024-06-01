@@ -166,20 +166,6 @@ protected:
                 cmd_.feedforward_torque = torqueWithError[i];
 
                 // return true;
-
-                auto maybe_result = controllers_[i]->SetQuery();
-
-                auto position = maybe_result->values.position;
-                auto velocity = maybe_result->values.velocity;
-                auto torque = maybe_result->values.torque;
-                auto temperature = maybe_result->values.temperature;
-                // printf("motor%d_position:%.2f,motor%d_velocity:%.2f,motor%d_torque:%.2f,motor%d_temperature:%.2f\n",
-                //        i + 1, position,
-                //        i + 1, velocity,
-                //        i + 1, torque,
-                //        i + 1, temperature);
-
-                // fflush(stdout);
             }
             else
             {
