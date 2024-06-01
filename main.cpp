@@ -160,8 +160,8 @@ protected:
 
                 cmd_.feedforward_torque = torque_commands_[index_][i];
             }
-            cmd_.kp_scale = cmd_kp[i];
-            cmd_.kd_scale = cmd_kd[i];
+            // cmd_.kp_scale = cmd_kp[i];
+            // cmd_.kd_scale = cmd_kd[i];
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
