@@ -146,6 +146,8 @@ protected:
             {
                 // std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
                 // cmd_.feedforward_torque = torqueWithError[i];
+                cmd_.feedforward_torque = mjbots::moteus::kIgnore;
+                cmd_.velocity = mjbots::moteus::kIgnore;
 
                 cmd_.position = cmd_pos[i];
 
@@ -159,8 +161,8 @@ protected:
 
                 // cmd_.position = 0.1;
             }
-            cmd_.kp_scale = cmd_kp[i];
-            cmd_.kd_scale = cmd_kd[i];
+            cmd_.kp_scale = 0 ;//cmd_kp[i];
+            cmd_.kd_scale = 0 ;//cmd_kd[i];
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
             // controllers_[i]->SetPositionWaitComplete(cmd_, 1);
         }
