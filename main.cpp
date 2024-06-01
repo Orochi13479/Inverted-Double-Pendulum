@@ -155,10 +155,10 @@ protected:
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
 
-                cmd_.position = 0;
+                cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2;
-                cmd_.stop_position = cmd_pos[i];
-                controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
+                // cmd_.stop_position = cmd_pos[i];
+                controllers_[i]->SetPosition(cmd_);
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
@@ -171,8 +171,6 @@ protected:
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
                 transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
             }
-            // cmd_.kp_scale = cmd_kp[i];
-            // cmd_.kd_scale = cmd_kd[i];
         }
 
         for (auto &pair : responses_)
