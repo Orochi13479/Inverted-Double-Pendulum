@@ -55,20 +55,6 @@ std::vector<std::vector<float>> readCSV(const std::string &filename)
     return data;
 }
 
-boost::optional<mjbots::moteus::Query::Result> FindServo(
-    const std::vector<mjbots::moteus::CanFdFrame> &frames,
-    int id)
-{
-    for (auto it = frames.rbegin(); it != frames.rend(); ++it)
-    {
-        if (it->source == id)
-        {
-            return mjbots::moteus::Query::Parse(it->data, it->size);
-        }
-    }
-    return {};
-}
-
 double revolutionsToDegrees(double revolutions)
 {
     const double degreesPerRevolution = 360.0;
@@ -145,12 +131,12 @@ protected:
         const std::vector<double> &last_torque_command = torque_commands_.back();
         std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
 
-        printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
-               static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-               v1.position, v2.position,
-               v1.torque, v2.torque, torque_diff[0], torque_diff[1],
-               v1.temperature, v2.temperature, v1.velocity, v2.velocity);
-        fflush(stdout);
+        // printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+        //        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
+        //        v1.position, v2.position,
+        //        v1.torque, v2.torque, torque_diff[0], torque_diff[1],
+        //        v1.temperature, v2.temperature, v1.velocity, v2.velocity);
+        // fflush(stdout);
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
