@@ -162,7 +162,7 @@ protected:
                 std::cout << "TRAJ MODE" << std::endl;
 
                 // cmd_.feedforward_torque = torque_commands_[index_][i];
-                cmd_.position = torque_commands_[index_][i];
+                cmd_.position = 0.1;
             }
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
