@@ -142,8 +142,8 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.kp_scale = NaN;
-            cmd_.kd_scale = NaN;
+            // cmd_.kp_scale = NaN;
+            // cmd_.kd_scale = NaN;
 
             if (index_ >= torque_commands_.size())
             {
