@@ -161,8 +161,8 @@ protected:
 
                 // cmd_.position = 0.1;
             }
-            cmd_.kp_scale = 0 ;//cmd_kp[i];
-            cmd_.kd_scale = 0 ;//cmd_kd[i];
+            cmd_.kp_scale = mjbots::moteus::kIgnore;//cmd_kp[i];
+            cmd_.kd_scale = mjbots::moteus::kIgnore;//cmd_kd[i];
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
             // controllers_[i]->SetPositionWaitComplete(cmd_, 1);
         }
