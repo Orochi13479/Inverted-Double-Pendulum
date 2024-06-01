@@ -148,6 +148,7 @@ protected:
                 // cmd_.feedforward_torque = torqueWithError[i];
                 cmd_.feedforward_torque = mjbots::moteus::kIgnore;
                 cmd_.velocity = mjbots::moteus::kIgnore;
+                cmd_.maximum_torque = 1.0;
 
                 cmd_.position = cmd_pos[i];
 
