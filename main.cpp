@@ -142,8 +142,8 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            // cmd_.kp_scale = NaN;
-            // cmd_.kd_scale = NaN;
+            cmd_.kp_scale = 1.0;
+            cmd_.kd_scale = 1.0;
 
             if (index_ >= torque_commands_.size())
             {
@@ -154,10 +154,10 @@ protected:
                 // cmd_.feedforward_torque = torqueWithError[i];
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
-                // cmd_.velocity = 0.0;
+                cmd_.velocity = 0.0;
                 cmd_.maximum_torque = NaN;
-                // cmd_.feedforward_torque = 0.0;
-
+                cmd_.feedforward_torque = 0.0;
+                
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2;
 
@@ -174,6 +174,7 @@ protected:
                 cmd_.feedforward_torque = torque_commands_[index_][i];
             }
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+            // controllers_[0]->SetPositionWaitComplete
         }
 
         for (auto &pair : responses_)
