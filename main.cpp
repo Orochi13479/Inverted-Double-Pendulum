@@ -18,31 +18,36 @@
 volatile sig_atomic_t ctrl_c_pressed = 0;
 
 // Signal handler function
-void signalHandler(int signal) {
-    ctrl_c_pressed = 1;  // Set flag to indicate Ctrl+C was pressed
+void signalHandler(int signal)
+{
+    ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
 }
 
 // Arrays to store data for each column
 std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
 
 // Function to read CSV data
-std::vector<std::vector<float>> readCSV(const std::string &filename) {
+std::vector<std::vector<float>> readCSV(const std::string &filename)
+{
     std::vector<std::vector<float>> data;
     std::string filepath = "../trajGen/" + filename;
     std::ifstream file(filepath);
 
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         throw std::runtime_error("Error: Unable to open file " + filepath);
     }
 
     std::string line;
-    std::getline(file, line);  // Skip the first line (column headings)
+    std::getline(file, line); // Skip the first line (column headings)
 
-    while (std::getline(file, line)) {
+    while (std::getline(file, line))
+    {
         std::istringstream iss(line);
         std::vector<float> row(9);
         char comma;
-        if (iss >> row[0] >> comma >> row[1] >> comma >> row[2] >> comma >> row[3] >> comma >> row[4] >> comma >> row[5] >> comma >> row[6] >> comma >> row[7] >> comma >> row[8]) {
+        if (iss >> row[0] >> comma >> row[1] >> comma >> row[2] >> comma >> row[3] >> comma >> row[4] >> comma >> row[5] >> comma >> row[6] >> comma >> row[7] >> comma >> row[8])
+        {
             data.push_back(row);
         }
     }
@@ -52,28 +57,34 @@ std::vector<std::vector<float>> readCSV(const std::string &filename) {
 
 boost::optional<mjbots::moteus::Query::Result> FindServo(
     const std::vector<mjbots::moteus::CanFdFrame> &frames,
-    int id) {
-    for (auto it = frames.rbegin(); it != frames.rend(); ++it) {
-        if (it->source == id) {
+    int id)
+{
+    for (auto it = frames.rbegin(); it != frames.rend(); ++it)
+    {
+        if (it->source == id)
+        {
             return mjbots::moteus::Query::Parse(it->data, it->size);
         }
     }
     return {};
 }
 
-double revolutionsToDegrees(double revolutions) {
+double revolutionsToDegrees(double revolutions)
+{
     const double degreesPerRevolution = 360.0;
     return revolutions * degreesPerRevolution;
 }
 
-double TorqueError(double desired_torque, double actual_torque) {
+double TorqueError(double desired_torque, double actual_torque)
+{
     double torque_error = actual_torque - desired_torque;
 
     return torque_error;
 }
 
 // A simple way to get the current time accurately as a double.
-static double GetNow() {
+static double GetNow()
+{
     struct timespec ts = {};
     ::clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     return static_cast<double>(ts.tv_sec) +
@@ -81,8 +92,9 @@ static double GetNow() {
 }
 
 // Class for controlling motors in a cyclic thread
-class MotorControlThread : public cactus_rt::CyclicThread {
-   private:
+class MotorControlThread : public cactus_rt::CyclicThread
+{
+private:
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers_;
     std::shared_ptr<mjbots::moteus::Transport> transport_;
     mjbots::moteus::PositionMode::Command cmd_;
@@ -96,14 +108,15 @@ class MotorControlThread : public cactus_rt::CyclicThread {
     int total_count_;
     double total_hz_;
 
-   public:
+public:
     // Constructor
     MotorControlThread(const char *name, cactus_rt::CyclicThreadConfig config,
                        std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers,
                        std::vector<std::vector<double>> torque_commands,
                        std::vector<int> time_intervals,
                        std::shared_ptr<mjbots::moteus::Transport> transport)
-        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0) {
+        : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
+    {
         cmd_.kp_scale = 0;
         cmd_.kd_scale = 0;
 
@@ -113,15 +126,16 @@ class MotorControlThread : public cactus_rt::CyclicThread {
             responses_[id++] = false;
     }
 
-   protected:
+protected:
     // Main loop function that executes cyclically
-    bool Loop(int64_t /*now*/) noexcept final {
+    bool Loop(int64_t /*now*/) noexcept final
+    {
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
-        std::vector<double> cmd_pos = {0.5, 0.0};
+        std::vector<double> cmd_pos = {0.05, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -139,8 +153,10 @@ class MotorControlThread : public cactus_rt::CyclicThread {
                v1.temperature, v2.temperature, v1.velocity, v2.velocity);
         fflush(stdout);
 
-        for (size_t i = 0; i < controllers_.size(); i++) {
-            if (index_ >= torque_commands_.size()) {
+        for (size_t i = 0; i < controllers_.size(); i++)
+        {
+            if (index_ >= torque_commands_.size())
+            {
                 // std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
                 cmd_.maximum_torque = 1.0;
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
@@ -165,8 +181,9 @@ class MotorControlThread : public cactus_rt::CyclicThread {
                 //        i + 1, temperature);
 
                 // fflush(stdout);
-
-            } else {
+            }
+            else
+            {
                 cmd_.feedforward_torque = torque_commands_[index_][i];
             }
             cmd_.kp_scale = cmd_kp[i];
@@ -183,7 +200,8 @@ class MotorControlThread : public cactus_rt::CyclicThread {
             responses_[frame.source] = true;
 
         const int count = std::count_if(responses_.begin(), responses_.end(),
-                                        [](const auto &pair) { return pair.second; });
+                                        [](const auto &pair)
+                                        { return pair.second; });
 
         constexpr double kStatusPeriodS = 0.1;
         static double status_time = GetNow() + kStatusPeriodS;
@@ -192,7 +210,8 @@ class MotorControlThread : public cactus_rt::CyclicThread {
         hz_count++;
 
         const auto now = GetNow();
-        if (now > status_time) {
+        if (now > status_time)
+        {
             printf("             %6.1fHz  rx_count=%2d   \r",
                    hz_count / kStatusPeriodS, count);
             fflush(stdout);
@@ -205,7 +224,8 @@ class MotorControlThread : public cactus_rt::CyclicThread {
         }
 
         interval_index_++;
-        if (interval_index_ >= time_intervals_[index_]) {
+        if (interval_index_ >= time_intervals_[index_])
+        {
             interval_index_ = 0;
             index_++;
         }
@@ -215,13 +235,14 @@ class MotorControlThread : public cactus_rt::CyclicThread {
         return false;
     }
 
-   public:
+public:
     // Function to calculate average frequency
     double GetAverageHz() const { return total_hz_ / total_count_; }
 };
 
 // Main function
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
@@ -231,8 +252,8 @@ int main(int argc, char **argv) {
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 200'000;   // Target Time in ns
-    config.SetFifoScheduler(98);  // Priority 0-100
+    config.period_ns = 2000'000; // Target Time in ns
+    config.SetFifoScheduler(98); // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -251,29 +272,33 @@ int main(int argc, char **argv) {
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
-        std::make_shared<mjbots::moteus::Controller>([&]() {
+        std::make_shared<mjbots::moteus::Controller>([&]()
+                                                     {
                                                  auto options = options_common;
                                                  options.id = 1;
                                                  return options; }()),
-        std::make_shared<mjbots::moteus::Controller>([&]() {
+        std::make_shared<mjbots::moteus::Controller>([&]()
+                                                     {
                                                  auto options = options_common;
                                                  options.id = 2;
                                                  return options; }()),
     };
 
-    for (auto &c : controllers) {
+    for (auto &c : controllers)
+    {
         c->SetStop();
     }
 
     // Extract torque commands, disregarding the first command
     std::vector<std::vector<double>> torque_commands;
-    for (size_t i = 1; i < data.size(); ++i) {
+    for (size_t i = 1; i < data.size(); ++i)
+    {
         torque_commands.push_back({data[i][4], data[i][8]});
     }
 
     // Calculate time intervals as differences between timestamps
     std::vector<int> time_intervals;
-    for (size_t i = 1; i < data.size(); ++i)  // Start from the second element
+    for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
         time_intervals.push_back((data[i][0] * 50) - (data[i - 1][0] * 50));
     }
@@ -282,13 +307,15 @@ int main(int argc, char **argv) {
 
     // Printing torque commands
     std::cout << "Torque Commands:\n";
-    for (size_t i = 0; i < torque_commands.size(); ++i) {
+    for (size_t i = 0; i < torque_commands.size(); ++i)
+    {
         std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
     }
 
     // Print time intervals
     std::cout << "\nTime Intervals (in milliseconds):\n";
-    for (size_t i = 0; i < time_intervals.size(); ++i) {
+    for (size_t i = 0; i < time_intervals.size(); ++i)
+    {
         std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
     }
 
@@ -320,7 +347,8 @@ int main(int argc, char **argv) {
     app.Join();
 
     // Ensure all controllers are set to stop, deactivating the mjbots
-    for (auto &c : controllers) {
+    for (auto &c : controllers)
+    {
         c->SetStop();
     }
 
