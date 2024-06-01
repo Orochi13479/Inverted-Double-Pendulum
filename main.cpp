@@ -160,10 +160,11 @@ protected:
                 // std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
                 cmd_.maximum_torque = 1.0;
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                // cmd_.velocity = mjbots::moteus::kIgnore;
+                cmd_.velocity = mjbots::moteus::kIgnore;
 
                 std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
-                cmd_.feedforward_torque = torqueWithError[i];
+                // cmd_.feedforward_torque = torqueWithError[i];
+                cmd_.position = cmd_pos[i];
 
                 // return true;
             }
