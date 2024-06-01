@@ -159,7 +159,7 @@ protected:
                 // cmd_.feedforward_torque = 0.0;
 
                 cmd_.position = cmd_pos[i];
-                cmd_.accel_limit = 2;
+                cmd_.accel_limit = 2.0;
 
                 // cmd_.stop_position = cmd_pos[i];
                 controllers_[i]->SetPositionWaitComplete(cmd_, 1);
