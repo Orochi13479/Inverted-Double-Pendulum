@@ -142,33 +142,26 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            // cmd_.kp_scale = 1.0;
-            // cmd_.kd_scale = 1.0;
+            cmd_.kp_scale = 1.0;
+            cmd_.kd_scale = 1.0;
 
             if (index_ >= torque_commands_.size())
             {
-                // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                // cmd_.velocity = 0.0;
                 std::cout << "POSITION MODE" << std::endl;
-                // std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
-                // cmd_.feedforward_torque = torqueWithError[i];
-                // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
-                // cmd_.position = std::numeric_limits<double>::quiet_NaN();
-                // cmd_.velocity = 0.0;
-                // cmd_.maximum_torque = NaN;
-                // cmd_.feedforward_torque = 0.0;
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
 
-                // cmd_.stop_position = cmd_pos[i];
-                controllers_[i]->SetPositionWaitComplete(cmd_, 1);
+                auto result = controllers_[i]->SetPosition(cmd_);
 
-                // return true;
+                if (result && result->values.trajectory_complete)
+                {
+                    return true;
+                }
             }
             else
             {
-                std::cout << "TRAJ MODE" << std::endl;
+                std::cout << "TORQUE MODE" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
                 transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
@@ -228,14 +221,14 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/RTTestTraj.csv";
+    std::string filename = "../trajGen/trajectory_data_06.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 2000'000; // Target Time in ns
-    config.SetFifoScheduler(98); // Priority 0-100
+    config.period_ns = 2'000'000; // Target Time in ns
+    config.SetFifoScheduler(98);  // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -246,11 +239,14 @@ int main(int argc, char **argv)
 
     // Set position format
     auto &pf = options_common.position_format;
-    pf.position = mjbots::moteus::kIgnore;
+    auto &qf = options_common.query_format;
+    pf.position = mjbots::moteus::kInt16;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
+    pf.accel_limit = mjbots::moteus::kInt16;
+    qf.trajectory_complete = mjbots::moteus::kIgnore;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
@@ -282,8 +278,9 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 150) - (data[i - 1][0] * 150));
+        time_intervals.push_back((data[i][0] * 250) - (data[i - 1][0] * 250));
     }
+
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
 

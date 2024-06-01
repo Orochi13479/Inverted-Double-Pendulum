@@ -1,19 +1,29 @@
-% Parameters
-lambda1 = 4;            % Adjust decay
-omega1 = pi/2;         % Adjust number of oscillationsc
-phi1 = pi;          
+%% SYSTEM POSITION TRAJECTORY GENERATION
+% This code generates a csv file 'inverted_damped_cosine_wave' that has
+% columns for joint 1 positions, joint 2 positions and timesteps. 
+% The remainder of trajectory is calculated through running the traj5.m
+% file. 
 
-lambda2 = 0;            % Adjust decay
-omega2 = pi/2;         % Adjust number of oscillations
-phi2 = pi;
-% Time array
-t = linspace(0, 1, 500)';
+%% trajectory_data_10
 
-% Function
-y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
-y2 = 0*pi/8* sin(omega2 * t + phi2);
-
+%% trajectory_data_09
 % % Parameters
+% lambda1 = 4;            % Adjust decay
+% omega1 = pi/2;         % Adjust number of oscillationsc
+% phi1 = pi;          
+% 
+% lambda2 = 0;            % Adjust decay
+% omega2 = pi/2;         % Adjust number of oscillations
+% phi2 = pi;
+% % Time array
+% t = linspace(0, 1, 500)';
+% 
+% % Function
+% y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
+% y2 = 0*pi/8* sin(omega2 * t + phi2);
+
+%% trajectory_data_08
+% %Parameters
 % lambda1 = 0.5;            % Adjust decay
 % omega1 = 7*pi/5;         % Adjust number of oscillationsc
 % phi1 = pi;          
@@ -28,6 +38,7 @@ y2 = 0*pi/8* sin(omega2 * t + phi2);
 % y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
 % y2 = pi/6* sin(omega2 * t + phi2);
 
+%% SECTION 2
 % Invert y values
 y1_inverted = flipud(y1);
 
