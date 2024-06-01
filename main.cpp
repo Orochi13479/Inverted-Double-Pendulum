@@ -164,8 +164,6 @@ protected:
                 // cmd_.stop_position = cmd_pos[i];
                 // controllers_[i]->SetPositionWaitComplete()
 
-                // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
-
                 // return true;
             }
             else
