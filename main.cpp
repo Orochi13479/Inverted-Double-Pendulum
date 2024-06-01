@@ -166,8 +166,8 @@ protected:
                 // cmd_.velocity = 0.0;
                 cmd_.maximum_torque = 1.0;
 
-                cmd_.position = cmd_pos[i];
-                cmd_.accel_limit = 2;
+                // cmd_.position = cmd_pos[i];
+                // cmd_.accel_limit = 2;
 
                 // cmd_.stop_position = cmd_pos[i];
                 // controllers_[i]->SetPositionWaitComplete(cmd_, 0.0);
