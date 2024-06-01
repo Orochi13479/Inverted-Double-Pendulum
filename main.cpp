@@ -154,12 +154,12 @@ protected:
             {
                 // std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
                 cmd_.maximum_torque = 1.0;
-                cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                cmd_.velocity = mjbots::moteus::kIgnore;
+                // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
+                // cmd_.velocity = mjbots::moteus::kIgnore;
 
-                // std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
-                cmd_.position = cmd_pos[i];
-                // cmd_.feedforward_torque = torque_diff[i];
+                std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
+                // cmd_.position = cmd_pos[i];
+                cmd_.feedforward_torque = torque_diff[i];
                 // return true;
                 printf("HOLD POSITION MODE: %2d/%2d POSITION IN DEGREES: %6.3f/%6.3f TORQUE: %6.3f/%6.3f VELOCITY: %6.3f/%6.3f\r",
                        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
