@@ -54,22 +54,26 @@ q2_smooth = spline(t_original, q2_desired, t_smooth);
 q1_desired = q1_smooth;
 q2_desired = q2_smooth;
 
+% Ensure the final values are not zero by setting them to the penultimate values
+q1_desired(end) = q1_desired(end-1);
+q2_desired(end) = q2_desired(end-1);
+
 % Compute velocities using finite differences
 dt = t_smooth(2) - t_smooth(1);  % Time step
 q1_dot_desired = diff(q1_desired) / dt;
 q2_dot_desired = diff(q2_desired) / dt;
 
 % Pad the velocities arrays to match the length of the time vector
-q1_dot_desired = [q1_dot_desired, 0];  % Add a zero to the end to match the original length
-q2_dot_desired = [q2_dot_desired, 0];  % Add a zero to the end to match the original length
+q1_dot_desired = [q1_dot_desired, q1_dot_desired(end)];  % Add the last value to the end to match the original length
+q2_dot_desired = [q2_dot_desired, q2_dot_desired(end)];  % Add the last value to the end to match the original length
 % 
 % Compute accelerations using finite differences
 q1_dot_dot_desired = diff(q1_dot_desired) / dt;
 q2_dot_dot_desired = diff(q2_dot_desired) / dt;
 % 
 % % Pad the accelerations arrays to match the length of the time vector
-q1_dot_dot_desired = [q1_dot_dot_desired, 0];  % Add a zero to the end to match the original length
-q2_dot_dot_desired = [q2_dot_dot_desired, 0];  % Add a zero to the end to match the original length
+q1_dot_dot_desired = [q1_dot_dot_desired, q1_dot_dot_desired(end)];  % Add the last value to the end to match the original length
+q2_dot_dot_desired = [q2_dot_dot_desired, q2_dot_dot_desired(end)];  % Add the last value to the end to match the original length
 
 %% SECTION 4: Calculate torques using Inverse Dynamics
 
