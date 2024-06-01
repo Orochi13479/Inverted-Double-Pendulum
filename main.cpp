@@ -190,14 +190,13 @@ protected:
             {
                 std::cout << "TRAJ MODE" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
+                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+                transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
             }
-            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
         for (auto &pair : responses_)
             pair.second = false;
-
-        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
