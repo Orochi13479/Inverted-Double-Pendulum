@@ -212,7 +212,7 @@ protected:
             index_++;
         }
 
-        ::usleep(1000);
+        ::usleep(10);
 
         return false;
     }
