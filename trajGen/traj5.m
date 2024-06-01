@@ -128,7 +128,7 @@ end
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_08.csv';
+filename = 'trajectory_data_09.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
@@ -184,7 +184,7 @@ for i = 1:length(t_sim)
     set(tau2_text, 'String', sprintf('tau2: %.2f N.m', tau2(i)));
     
     % Pause to create animation effect
-    pause(0.0001);
+    pause(0.001);
 end
 
 %% Generate Graphs for Joint 1 and Joint 2 Angular Position, Velocity, Acceleration, and Torque
