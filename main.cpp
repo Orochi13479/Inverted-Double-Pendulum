@@ -142,8 +142,8 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.kp_scale = 1.0;
-            cmd_.kd_scale = 1.0;
+            // cmd_.kp_scale = 1.0;
+            // cmd_.kd_scale = 1.0;
 
             if (index_ >= torque_commands_.size())
             {
@@ -230,7 +230,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_09.csv";
+    std::string filename = "../trajGen/RTTestTraj.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
