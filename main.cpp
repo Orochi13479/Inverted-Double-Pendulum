@@ -103,9 +103,6 @@ public:
                        std::shared_ptr<mjbots::moteus::Transport> transport)
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
     {
-        // cmd_.maximum_torque = 1.0;
-        // cmd_.accel_limit = 200;
-        // cmd_.velocity_limit = 200;
 
         // Measuring Frequency
         int id = 0;
@@ -145,6 +142,9 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
+            cmd_.kp_scale = NaN;
+            cmd_.kd_scale = NaN;
+
             if (index_ >= torque_commands_.size())
             {
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
