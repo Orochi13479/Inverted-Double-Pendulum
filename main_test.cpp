@@ -122,7 +122,7 @@ protected:
 
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
-        std::vector<double> cmd_pos = {0.0, 0.1};
+        std::vector<double> cmd_pos = {0.0, 0.5};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -144,13 +144,11 @@ protected:
         {
             if (index_ >= torque_commands_.size())
             {
-                // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                // cmd_.velocity = 0.0;
+                // std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
+                // cmd_.feedforward_torque = torqueWithError[i];
 
-                std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
-                cmd_.feedforward_torque = torqueWithError[i];
+                cmd_.position = cmd_pos[i];
 
-                // return true;
             }
             else
             {
