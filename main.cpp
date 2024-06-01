@@ -260,6 +260,7 @@ int main(int argc, char **argv)
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
     pf.accel_limit = mjbots::moteus::kFloat;
+    std::cout << "INIT PASSED 0";
     qf.trajectory_complete = mjbots::moteus::kInt8;
 
     std::cout << "INIT PASSED 1";
