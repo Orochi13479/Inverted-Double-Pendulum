@@ -124,10 +124,12 @@ protected:
         std::vector<double> cmd_kd = {5.0, 0.5};
         std::vector<double> cmd_pos = {0.5, 0.0};
 
+        std::cout << "INIT PASSED 3" << std::endl;
+
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
 
-        std::cout << "INIT PASSED 3";
+        std::cout << "INIT PASSED 4" << std::endl;
 
         const auto &v1 = maybe_servo1->values;
         const auto &v2 = maybe_servo2->values;
@@ -260,10 +262,10 @@ int main(int argc, char **argv)
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
     pf.accel_limit = mjbots::moteus::kInt16;
-    std::cout << "INIT PASSED 0";
+    std::cout << "INIT PASSED 0" << std::endl;
     qf.trajectory_complete = mjbots::moteus::kInt8;
 
-    std::cout << "INIT PASSED 1";
+    std::cout << "INIT PASSED 1" << std::endl;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
@@ -279,7 +281,7 @@ int main(int argc, char **argv)
                                                  return options; }()),
     };
 
-    std::cout << "INIT PASSED 2";
+    std::cout << "INIT PASSED 2" << std::endl;
 
     for (auto &c : controllers)
     {
