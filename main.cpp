@@ -125,7 +125,7 @@ protected:
 
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
-        std::vector<double> cmd_pos = {0.0, 0.1};
+        std::vector<double> cmd_pos = {0.5, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -163,6 +163,7 @@ protected:
 
                 // cmd_.stop_position = cmd_pos[i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+                controllers_[i]->MakePosition(cmd_)
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
