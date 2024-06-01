@@ -299,22 +299,22 @@ int main(int argc, char **argv)
     {
         time_intervals.push_back((data[i][0] * 150) - (data[i - 1][0] * 150));
     }
-    std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
-    std::cout << "Torquesize " << torque_commands.size() << std::endl;
+    // std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
+    // std::cout << "Torquesize " << torque_commands.size() << std::endl;
 
-    // Printing torque commands
-    std::cout << "Torque Commands:\n";
-    for (size_t i = 0; i < torque_commands.size(); ++i)
-    {
-        std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
-    }
+    // // Printing torque commands
+    // std::cout << "Torque Commands:\n";
+    // for (size_t i = 0; i < torque_commands.size(); ++i)
+    // {
+    //     std::cout << "Action " << i + 1 << ": Motor 1: " << torque_commands[i][0] << ", Motor 2: " << torque_commands[i][1] << std::endl;
+    // }
 
-    // Print time intervals
-    std::cout << "\nTime Intervals (in milliseconds):\n";
-    for (size_t i = 0; i < time_intervals.size(); ++i)
-    {
-        std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
-    }
+    // // Print time intervals
+    // std::cout << "\nTime Intervals (in milliseconds):\n";
+    // for (size_t i = 0; i < time_intervals.size(); ++i)
+    // {
+    //     std::cout << "Interval " << i + 1 << ": " << time_intervals[i] << " ms" << std::endl;
+    // }
 
     // Prompt the user to press enter
     std::cout << "CAREFULLY CHECK TORQUE VALUES";
