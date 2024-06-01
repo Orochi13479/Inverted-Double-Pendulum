@@ -66,6 +66,12 @@ double revolutionsToDegrees(double revolutions) {
     return revolutions * degreesPerRevolution;
 }
 
+double TorqueError(double desired_torque, double actual_torque) {
+    double torque_error = actual_torque - desired_torque;
+
+    return torque_error;
+}
+
 // A simple way to get the current time accurately as a double.
 static double GetNow() {
     struct timespec ts = {};
@@ -115,20 +121,31 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
         std::vector<double> cmd_kp = {6.0, 1.5};
         std::vector<double> cmd_kd = {3.0, 0.5};
-        std::vector<double> cmd_pos = {0.5, 0.0};
+        // std::vector<double> cmd_pos = {0.5, 0.0};
+
+        auto maybe_servo1 = FindServo(receive_frames, 1);
+        auto maybe_servo2 = FindServo(receive_frames, 2);
+
+        int missed_replies = 0;
+        int status_count = 0;
+        constexpr int kStatusPeriod = 0;
+
+        const auto &v1 = *maybe_servo1;
+        const auto &v2 = *maybe_servo2;
 
         for (size_t i = 0; i < controllers_.size(); i++) {
             if (index_ >= torque_commands_.size()) {
                 std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
+                cmd_.maximum_torque = 1.0;
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
                 // cmd_.velocity = mjbots::moteus::kIgnore;
-                cmd_.maximum_torque = 1.0;
-                cmd_.position = cmd_pos[i];
+                std::vector<double> torque_diff = {TorqueError(torque_commands_[index_][0], v1.torque), TorqueError(torque_commands_[index_][1], v2.torque)};
+                // cmd_.position = cmd_pos[i];
+                cmd_.feedforward_torque = torque_diff[i];
                 // return true;
 
             } else {
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-
             }
             cmd_.kp_scale = cmd_kp[i];
             cmd_.kd_scale = cmd_kd[i];
@@ -139,16 +156,6 @@ class MotorControlThread : public cactus_rt::CyclicThread {
             pair.second = false;
 
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
-
-        auto maybe_servo1 = FindServo(receive_frames, 1);
-        auto maybe_servo2 = FindServo(receive_frames, 2);
-
-        int missed_replies = 0;
-        int status_count = 0;
-        constexpr int kStatusPeriod = 0;
-
-        const auto& v1 = *maybe_servo1;
-        const auto& v2 = *maybe_servo2;
 
         status_count++;
         if (status_count > kStatusPeriod) {
