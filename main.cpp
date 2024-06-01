@@ -119,8 +119,8 @@ class MotorControlThread : public cactus_rt::CyclicThread {
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
-        std::vector<double> cmd_kp = {6.0, 1.5};
-        std::vector<double> cmd_kd = {3.0, 0.5};
+        std::vector<double> cmd_kp = {8.0, 2};
+        std::vector<double> cmd_kd = {4.0, 1};
         // std::vector<double> cmd_pos = {0.5, 0.0};
 
         auto maybe_servo1 = FindServo(receive_frames, 1);
@@ -139,7 +139,8 @@ class MotorControlThread : public cactus_rt::CyclicThread {
                 cmd_.maximum_torque = 1.0;
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
                 // cmd_.velocity = mjbots::moteus::kIgnore;
-                std::vector<double> torque_diff = {TorqueError(torque_commands_[index_][0], v1.torque), TorqueError(torque_commands_[index_][1], v2.torque)};
+                const std::vector<double>& last_torque_command = torque_commands_.back();
+                std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
                 // cmd_.position = cmd_pos[i];
                 cmd_.feedforward_torque = torque_diff[i];
                 // return true;
