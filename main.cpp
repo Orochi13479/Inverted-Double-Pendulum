@@ -254,12 +254,12 @@ int main(int argc, char **argv)
     // Set position format
     auto &pf = options_common.position_format;
     auto &qf = options_common.query_format;
-    pf.position = mjbots::moteus::kFloat;
+    pf.position = mjbots::moteus::kInt16;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
-    pf.accel_limit = mjbots::moteus::kFloat;
+    pf.accel_limit = mjbots::moteus::kInt16;
     std::cout << "INIT PASSED 0";
     qf.trajectory_complete = mjbots::moteus::kInt8;
 
