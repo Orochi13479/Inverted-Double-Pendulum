@@ -163,7 +163,7 @@ protected:
 
                 // cmd_.stop_position = cmd_pos[i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-                controllers_[i]->MakePosition(cmd_)
+                // controllers_[i]->SetPositionWaitComplete()
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
