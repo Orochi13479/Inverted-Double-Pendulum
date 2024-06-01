@@ -147,28 +147,36 @@ protected:
 
             if (index_ >= torque_commands_.size())
             {
-                // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                // cmd_.velocity = 0.0;
                 std::cout << "POSITION MODE POS: " << v1.position << std::endl;
                 // std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
                 // cmd_.feedforward_torque = torqueWithError[i];
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
 
-                if (v1.position > 0.5)
-                {
-                    std::cout << "POSIIVE " << std::endl;
+                // if (v1.position > 0.5)
+                // {
+                //     std::cout << "POSIIVE " << std::endl;
 
-                    cmd_.feedforward_torque = -0.1;
-                }
-                else
-                {
-                    std::cout << "NEGATIVE" << std::endl;
+                //     cmd_.feedforward_torque = -0.1;
+                // }
+                // else
+                // {
+                //     std::cout << "NEGATIVE" << std::endl;
 
-                    cmd_.feedforward_torque = 0.1;
-                }
+                //     cmd_.feedforward_torque = 0.1;
+                // }
                 // cmd_.velocity = 0.0;
-                cmd_.maximum_torque = 1.0;
+                // cmd_.maximum_torque = 1.0;
+
+                cmd_.position = 0.5;
+                cmd_.accel_limit = 1.0;
+
+                auto c1_result = controllers_[i]->SetPosition(cmd_);
+                auto c2_result = controllers_[i]->SetPosition(cmd_);
+                if (c1_result && c2_result && c1_result->values.trajectory_complete && c2_result->values.trajectory_complete)
+                {
+                    break;
+                }
 
                 // cmd_.position = cmd_pos[i];
                 // cmd_.accel_limit = 2;
@@ -264,6 +272,8 @@ int main(int argc, char **argv)
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
+    options_common.position_format.accel_limit = mjbots::moteus::kFloat;
+    options_common.query_format.trajectory_complete = mjbots::moteus::kInt8;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
