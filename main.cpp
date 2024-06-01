@@ -104,6 +104,8 @@ public:
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
     {
         // cmd_.maximum_torque = 1.0;
+        cmd_.accel_limit = 200;
+        cmd_.velocity_limit = 200;
 
         // Measuring Frequency
         int id = 0;
@@ -149,9 +151,8 @@ protected:
                 // cmd_.feedforward_torque = torqueWithError[i];
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
-                cmd_.accel_limit = 125;
-                cmd_.velocity_limit = 125;
-                cmd_.velocity = 0.05;
+
+                cmd_.velocity = 0.3;
                 cmd_.position = 0.1;
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
@@ -162,12 +163,14 @@ protected:
                 std::cout << "TRAJ MODE" << std::endl;
 
                 // cmd_.feedforward_torque = torque_commands_[index_][i];
+                cmd_.velocity = 0.3;
+
                 cmd_.position = 0.1;
             }
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
             // send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-            controllers_[i]->SetPositionWaitComplete(cmd_, 0.01);
+            controllers_[i]->SetPositionWaitComplete(cmd_, 0.1);
         }
 
         for (auto &pair : responses_)
