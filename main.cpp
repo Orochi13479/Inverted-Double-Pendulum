@@ -162,10 +162,11 @@ protected:
                 cmd_.maximum_torque = 1.0;
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
                 // cmd_.velocity = mjbots::moteus::kIgnore;
-
                 std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
+                std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
 
-                cmd_.feedforward_torque = torque_diff[i];
+
+                cmd_.feedforward_torque = torqueWithError[i];
 
                 // return true;
 
@@ -182,10 +183,10 @@ protected:
                 //        i + 1, temperature);
 
                 // fflush(stdout);
-                printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+                printf("MODE: %2d/%2d  POSITION IN DEGREES: %6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
                        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                        revolutionsToDegrees(v1.position + v2.position),
-                       v1.torque, v2.torque,
+                       v1.torque, v2.torque, torque_diff[0], torque_diff[1],
                        v1.temperature, v2.temperature, v1.velocity, v2.velocity);
                 fflush(stdout);
             }
