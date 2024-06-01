@@ -239,8 +239,8 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 2000'000; // Target Time in ns
-    config.SetFifoScheduler(98); // Priority 0-100
+    config.period_ns = 2'000'000; // Target Time in ns
+    config.SetFifoScheduler(98);  // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -257,8 +257,8 @@ int main(int argc, char **argv)
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
-    pf.accel_limit = mjbots::moteus::kFloat;
-    qf.trajectory_complete = mjbots::moteus::kInt8;
+    pf.accel_limit = mjbots::moteus::kIgnore;
+    qf.trajectory_complete = mjbots::moteus::kIgnore;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
