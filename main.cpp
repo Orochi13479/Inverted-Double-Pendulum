@@ -127,6 +127,8 @@ protected:
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
 
+        std::cout << "INIT PASSED 3";
+
         const auto &v1 = maybe_servo1->values;
         const auto &v2 = maybe_servo2->values;
 
@@ -257,8 +259,8 @@ int main(int argc, char **argv)
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
-    pf.accel_limit = mjbots::moteus::kIgnore;
-    qf.trajectory_complete = mjbots::moteus::kIgnore;
+    pf.accel_limit = mjbots::moteus::kFloat;
+    qf.trajectory_complete = mjbots::moteus::kInt8;
 
     std::cout << "INIT PASSED 1";
 
