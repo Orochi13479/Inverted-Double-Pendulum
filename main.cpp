@@ -157,7 +157,7 @@ protected:
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2;
-                controllers_[i]->SetPositionWaitComplete(cmd_, 3)
+                controllers_[i]->SetPositionWaitComplete(cmd_, 3);
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
@@ -227,7 +227,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_08.csv";
+    std::string filename = "../trajGen/RTTestTraj.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
