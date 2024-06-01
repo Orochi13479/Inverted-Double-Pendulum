@@ -160,23 +160,23 @@ protected:
             }
             else
             {
-                std::cout << "TRAJ MODE" << std::endl;
+                // std::cout << "TRAJ MODE" << std::endl;
 
-                // cmd_.feedforward_torque = torque_commands_[index_][i];
-                cmd_.velocity = 0.3;
+                cmd_.feedforward_torque = torque_commands_[index_][i];
+                // cmd_.velocity = 0.3;
 
-                cmd_.position = 0.1;
+                // cmd_.position = 0.1;
             }
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
-            // send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-            controllers_[i]->SetPositionWaitComplete(cmd_, 0.1);
+            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+            // controllers_[i]->SetPositionWaitComplete(cmd_, 0.1);
         }
 
         for (auto &pair : responses_)
             pair.second = false;
 
-        // transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
+        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_06.csv";
+    std::string filename = "../trajGen/trajectory_data_07.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
@@ -275,7 +275,7 @@ int main(int argc, char **argv)
     std::vector<std::vector<double>> torque_commands;
     for (size_t i = 1; i < data.size(); ++i)
     {
-        torque_commands.push_back({data[i][1], data[i][5]});
+        torque_commands.push_back({data[i][4], data[i][8]});
     }
 
     // Calculate time intervals as differences between timestamps
