@@ -120,6 +120,9 @@ protected:
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
+        send_frames.clear();
+        receive_frames.clear();
+
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
         std::vector<double> cmd_pos = {0.0, 0.1};
@@ -147,14 +150,14 @@ protected:
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
                 // cmd_.velocity = 0.0;
 
-                std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
-                cmd_.feedforward_torque = torqueWithError[i];
+                // std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
+                // cmd_.feedforward_torque = torqueWithError[i];
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
 
-                cmd_.velocity = 0.3;
-                cmd_.position = 0.1;
-
+                cmd_.position = 0.5;
+                cmd_.accel_limit = 2;
+                controllers_[i]->SetPositionWaitComplete(cmd_, 3)
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
@@ -162,17 +165,12 @@ protected:
             }
             else
             {
-                // std::cout << "TRAJ MODE" << std::endl;
-                cmd_.maximum_torque = 1.1;
+                std::cout << "TRAJ MODE" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-                // cmd_.velocity = 0.3;
-
-                // cmd_.position = 0.1;
             }
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-            // controllers_[i]->SetPositionWaitComplete(cmd_, 1);
         }
 
         for (auto &pair : responses_)
