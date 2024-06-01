@@ -216,7 +216,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/RTTestTraj.csv";
+    std::string filename = "../trajGen/TEST_DLO.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
@@ -270,7 +270,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 50) - (data[i - 1][0] * 50));
+        time_intervals.push_back((data[i][0] * 500) - (data[i - 1][0] * 500));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
