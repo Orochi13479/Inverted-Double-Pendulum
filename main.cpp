@@ -157,7 +157,7 @@ protected:
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
 
-                cmd_.position = 0.5;
+                cmd_.position = 0.1;
                 cmd_.accel_limit = 2.0;
 
                 auto c1_result = controllers_[0]->SetPosition(cmd_);
@@ -262,7 +262,9 @@ int main(int argc, char **argv)
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
     pf.accel_limit = mjbots::moteus::kInt16;
+
     std::cout << "INIT PASSED 0" << std::endl;
+
     qf.trajectory_complete = mjbots::moteus::kInt8;
 
     std::cout << "INIT PASSED 1" << std::endl;
@@ -301,8 +303,9 @@ int main(int argc, char **argv)
     {
         time_intervals.push_back((data[i][0] * 150) - (data[i - 1][0] * 150));
     }
-    // std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
-    // std::cout << "Torquesize " << torque_commands.size() << std::endl;
+
+    std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
+    std::cout << "Torquesize " << torque_commands.size() << std::endl;
 
     // // Printing torque commands
     // std::cout << "Torque Commands:\n";
