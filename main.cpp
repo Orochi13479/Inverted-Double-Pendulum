@@ -254,7 +254,7 @@ int main(int argc, char **argv)
     // Set position format
     auto &pf = options_common.position_format;
     auto &qf = options_common.query_format;
-    pf.position = mjbots::moteus::kIgnore;
+    pf.position = mjbots::moteus::kFloat;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
