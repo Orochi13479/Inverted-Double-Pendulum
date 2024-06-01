@@ -161,7 +161,7 @@ protected:
             else
             {
                 // std::cout << "TRAJ MODE" << std::endl;
-
+                cmd_.maximum_torque = 1.1;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 // cmd_.velocity = 0.3;
 
