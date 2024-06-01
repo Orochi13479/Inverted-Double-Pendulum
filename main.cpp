@@ -120,7 +120,7 @@ protected:
 
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
-        std::vector<double> cmd_pos = {0.5, 0.5};
+        std::vector<double> cmd_pos = {0.0, 0.2};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -131,29 +131,33 @@ protected:
         const std::vector<double> &last_torque_command = torque_commands_.back();
         std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
 
-        // printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
-        //        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-        //        v1.position, v2.position,
-        //        v1.torque, v2.torque, torque_diff[0], torque_diff[1],
-        //        v1.temperature, v2.temperature, v1.velocity, v2.velocity);
-        // fflush(stdout);
+        printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f\r",
+               static_cast<int>(v1.mode), static_cast<int>(v2.mode),
+               v1.position, v2.position,
+               v1.torque, v2.torque, torque_diff[0], torque_diff[1],
+               v1.temperature, v2.temperature, v1.velocity, v2.velocity);
+        fflush(stdout);
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
             if (index_ >= torque_commands_.size())
             {
                 // cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                cmd_.velocity = 0.0;
+                // cmd_.velocity = 0.0;
 
                 // std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
                 // cmd_.feedforward_torque = torqueWithError[i];
-                cmd_.position = cmd_pos[i];
-                std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
+                cmd_.position = std::numeric_limits<double>::quiet_NaN();
+                cmd_.velocity = 0.0;
+                // cmd_.position = cmd_pos[i];
+                // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
                 // return true;
             }
             else
             {
+                std::cout << "TRAJ MODE" << std::endl;
+
                 cmd_.feedforward_torque = torque_commands_[index_][i];
             }
             cmd_.kp_scale = cmd_kp[i];
@@ -216,7 +220,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/TEST_DLO.csv";
+    std::string filename = "../trajGen/RTTestTraj.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
@@ -270,7 +274,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 500) - (data[i - 1][0] * 500));
+        time_intervals.push_back((data[i][0] * 50) - (data[i - 1][0] * 50));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
