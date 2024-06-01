@@ -167,7 +167,7 @@ protected:
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
             // send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-            controllers_[i]->SetPosition(cmd_);
+            controllers_[i]->SetPositionWaitComplete(cmd_);
         }
 
         for (auto &pair : responses_)
