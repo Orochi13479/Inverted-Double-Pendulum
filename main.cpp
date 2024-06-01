@@ -169,7 +169,7 @@ protected:
                 // cmd_.maximum_torque = 1.0;
 
                 cmd_.position = 0.5;
-                cmd_.accel_limit = 1.0;
+                cmd_.accel_limit = 2.0;
 
                 auto c1_result = controllers_[0]->SetPosition(cmd_);
                 auto c2_result = controllers_[1]->SetPosition(cmd_);
