@@ -161,7 +161,7 @@ protected:
             }
             else
             {
-                std::cout << "TRAJECTORY MODE" << std::endl;
+                std::cout << "TORQUE MODE" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
                 transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
