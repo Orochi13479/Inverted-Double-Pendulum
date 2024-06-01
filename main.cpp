@@ -147,7 +147,6 @@ class MotorControlThread : public cactus_rt::CyclicThread {
                 // cmd_.velocity = mjbots::moteus::kIgnore;
 
                 std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
-
                 cmd_.feedforward_torque = torqueWithError[i];
 
                 // return true;
