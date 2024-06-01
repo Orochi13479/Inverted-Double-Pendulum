@@ -155,8 +155,9 @@ protected:
                 // cmd_.feedforward_torque = std::numeric_limits<double>::quiet_NaN();
                 // cmd_.position = std::numeric_limits<double>::quiet_NaN();
 
-                cmd_.position = cmd_pos[i];
+                cmd_.position = 0;
                 cmd_.accel_limit = 2;
+                cmd_.stop_position = cmd_pos[i];
                 controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
