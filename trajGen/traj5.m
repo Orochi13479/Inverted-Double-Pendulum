@@ -16,7 +16,7 @@
 L1 = 0.195;       % Link 1 length (m)
 L2 = 0.215;       % Link 2 length (m)
 m1 = 0.36;        % Link 1 mass (kg)
-m2 = 0.21;        % Link 2 mass (kg)
+m2 = 0.037; %0.21;        % Link 2 mass (kg)    0.037 - lighter arm
 g = 9.8;          % gravity (m/s^2)
 
 %% SECTION 2: Initialising simulation variables
