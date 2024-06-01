@@ -166,13 +166,14 @@ protected:
             }
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
-            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+            // send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+            controllers_[i]->SetPosition(cmd_);
         }
 
         for (auto &pair : responses_)
             pair.second = false;
 
-        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
+        // transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
