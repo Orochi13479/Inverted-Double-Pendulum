@@ -124,12 +124,12 @@ protected:
         std::vector<double> cmd_kd = {5.0, 0.5};
         std::vector<double> cmd_pos = {0.5, 0.0};
 
-        std::cout << "INIT PASSED 3" << std::endl;
+        std::cout << "INIT PASSED 4" << std::endl;
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
 
-        std::cout << "INIT PASSED 4" << std::endl;
+        std::cout << "INIT PASSED 5" << std::endl;
 
         const auto &v1 = maybe_servo1->values;
         const auto &v2 = maybe_servo2->values;
@@ -265,7 +265,7 @@ int main(int argc, char **argv)
 
     std::cout << "INIT PASSED 0" << std::endl;
 
-    qf.trajectory_complete = mjbots::moteus::kInt8;
+    qf.trajectory_complete = mjbots::moteus::kIgnore;
 
     std::cout << "INIT PASSED 1" << std::endl;
 
@@ -289,7 +289,7 @@ int main(int argc, char **argv)
     {
         c->SetStop();
     }
-
+    std::cout << "INIT PASSED 3" << std::endl;
     // Extract torque commands, disregarding the first command
     std::vector<std::vector<double>> torque_commands;
     for (size_t i = 1; i < data.size(); ++i)
