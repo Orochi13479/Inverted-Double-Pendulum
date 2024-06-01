@@ -159,8 +159,9 @@ protected:
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2;
+
                 // cmd_.stop_position = cmd_pos[i];
-                controllers_[i]->SetPosition(cmd_);
+                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
 
                 // std::cout << "POSITION AIM " << i << ": " << cmd_pos[i] << std::endl;
 
@@ -171,12 +172,13 @@ protected:
                 std::cout << "TRAJ MODE" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-                transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
             }
         }
 
         for (auto &pair : responses_)
             pair.second = false;
+
+        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
