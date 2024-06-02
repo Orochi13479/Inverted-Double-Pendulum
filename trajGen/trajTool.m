@@ -4,7 +4,21 @@
 % The remainder of trajectory is calculated through running the traj5.m
 % file. 
 
-%% trajectory_data_10
+%% trajectory_data_11
+%Parameters
+lambda1 = 3;            % Adjust decay
+omega1 = 3*pi/2;         % Adjust number of oscillationsc
+phi1 = pi;          
+
+lambda2 = 3;            % Adjust decay
+omega2 = 3*pi/2;         % Adjust number of oscillations
+phi2 = pi;
+% Time array
+t = linspace(0, 2,200)';
+
+% Function
+y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
+y2 = pi/4* sin(omega2 * t + phi2);
 
 %% trajectory_data_09
 % % Parameters
@@ -23,20 +37,20 @@
 % y2 = 0*pi/8* sin(omega2 * t + phi2);
 
 % trajectory_data_10
-%Parameters
-lambda1 = 0.5;            % Adjust decay
-omega1 = 7*pi/5;         % Adjust number of oscillationsc
-phi1 = pi;          
-
-lambda2 = 3;            % Adjust decay
-omega2 = 7*pi/5;         % Adjust number of oscillations
-phi2 = pi;
-% Time array
-t = linspace(0, 5,500)';
-
-% Function
-y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
-y2 = pi/6* sin(omega2 * t + phi2);
+% %Parameters
+% lambda1 = 0.5;            % Adjust decay
+% omega1 = 7*pi/5;         % Adjust number of oscillationsc
+% phi1 = pi;          
+% 
+% lambda2 = 3;            % Adjust decay
+% omega2 = 7*pi/5;         % Adjust number of oscillations
+% phi2 = pi;
+% % Time array
+% t = linspace(0, 5,500)';
+% 
+% % Function
+% y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
+% y2 = pi/6* sin(omega2 * t + phi2);
 
 %% SECTION 2
 % Invert y values
