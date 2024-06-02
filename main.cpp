@@ -55,12 +55,6 @@ std::vector<std::vector<float>> readCSV(const std::string &filename)
     return data;
 }
 
-double revolutionsToDegrees(double revolutions)
-{
-    const double degreesPerRevolution = 360.0;
-    return revolutions * degreesPerRevolution;
-}
-
 double TorqueError(double desired_torque, double actual_torque)
 {
     double torque_error = actual_torque - desired_torque;
