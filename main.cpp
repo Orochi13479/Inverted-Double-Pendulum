@@ -147,7 +147,7 @@ protected:
 
             if (index_ >= torque_commands_.size())
             {
-                std::cout << "POSITION MODE" << std::endl;
+                std::cout << "TRAJECTORY COMPLETE" << std::endl;
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
@@ -161,7 +161,7 @@ protected:
             }
             else
             {
-                std::cout << "TORQUE MODE" << std::endl;
+                std::cout << "TRAJECTORY IN PROGRESS" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
                 transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
