@@ -22,7 +22,7 @@
 % y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
 % y2 = 0*pi/8* sin(omega2 * t + phi2);
 
-% trajectory_data_08
+% trajectory_data_10
 %Parameters
 lambda1 = 0.5;            % Adjust decay
 omega1 = 7*pi/5;         % Adjust number of oscillationsc
