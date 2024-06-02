@@ -127,7 +127,7 @@ end
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_11.csv';
+filename = 'trajectory_data_12.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
