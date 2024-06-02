@@ -81,3 +81,9 @@ Use following command to simulate motion using position control instead of torqu
 1>d pos 0.1 0.25 nan a3 && 2>d pos 0.1 -0.05 nan a3 && ? && 
 1>d pos 0.5 0 nan a1.5 && 2>d pos 0 0 nan a1.5
 ```
+```
+1>d pos 0 0 nan a1 && 2>d pos 0 0 nan a1 && ? && 
+1>d pos -0.2 -0.05 nan a2 && 2>d pos -0.15 -0.05 nan a2 && ? && 
+1>d pos 0.15 0.3 nan a3 && 2>d pos 0.1 -0.05 nan a3 && ? && 
+1>d pos 0.5 0 nan a1.5 && 2>d pos 0 0 nan a1.5
+```
