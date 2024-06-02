@@ -116,6 +116,7 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
         const std::vector<double> &last_torque_command = torque_commands_.back();
         std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
+        std::vector<double> actual_torque = {v1.torque, v2.torque};
 
         printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %s/%s FAULTS: %2d/%2d\r",
                static_cast<int>(v1.mode), static_cast<int>(v2.mode),
@@ -140,7 +141,7 @@ class MotorControlThread : public cactus_rt::CyclicThread {
 
                 // auto result = controllers_[i]->SetPosition(cmd_);
 
-                cmd_.feedforward_torque = torque_diff[i];
+                cmd_.feedforward_torque = actual_torque[i] + torque_diff[i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
                 transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
