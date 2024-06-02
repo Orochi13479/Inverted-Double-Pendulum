@@ -103,9 +103,6 @@ public:
                        std::shared_ptr<mjbots::moteus::Transport> transport)
         : CyclicThread(name, config), controllers_(controllers), torque_commands_(torque_commands), time_intervals_(time_intervals), transport_(transport), index_(0), interval_index_(0), total_count_(0), total_hz_(0)
     {
-        // cmd_.maximum_torque = 1.0;
-        cmd_.accel_limit = 200;
-        cmd_.velocity_limit = 200;
 
         // Measuring Frequency
         int id = 0;
@@ -120,9 +117,12 @@ protected:
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
+        send_frames.clear();
+        receive_frames.clear();
+
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
-        std::vector<double> cmd_pos = {0.0, 0.25};
+        std::vector<double> cmd_pos = {0.5, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -133,46 +133,43 @@ protected:
         const std::vector<double> &last_torque_command = torque_commands_.back();
         std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
 
-        printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  VELOCITY: %6.3f/%6.3f FAULTS: %6.3f/%6.3f\r",
+        printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %s/%s FAULTS: %2d/%2d\r",
                static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                v1.position, v2.position,
                v1.torque, v2.torque, torque_diff[0], torque_diff[1],
-               v1.temperature, v2.temperature, v1.velocity, v2.velocity, v1.fault, v2.fault);
+               v1.temperature, v2.temperature, v1.trajectory_complete, v2.trajectory_complete, static_cast<int>(v1.fault), static_cast<int>(v2.fault));
         fflush(stdout);
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
+            cmd_.kp_scale = 1.0;
+            cmd_.kd_scale = 1.0;
+
             if (index_ >= torque_commands_.size())
             {
-                std::cout << "POSITION MODE" << std::endl;
-                // std::vector<double> torqueWithError = {v1.torque + torque_diff[0], v2.torque + torque_diff[1]};
-                // cmd_.feedforward_torque = torqueWithError[i];
-                cmd_.feedforward_torque = mjbots::moteus::kIgnore;
-                cmd_.velocity = mjbots::moteus::kIgnore;
-                cmd_.maximum_torque = 1.0;
+                std::cout << "TRAJECTORY COMPLETE" << std::endl;
 
                 cmd_.position = cmd_pos[i];
+                cmd_.accel_limit = 2.0;
 
+                auto result = controllers_[i]->SetPosition(cmd_);
+
+                if (result && result->values.trajectory_complete)
+                {
+                    return true;
+                }
             }
             else
             {
-                std::cout << "TRAJ MODE" << std::endl;
-
+                std::cout << "TRAJECTORY IN PROGRESS" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-                // cmd_.velocity = 0.3;
-
-                // cmd_.position = 0.1;
+                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+                transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
             }
-            cmd_.kp_scale = mjbots::moteus::kInt8;//cmd_kp[i];
-            cmd_.kd_scale = mjbots::moteus::kInt8;//cmd_kd[i];
-            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-            // controllers_[i]->SetPositionWaitComplete(cmd_, 1);
         }
 
         for (auto &pair : responses_)
             pair.second = false;
-
-        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
@@ -208,7 +205,7 @@ protected:
             index_++;
         }
 
-        ::usleep(1000);
+        ::usleep(10);
 
         return false;
     }
@@ -224,14 +221,14 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/RTTestTraj.csv";
+    std::string filename = "../trajGen/trajectory_data_05.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 2000'000; // Target Time in ns
-    config.SetFifoScheduler(98); // Priority 0-100
+    config.period_ns = 2'000'000; // Target Time in ns
+    config.SetFifoScheduler(98);  // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -242,11 +239,14 @@ int main(int argc, char **argv)
 
     // Set position format
     auto &pf = options_common.position_format;
-    pf.position = mjbots::moteus::kIgnore;
+    auto &qf = options_common.query_format;
+    pf.position = mjbots::moteus::kInt16;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
+    pf.accel_limit = mjbots::moteus::kInt16;
+    qf.trajectory_complete = mjbots::moteus::kIgnore;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
@@ -278,8 +278,9 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 100) - (data[i - 1][0] * 100));
+        time_intervals.push_back((data[i][0] * 250) - (data[i - 1][0] * 250));
     }
+
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
 
