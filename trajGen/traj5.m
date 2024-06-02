@@ -85,9 +85,9 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     q2_dot_dot = q2_dot_dot_desired(i);
     
     % Enforce acceleration limits
-    % q1_dot_dot = min(max(q1_dot_dot, -125), 125);
-    % q2_dot_dot = min(max(q2_dot_dot, -125), 125);
-    % 
+    q1_dot_dot = min(max(q1_dot_dot, -125), 125);
+    q2_dot_dot = min(max(q2_dot_dot, -125), 125);
+    
     % Mass matrix
     M11 = m1 * L1^2 + m2 * (L1^2 + 2 * L1 * L2 * cos(q2) + L2^2);
     M12 = m2 * (L1 * L2 * cos(q2) + L2^2);
@@ -128,7 +128,7 @@ end
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_09.csv';
+filename = 'trajectory_data_10.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
@@ -145,6 +145,10 @@ fclose(fid);
 writematrix(data, filename, 'WriteMode', 'append');
 
 %% SIMULATE SYSTEM
+
+% Calculate the real-time time step
+dt_real_time = mean(diff(t_sim));  % Assuming uniform time steps
+
 % Animation of the double inverted pendulum
 figure;
 hold on;
@@ -174,7 +178,7 @@ for i = 1:length(t_sim)
     set(pendulum1, 'XData', [0, L1 * sin(q1_sim(i))], 'YData', [0, -L1 * cos(q1_sim(i))]);
     set(pendulum2, 'XData', [L1 * sin(q1_sim(i)), L1 * sin(q1_sim(i)) + L2 * sin(q1_sim(i) + q2_sim(i))], ...
                    'YData', [-L1 * cos(q1_sim(i)), -L1 * cos(q1_sim(i)) - L2 * cos(q1_sim(i) + q2_sim(i))]);
-    
+
     % Update the text annotations
     set(q1_text, 'String', sprintf('q1: %.2f rad', q1_sim(i)));
     set(q2_text, 'String', sprintf('q2: %.2f rad', q2_sim(i)));
@@ -182,9 +186,9 @@ for i = 1:length(t_sim)
     set(q2_dot_text, 'String', sprintf('q2_dot: %.2f rad/s', q2_dot_sim(i)));
     set(tau1_text, 'String', sprintf('tau1: %.2f N.m', tau1(i)));
     set(tau2_text, 'String', sprintf('tau2: %.2f N.m', tau2(i)));
-    
-    % Pause to create animation effect
-    pause(0.001);
+
+    % Pause to create animation effect in real-time
+    pause(dt_real_time);
 end
 
 %% Generate Graphs for Joint 1 and Joint 2 Angular Position, Velocity, Acceleration, and Torque
