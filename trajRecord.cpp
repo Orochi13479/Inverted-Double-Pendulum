@@ -30,15 +30,15 @@ int main(int argc, char **argv)
     mjbots::moteus::Controller::Options options_common;
 
     // Set position format
-    auto &pf = options_common.position_format;
-    auto &qf = options_common.query_format;
-    pf.position = mjbots::moteus::kInt16;
-    pf.velocity = mjbots::moteus::kIgnore;
-    pf.feedforward_torque = mjbots::moteus::kFloat;
-    pf.kp_scale = mjbots::moteus::kInt8;
-    pf.kd_scale = mjbots::moteus::kInt8;
-    pf.accel_limit = mjbots::moteus::kInt16;
-    qf.trajectory_complete = mjbots::moteus::kIgnore;
+    // auto &pf = options_common.position_format;
+    // auto &qf = options_common.query_format;
+    // // pf.position = mjbots::moteus::kInt16;
+    // // pf.velocity = mjbots::moteus::kIgnore;
+    // // pf.feedforward_torque = mjbots::moteus::kFloat;
+    // // pf.kp_scale = mjbots::moteus::kInt8;
+    // // pf.kd_scale = mjbots::moteus::kInt8;
+    // // pf.accel_limit = mjbots::moteus::kInt16;
+    // // qf.trajectory_complete = mjbots::moteus::kIgnore;
 
     // Create two controllers
     std::vector<std::shared_ptr<moteus::Controller>> controllers = {
@@ -54,22 +54,11 @@ int main(int argc, char **argv)
             return options; }()),
     };
 
-    moteus::PositionMode::Command cmd;
-    cmd.kp_scale = 0.0;
-    cmd.kd_scale = 0.0;
-    cmd.feedforward_torque = 0.0;
-
-    std::vector<moteus::CanFdFrame> send_frames;
-    std::vector<moteus::CanFdFrame> receive_frames;
-
     double torque_command[2] = {0.1, -0.1};
 
     // Main loop
     while (!ctrl_c_pressed)
     {
-
-        send_frames.clear();
-        receive_frames.clear();
 
         auto maybe_servo1 = controllers[0]->SetQuery();
         auto maybe_servo2 = controllers[1]->SetQuery();
