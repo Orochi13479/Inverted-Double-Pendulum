@@ -130,7 +130,7 @@ protected:
         {
             cmd_.kp_scale = 2.0;
             cmd_.kd_scale = 1.0;
-            cmd_.maximum_torque = 1.0;
+            // cmd_.maximum_torque = 1.0;
             cmd_.accel_limit = 3.0;
 
             if (index_ >= torque_commands_.size()) // POSITION MODE
@@ -267,7 +267,7 @@ int main(int argc, char **argv)
     std::vector<std::vector<double>> torque_commands;
     for (size_t i = 1; i < data.size(); ++i)
     {
-        torque_commands.push_back({data[i][4] * 1.50, data[i][8] * 1.50});
+        torque_commands.push_back({data[i][4], data[i][8]});
     }
 
     // Calculate time intervals as differences between timestamps
