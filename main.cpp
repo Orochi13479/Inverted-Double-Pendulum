@@ -136,8 +136,8 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.kp_scale = cmd_kp[i];
-            cmd_.kd_scale = cmd_kd[i];
+            // cmd_.kp_scale = cmd_kp[i];
+            // cmd_.kd_scale = cmd_kd[i];
 
             if (index_ >= torque_commands_.size()) // POSITION MODE
             {
