@@ -48,16 +48,14 @@ int main(int argc, char **argv)
     std::ofstream csv_file("../trajGen/motor_data.csv");
     csv_file << "Time,q1,q1_dot,q1_dot_dot,tau1,q2,q2_dot,q2_dot_dot,tau2\n";
 
-    // Get the start time
-    auto start = std::chrono::steady_clock::now();
-
     std::cout << "Press Enter to start recording and CTRL+C to stop";
     std::cin.get();
+
+    auto start = std::chrono::steady_clock::now();
 
     // Main loop
     while (!ctrl_c_pressed)
     {
-        auto now = std::chrono::steady_clock::now();
         auto maybe_servo1 = controllers[0]->SetQuery();
         auto maybe_servo2 = controllers[1]->SetQuery();
 
@@ -65,6 +63,7 @@ int main(int argc, char **argv)
         const auto &v2 = maybe_servo2->values;
 
         // Get the current time in milliseconds since start
+        auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
         // printf("POSITION: %6.3f/%6.3f  VELOCITY: %6.3f/%6.3f TORQUE: %6.3f/%6.3f\r",
         //        v1.position, v2.position, v1.velocity, v2.velocity,
