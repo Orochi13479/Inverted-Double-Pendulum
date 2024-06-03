@@ -126,7 +126,8 @@ protected:
 
                 if (index_ == torque_commands_.size())
                 {
-                    std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
+                    std::cout << "\nCOMPLETED AT " << "index_: " << index_ << ". Press Ctrl+C to Exit\n"
+                              << std::endl;
                     index_++;
                 }
 

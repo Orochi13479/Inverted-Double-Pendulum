@@ -29,9 +29,6 @@ void signalHandler(int signal)
     ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
 }
 
-// Arrays to store data for each column
-std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
-
 // Function to read CSV data
 std::vector<std::vector<float>> readCSV(const std::string &filename)
 {
@@ -143,91 +140,63 @@ protected:
         std::vector<mjbots::moteus::CanFdFrame> send_frames;
         std::vector<mjbots::moteus::CanFdFrame> receive_frames;
 
-        while (index_ >= torque_commands_.size())
-        {
-            std::cout << "\nAll Actions Complete. Press Ctrl+C to Exit\n";
+        send_frames.clear();
+        receive_frames.clear();
 
-            std::ostringstream oss;
-            auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                              std::chrono::system_clock::now().time_since_epoch())
-                              .count();
-            oss << "timestamp:" << now_ms;
+        std::vector<double> cmd_pos = {0.50, 0.00};
+        std::vector<double> cmd_kp = {5.0, 5.0};
+        std::vector<double> cmd_kd = {20.0, 0.5};
 
-            for (size_t i = 0; i < controllers_.size(); ++i)
-            {
-                // Query the current position of the motor
-                auto maybe_result = controllers_[i]->SetQuery();
-                if (maybe_result)
-                {
-                    auto mode = maybe_result->values.mode;
-                    auto position = maybe_result->values.position;
-                    auto velocity = maybe_result->values.velocity;
-                    auto torque = maybe_result->values.torque;
-                    auto motor_temperature = maybe_result->values.motor_temperature;
-                    auto trajectory_complete = maybe_result->values.trajectory_complete;
-                    auto temperature = maybe_result->values.temperature;
-                    auto fault = maybe_result->values.fault;
-
-                    oss << ",motor" << i + 1 << "_mode:" << static_cast<int>(mode);
-                    oss << ",motor" << i + 1 << "_position:" << position;
-                    oss << ",motor" << i + 1 << "_velocity:" << velocity;
-                    oss << ",motor" << i + 1 << "_torque:" << torque;
-                    oss << ",motor" << i + 1 << "_motor_temperature:" << motor_temperature;
-                    oss << ",motor" << i + 1 << "_trajectory_complete:" << trajectory_complete;
-                    oss << ",motor" << i + 1 << "_temperature:" << temperature;
-                    oss << ",motor" << i + 1 << "_fault:" << static_cast<int>(fault);
-                }
-            }
-            std::string data = oss.str();
-            broadcastData(data);
-
-            index_++;
-
-            if (index_ == 1000)
-            {
-                return true;
-            }
-
-            // return true;
-        }
+        std::ostringstream oss;
+        auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::system_clock::now().time_since_epoch())
+                          .count();
+        oss << "timestamp:" << now_ms;
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.feedforward_torque = torque_commands_[index_][i];
+            cmd_.kp_scale = cmd_kp[i];
+            cmd_.kd_scale = cmd_kd[i];
+            cmd_.maximum_torque = 1.0;
+            cmd_.accel_limit = 4.0;
+
+            if (index_ >= torque_commands_.size()) // POSITION MODE
+            {
+
+                if (index_ == torque_commands_.size())
+                {
+                    std::cout << "\nCOMPLETED AT " << "index_: " << index_ << ". Press Ctrl+C to Exit\n"
+                              << std::endl;
+                    index_++;
+                }
+
+                cmd_.position = cmd_pos[i];
+                cmd_.feedforward_torque = 0.0;
+            }
+            else // TORQUE MODE
+            {
+                cmd_.feedforward_torque = torque_commands_[index_][i];
+            }
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+
+            // Query the current position of the motor
+            auto maybe_result = controllers_[i]->SetQuery();
+            if (maybe_result)
+            {
+                auto position = maybe_result->values.position;
+                auto velocity = maybe_result->values.velocity;
+                auto torque = maybe_result->values.torque;
+
+                oss << ",motor" << i + 1 << "_position:" << position;
+                oss << ",motor" << i + 1 << "_velocity:" << velocity;
+                oss << ",motor" << i + 1 << "_torque:" << torque;
+            }
         }
 
-        for (auto &pair : responses_)
-            pair.second = false;
+        std::string data = oss.str();
+        broadcastData(data);
 
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
-
-        for (const auto &frame : receive_frames)
-            responses_[frame.source] = true;
-
-        const int count = std::count_if(responses_.begin(), responses_.end(),
-                                        [](const auto &pair)
-                                        { return pair.second; });
-
-        constexpr double kStatusPeriodS = 0.1;
-        static double status_time = GetNow() + kStatusPeriodS;
-        static int hz_count = 0;
-
-        hz_count++;
-
-        const auto now = GetNow();
-        if (now > status_time)
-        {
-            printf("             %6.1fHz  rx_count=%2d   \r",
-                   hz_count / kStatusPeriodS, count);
-            fflush(stdout);
-
-            total_count_++;
-            total_hz_ += (hz_count / kStatusPeriodS);
-
-            hz_count = 0;
-            status_time += kStatusPeriodS;
-        }
 
         interval_index_++;
         if (interval_index_ >= time_intervals_[index_])
@@ -235,41 +204,6 @@ protected:
             interval_index_ = 0;
             index_++;
         }
-
-        std::ostringstream oss;
-        auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                     std::chrono::system_clock::now().time_since_epoch())
-                     .count();
-        oss << "timestamp:" << now_ms;
-        for (size_t i = 0; i < controllers_.size(); ++i)
-        {
-            // Query the current position of the motor
-            auto maybe_result = controllers_[i]->SetQuery();
-            if (maybe_result)
-            {
-                auto mode = maybe_result->values.mode;
-                auto position = maybe_result->values.position;
-                auto velocity = maybe_result->values.velocity;
-                auto torque = maybe_result->values.torque;
-                auto motor_temperature = maybe_result->values.motor_temperature;
-                auto trajectory_complete = maybe_result->values.trajectory_complete;
-                auto temperature = maybe_result->values.temperature;
-                auto fault = maybe_result->values.fault;
-
-                oss << ",motor" << i + 1 << "_mode:" << static_cast<int>(mode);
-                oss << ",motor" << i + 1 << "_position:" << position;
-                oss << ",motor" << i + 1 << "_velocity:" << velocity;
-                oss << ",motor" << i + 1 << "_torque:" << torque;
-                oss << ",motor" << i + 1 << "_motor_temperature:" << motor_temperature;
-                oss << ",motor" << i + 1 << "_trajectory_complete:" << trajectory_complete;
-                oss << ",motor" << i + 1 << "_temperature:" << temperature;
-                oss << ",motor" << i + 1 << "_fault:" << static_cast<int>(fault);
-            }
-        }
-        std::string data = oss.str();
-
-        // Broadcast data via WebSocket
-        broadcastData(data);
 
         ::usleep(10);
 
@@ -287,7 +221,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data.csv";
+    std::string filename = "../trajGen/trajectory_data_15.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
@@ -295,8 +229,8 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 150'000;  // Target Time in ns
-    config.SetFifoScheduler(98); // Priority 0-100
+    config.period_ns = 3'300'000; // Target Time in ns
+    config.SetFifoScheduler(98);  // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -307,11 +241,15 @@ int main(int argc, char **argv)
 
     // Set position format
     auto &pf = options_common.position_format;
-    pf.position = mjbots::moteus::kIgnore;
+    auto &qf = options_common.query_format;
+    pf.position = mjbots::moteus::kInt16;
     pf.velocity = mjbots::moteus::kIgnore;
-    pf.feedforward_torque = mjbots::moteus::kFloat;
-    pf.kp_scale = mjbots::moteus::kInt8;
-    pf.kd_scale = mjbots::moteus::kInt8;
+    pf.feedforward_torque = mjbots::moteus::kInt16;
+    pf.kp_scale = mjbots::moteus::kInt16;
+    pf.kd_scale = mjbots::moteus::kInt16;
+    pf.accel_limit = mjbots::moteus::kInt8;
+    pf.maximum_torque = mjbots::moteus::kInt8;
+    qf.trajectory_complete = mjbots::moteus::kInt8;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
@@ -343,7 +281,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
+        time_intervals.push_back((data[i][0]) - (data[i - 1][0]));
     }
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
     std::cout << "Torquesize " << torque_commands.size() << std::endl;
@@ -396,8 +334,8 @@ int main(int argc, char **argv)
     }
 
     // Calculate the average loop duration from the motor control thread
-    std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
-    std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
+    // std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
+    // std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
 
     // Output the average speed of the motor control thread
     std::cout << "\nAverage speed: " << motor_thread->GetAverageHz() << " Hz\n";
