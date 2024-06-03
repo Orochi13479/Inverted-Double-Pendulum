@@ -128,8 +128,6 @@ protected:
         // std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
         // std::vector<double> actual_torque = {v1.torque, v2.torque};
 
-
-
         for (size_t i = 0; i < controllers_.size(); i++)
         {
             // cmd_.kp_scale = cmd_kp[i];
@@ -140,6 +138,7 @@ protected:
                 if (index_ == torque_commands_.size())
                 {
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
+                    index_++;
                 }
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 4.0;
