@@ -117,7 +117,7 @@ protected:
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
 
-        std::vector<double> cmd_pos = {0.7, 0.0};
+        std::vector<double> cmd_pos = {0.6, 0.0};
         std::vector<double> cmd_pos_backup = {0.5, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
