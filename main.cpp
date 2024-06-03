@@ -148,6 +148,10 @@ protected:
                     std::cout << "Adjusting" << std::endl;
                     cmd_.position = cmd_pos_backup[i];
                 }
+                else if (v1.trajectory_complete && v1.position == 0.5)
+                {
+                    std::cout << "FINISHED" << std::endl;
+                }
                 else
                 {
                     std::cout << "Moving" << std::endl;
