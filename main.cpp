@@ -267,7 +267,7 @@ int main(int argc, char **argv)
     std::vector<std::vector<double>> torque_commands;
     for (size_t i = 1; i < data.size(); ++i)
     {
-        torque_commands.push_back({data[i][4] * 1.25, data[i][8] * 1.25});
+        torque_commands.push_back({data[i][4] * 1.50, data[i][8] * 1.50});
     }
 
     // Calculate time intervals as differences between timestamps
