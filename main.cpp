@@ -140,6 +140,7 @@ protected:
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                     index_++;
                 }
+                cmd_.feedforward_torque = NaN;
                 cmd_.position = cmd_pos[i];
                 // if (v1.trajectory_complete)
                 // {
@@ -149,6 +150,7 @@ protected:
             }
             else // TORQUE MODE
             {
+                cmd_.position = NaN;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \n",
                        v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
