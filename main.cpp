@@ -128,7 +128,7 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.kp_scale = 2.0;
+            cmd_.kp_scale = 10.0;
             cmd_.kd_scale = 1.0;
             cmd_.maximum_torque = 1.0;
             cmd_.accel_limit = 3.0;
