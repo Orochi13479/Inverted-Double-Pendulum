@@ -141,11 +141,11 @@ protected:
                     index_++;
                 }
                 cmd_.position = cmd_pos[i];
-                if (v1.trajectory_complete)
-                {
-                    std::cout << "\nBACKUP TRAJ" << std::endl;
-                    cmd_.position = cmd_pos_backup[i];
-                }
+                // if (v1.trajectory_complete)
+                // {
+                //     std::cout << "\nBACKUP TRAJ" << std::endl;
+                //     cmd_.position = cmd_pos_backup[i];
+                // }
             }
             else // TORQUE MODE
             {
