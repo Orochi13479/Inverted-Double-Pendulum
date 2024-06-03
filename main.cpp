@@ -130,9 +130,11 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.kp_scale = cmd_kp[i];
-            cmd_.kd_scale = cmd_kd[i];
+            // cmd_.kp_scale = cmd_kp[i];
+            // cmd_.kd_scale = cmd_kd[i];
             cmd_.maximum_torque = 1.0;
+            cmd_.accel_limit = 4.0;
+
             if (index_ >= torque_commands_.size()) // POSITION MODE
             {
                 if (index_ == torque_commands_.size())
@@ -141,7 +143,6 @@ protected:
                     index_++;
                 }
                 cmd_.position = cmd_pos[i];
-                cmd_.accel_limit = 4.0;
 
                 // cmd_.feedforward_torque = actual_torque[i] + torque_diff[i];
             }
@@ -174,7 +175,7 @@ protected:
         const auto now = GetNow();
         if (now > status_time)
         {
-            printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %s/%s FAULTS: %2d/%2d\r",
+            printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
                    static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                    v1.position, v2.position,
                    v1.torque, v2.torque,
