@@ -63,13 +63,13 @@ protected:
         for (auto &pair : responses_)
             pair.second = false;
 
-        auto section_start_time = std::chrono::high_resolution_clock::now();
+        // auto section_start_time = std::chrono::high_resolution_clock::now();
 
         transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
-        auto section_end_time = std::chrono::high_resolution_clock::now();
-        auto section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
-        std::cout << "Section 2 (Transport Cycle) duration: " << section_duration << " microseconds\n";
+        // auto section_end_time = std::chrono::high_resolution_clock::now();
+        // auto section_duration = std::chrono::duration_cast<std::chrono::microseconds>(section_end_time - section_start_time).count();
+        // std::cout << "Section 2 (Transport Cycle) duration: " << section_duration << " microseconds\n";
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
