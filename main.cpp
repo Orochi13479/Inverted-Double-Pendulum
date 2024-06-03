@@ -139,9 +139,12 @@ protected:
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
 
+            if (index_ == torque_commands_.size()) // POSITION MODE
+            {
+                std::cout << "COMPLETE" << "index_: " << index_ << std::endl;
+            }
             if (index_ >= torque_commands_.size()) // POSITION MODE
             {
-                std::cout << "COMPLETE" << std::endl;
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
