@@ -117,8 +117,8 @@ protected:
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
 
-        std::vector<double> cmd_pos = {0.5, 0.0};
-        std::vector<double> cmd_pos_backup = {0.6, 0.0};
+        std::vector<double> cmd_pos = {0.5, 0.01};
+        std::vector<double> cmd_pos_backup = {0.6, 0.01};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -128,7 +128,7 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.kp_scale = 10.0;
+            cmd_.kp_scale = 2.0;
             cmd_.kd_scale = 1.0;
             cmd_.maximum_torque = 1.0;
             cmd_.accel_limit = 3.0;
@@ -251,7 +251,7 @@ int main(int argc, char **argv)
     // Set position format
     auto &pf = options_common.position_format;
     auto &qf = options_common.query_format;
-    pf.position = mjbots::moteus::kInt16;
+    pf.position = mjbots::moteus::kFloat;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
