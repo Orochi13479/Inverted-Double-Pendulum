@@ -141,10 +141,11 @@ protected:
                     index_++;
                 }
 
-                if (v1.trajectory_complete && v1.position == 0.5)
+                if (v1.trajectory_complete && v1.position != 0.5)
                 {
-                    std::cout << "\nCOMPLETED" << std::endl;
-                    return true;
+                    std::cout << "ADJUSTING" << std::endl;
+                    // return true;
+                    controllers_[i]->SetBrake();
                 }
                 else
                 {
