@@ -127,12 +127,12 @@ protected:
         const std::vector<double> &last_torque_command = torque_commands_.back();
         std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
 
-        printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %s/%s FAULTS: %2d/%2d\r",
-               static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-               v1.position, v2.position,
-               v1.torque, v2.torque, torque_diff[0], torque_diff[1],
-               v1.temperature, v2.temperature, v1.trajectory_complete, v2.trajectory_complete, static_cast<int>(v1.fault), static_cast<int>(v2.fault));
-        fflush(stdout);
+        // printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %s/%s FAULTS: %2d/%2d\r",
+        //        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
+        //        v1.position, v2.position,
+        //        v1.torque, v2.torque, torque_diff[0], torque_diff[1],
+        //        v1.temperature, v2.temperature, v1.trajectory_complete, v2.trajectory_complete, static_cast<int>(v1.fault), static_cast<int>(v2.fault));
+        // fflush(stdout);
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
@@ -141,7 +141,7 @@ protected:
 
             if (index_ >= torque_commands_.size())
             {
-                std::cout << "TRAJECTORY COMPLETE" << std::endl;
+                // std::cout << "TRAJECTORY COMPLETE" << std::endl;
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
@@ -157,7 +157,7 @@ protected:
             }
             else
             {
-                std::cout << "TRAJECTORY IN PROGRESS" << std::endl;
+                // std::cout << "TRAJECTORY IN PROGRESS" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
                 transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
@@ -201,8 +201,6 @@ protected:
             index_++;
         }
 
-        ::usleep(10);
-
         return false;
     }
 
@@ -217,7 +215,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/motor_data.csv";
+    std::string filename = "../trajGen/trajectory_data_16.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
@@ -274,7 +272,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 250) - (data[i - 1][0] * 250));
+        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
     }
 
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
