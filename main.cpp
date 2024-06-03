@@ -131,18 +131,7 @@ protected:
                     controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
                 }
 
-                // if (v1.trajectory_complete && v1.position != 0.5)
-                // {
-                //     std::cout << "Adjusting" << std::endl;
-                //     cmd_.position = cmd_pos_backup[i];
-                // }
-                // else
-                // {
-                //     std::cout << "Moving" << std::endl;
-                //     cmd_.position = cmd_pos[i];
-                // }
-
-                cmd_.position = cmd_pos[i];
+                // cmd_.position = cmd_pos[i];
 
                 printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
                        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
