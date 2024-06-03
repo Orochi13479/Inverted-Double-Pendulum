@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     };
 
     // Open a CSV file for writing
-    std::ofstream csv_file("../motor_data.csv");
+    std::ofstream csv_file("../trajGen/motor_data.csv");
     csv_file << "Time,q1,q1_dot,q1_dot_dot,tau1,q2,q2_dot,q2_dot_dot,tau2\n";
 
     // Get the start time
