@@ -27,8 +27,7 @@ void signalHandler(int signal) {
 // Define a struct to hold data for each timestamp
 struct DataPoint {
     std::chrono::system_clock::time_point timestamp;
-    double position1;
-    double position2;
+    double position;
     double torque1;
     double torque2;
     double velocity1;
@@ -249,8 +248,7 @@ int main(int argc, char** argv) {
         const auto& v1 = *maybe_servo1;
         const auto& v2 = *maybe_servo2;
 
-        currentDataPoint.position1 = v1.position;
-        currentDataPoint.position2 = v2.position;
+        currentDataPoint.position = revolutionsToDegrees(v1.position + v2.position);
         currentDataPoint.torque1 = v1.torque;
         currentDataPoint.torque2 = v2.torque;  
         currentDataPoint.velocity1 = v1.velocity;
@@ -290,11 +288,10 @@ int main(int argc, char** argv) {
             std::time_t timestamp = std::chrono::system_clock::to_time_t(dataPoint.timestamp);
             // Format timestamp as string
             std::ostringstream timestampStr;
-            timestampStr << std::put_time(std::(&timestamp), "%Y-%m-%d %H:%M:%S");
+            timestampStr << std::put_time(std::localtime(&timestamp), "%Y-%m-%d %H:%M:%S");
             // Write data to CSV
             outputFile << timestampStr.str() << ","
-                       << dataPoint.position1 << ","
-                       << dataPoint.position2 << ","
+                       << dataPoint.position << ","
                        << dataPoint.torque1 << ","
                        << dataPoint.torque2 << ","
                        << dataPoint.velocity1 << ","
