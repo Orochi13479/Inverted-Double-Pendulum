@@ -4,7 +4,7 @@
 % The remainder of trajectory is calculated through running the traj5.m
 % file. 
 
-%% trajectory_data_17
+%% trajectory_data_18
 %Parameters
 lambda1 = 1.2;            % Adjust decay
 omega1 = 2*pi/2;         % Adjust number of oscillationsc
