@@ -1,4 +1,3 @@
-% SECTION 1: Physical parameters of the system
 % Define parameters of double inverted pendulum system
 L1 = 0.195;       % Link 1 length (m)
 L2 = 0.215;       % Link 2 length (m)
@@ -29,8 +28,11 @@ y0 = [q1_dot_0; q2_dot_0; q1_dot_dot_desired(1); q2_dot_dot_desired(1)];
 % Time span
 tspan = t_sim;
 
-% Solve the ODE
-[t, y] = ode45(@(t, y) double_pendulum_ode(t, y, q1_desired, q2_desired, q1_dot_desired, q2_dot_desired, t_sim, m1, m2, L1, L2, g), tspan, y0);
+% Set ODE solver options to handle stiff equations
+options = odeset('RelTol', 1e-6, 'AbsTol', 1e-8);
+
+% Solve the ODE using a stiff solver
+[t, y] = ode15s(@(t, y) double_pendulum_ode(t, y, q1_desired, q2_desired, q1_dot_desired, q2_dot_desired, t_sim, m1, m2, L1, L2, g), tspan, y0, options);
 
 % Extract results
 q1_sim = y(:, 1);
@@ -38,9 +40,14 @@ q2_sim = y(:, 3);
 q1_dot_sim = y(:, 2);
 q2_dot_sim = y(:, 4);
 
+% Ensure consistent dimensions
+len = length(t_sim);
+q1_sim = q1_sim(1:len);
+q2_sim = q2_sim(1:len);
+q1_dot_sim = q1_dot_sim(1:len);
+q2_dot_sim = q2_dot_sim(1:len);
+
 % Initialize arrays to store results
-q1_sim = zeros(size(t_sim));
-q2_sim = zeros(size(t_sim));
 q1_dot_dot_sim = zeros(size(t_sim));
 q2_dot_dot_sim = zeros(size(t_sim));
 tau1 = zeros(size(t_sim));
@@ -84,16 +91,19 @@ for i = 1:length(t)
     % Store results
     tau1(i) = tau(1);
     tau2(i) = tau(2);
-    q1_sim(i) = q1;
-    q2_sim(i) = q2;
     q1_dot_dot_sim(i) = q_dot_dot(1);
     q2_dot_dot_sim(i) = q_dot_dot(2);
 end
 
+% Ensure consistent dimensions for all results
+tau1 = tau1(1:len);
+tau2 = tau2(1:len);
+q1_dot_dot_sim = q1_dot_dot_sim(1:len);
+q2_dot_dot_sim = q2_dot_dot_sim(1:len);
 
 %% GENERATE CSV FILE OF TRAJECTORY
 % Generate CSV file of Trajectory Generation Data
-filename = 'trajectory_data_17.csv';
+filename = 'trajectory_data_20.csv';
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
 title_line = 'Time,q1,q1_dot,q1_dot_dot,tau1,q2,q2_dot,q2_dot_dot,tau2';
 fid = fopen(filename, 'w');
@@ -133,7 +143,7 @@ hold off;
 figure;
 
 % Plot Joint 1 Angular Position
-subplot(4, 2, 1);  % Create a 4x2 grid, and use the 1st cell
+subplot(4, 2, 1);
 plot(t_sim, q1_sim, 'b', 'LineWidth', 1.5);
 title('Joint 1 Angular Position');
 xlabel('Time (s)');
@@ -141,7 +151,7 @@ ylabel('Position (rad)');
 grid on;
 
 % Plot Joint 1 Angular Velocity
-subplot(4, 2, 3);  % Create a 4x2 grid, and use the 3rd cell
+subplot(4, 2, 3);
 plot(t_sim, q1_dot_sim, 'r', 'LineWidth', 1.5);
 title('Joint 1 Angular Velocity');
 xlabel('Time (s)');
@@ -149,7 +159,7 @@ ylabel('Velocity (rad/s)');
 grid on;
 
 % Plot Joint 1 Angular Acceleration
-subplot(4, 2, 5);  % Create a 4x2 grid, and use the 5th cell
+subplot(4, 2, 5);
 plot(t_sim, q1_dot_dot_sim, 'g', 'LineWidth', 1.5);
 title('Joint 1 Angular Acceleration');
 xlabel('Time (s)');
@@ -157,7 +167,7 @@ ylabel('Acceleration (rad/s^2)');
 grid on;
 
 % Plot Joint 1 Torque
-subplot(4, 2, 7);  % Create a 4x2 grid, and use the 7th cell
+subplot(4, 2, 7);
 plot(t_sim, tau1, 'k', 'LineWidth', 1.5);
 title('Joint 1 Torque');
 xlabel('Time (s)');
@@ -165,7 +175,7 @@ ylabel('Torque (N.m)');
 grid on;
 
 % Plot Joint 2 Angular Position
-subplot(4, 2, 2);  % Create a 4x2 grid, and use the 2nd cell
+subplot(4, 2, 2);
 plot(t_sim, q2_sim, 'b', 'LineWidth', 1.5);
 title('Joint 2 Angular Position');
 xlabel('Time (s)');
@@ -173,7 +183,7 @@ ylabel('Position (rad)');
 grid on;
 
 % Plot Joint 2 Angular Velocity
-subplot(4, 2, 4);  % Create a 4x2 grid, and use the 4th cell
+subplot(4, 2, 4);
 plot(t_sim, q2_dot_sim, 'r', 'LineWidth', 1.5);
 title('Joint 2 Angular Velocity');
 xlabel('Time (s)');
@@ -181,7 +191,7 @@ ylabel('Velocity (rad/s)');
 grid on;
 
 % Plot Joint 2 Angular Acceleration
-subplot(4, 2, 6);  % Create a 4x2 grid, and use the 6th cell
+subplot(4, 2, 6);
 plot(t_sim, q2_dot_dot_sim, 'g', 'LineWidth', 1.5);
 title('Joint 2 Angular Acceleration');
 xlabel('Time (s)');
@@ -189,11 +199,10 @@ ylabel('Acceleration (rad/s^2)');
 grid on;
 
 % Plot Joint 2 Torque
-subplot(4, 2, 8);  % Create a 4x2 grid, and use the 8th cell
+subplot(4, 2, 8);
 plot(t_sim, tau2, 'k', 'LineWidth', 1.5);
 title('Joint 2 Torque');
 xlabel('Time (s)');
 ylabel('Torque (N.m)');
 grid on;
-
 
