@@ -127,7 +127,7 @@ protected:
                 {
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                     index_++;
-                    cmd_.position = cmd_pos_backup[i];
+                    cmd_.stop_position = cmd_pos_backup[i];
                     controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
                 }
 
@@ -142,7 +142,7 @@ protected:
                 //     cmd_.position = cmd_pos[i];
                 // }
 
-                cmd_.position = cmd_pos[i];
+                cmd_.stop_position = cmd_pos[i];
                 controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
 
                 printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
@@ -242,6 +242,7 @@ int main(int argc, char **argv)
     pf.accel_limit = mjbots::moteus::kInt8;
     pf.maximum_torque = mjbots::moteus::kInt8;
     qf.trajectory_complete = mjbots::moteus::kInt8;
+    pf.stop_position = mjbots::moteus::kFloat;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
