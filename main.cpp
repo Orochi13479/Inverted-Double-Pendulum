@@ -141,7 +141,7 @@ protected:
 
             if (index_ >= torque_commands_.size()) // POSITION MODE
             {
-                // std::cout << "TRAJECTORY COMPLETE" << std::endl;
+                std::cout << "COMPLETE" << std::endl;
 
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_16.csv";
+    std::string filename = "../trajGen/trajectory_data_15.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
