@@ -117,7 +117,7 @@ protected:
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
 
-        std::vector<double> cmd_pos = {-0.5, 0.01};
+        std::vector<double> cmd_pos = {0.5, 0.1};
         std::vector<double> cmd_pos_backup = {0.5, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
@@ -159,7 +159,8 @@ protected:
                 //     cmd_.position = cmd_pos[i];
                 // }
                 cmd_.position = cmd_pos[i];
-                controllers_[i]->SetPosition(cmd_);
+                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
+
                 printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
                        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                        v1.position, v2.position,
@@ -173,12 +174,13 @@ protected:
                 // printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \n",
                 //        v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
                 send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-                transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
             }
         }
 
         for (auto &pair : responses_)
             pair.second = false;
+
+        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
