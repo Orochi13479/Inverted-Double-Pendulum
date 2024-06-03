@@ -3,14 +3,15 @@
 % columns for joint 1 positions, joint 2 positions and timesteps. 
 % The remainder of trajectory is calculated through running the traj5.m
 % file. 
-%% trajectory_data_13
+
+%% trajectory_data_17
 %Parameters
 lambda1 = 1.2;            % Adjust decay
-omega1 = 6*pi/2;         % Adjust number of oscillationsc
+omega1 = 2*pi/2;         % Adjust number of oscillationsc
 phi1 = pi;          
 
 lambda2 = 3;            % Adjust decay
-omega2 = 6*pi/2;         % Adjust number of oscillations
+omega2 = 2*pi/2;         % Adjust number of oscillations
 phi2 = pi;
 % Time array
 t = linspace(0, 4,400)';
@@ -18,6 +19,38 @@ t = linspace(0, 4,400)';
 % Function
 y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
 y2 = pi/4* sin(omega2 * t + phi2);
+
+%% trajectory_data_17
+% %Parameters
+% lambda1 = 1.2;            % Adjust decay
+% omega1 = 6*pi/2;         % Adjust number of oscillationsc
+% phi1 = pi;          
+% 
+% lambda2 = 3;            % Adjust decay
+% omega2 = 6*pi/2;         % Adjust number of oscillations
+% phi2 = pi;
+% % Time array
+% t = linspace(0, 4,400)';
+% 
+% % Function
+% y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
+% y2 = 0*pi/4* sin(omega2 * t + phi2);
+
+%% trajectory_data_13
+% %Parameters
+% lambda1 = 1.2;            % Adjust decay
+% omega1 = 6*pi/2;         % Adjust number of oscillationsc
+% phi1 = pi;          
+% 
+% lambda2 = 3;            % Adjust decay
+% omega2 = 6*pi/2;         % Adjust number of oscillations
+% phi2 = pi;
+% % Time array
+% t = linspace(0, 4,400)';
+% 
+% % Function
+% y1 = pi * exp(-lambda1 * t) .* cos(omega1 * t + phi1);
+% y2 = pi/4* sin(omega2 * t + phi2);
 
 %% trajectory_data_11 & 12
 % %Parameters
