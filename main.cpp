@@ -104,8 +104,8 @@ protected:
         send_frames.clear();
         receive_frames.clear();
 
-        std::vector<double> cmd_pos = {0.5, 0.01};
-        std::vector<double> cmd_pos_backup = {0.50, 0.0};
+        std::vector<double> cmd_pos = {0.50, 0.01};
+        // std::vector<double> cmd_pos_backup = {0.50, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -127,8 +127,8 @@ protected:
                 {
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                     index_++;
-                    cmd_.position = cmd_pos_backup[i];
-                    controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
+                    cmd_.position = cmd_pos[i];
+                    controllers_[i]->SetPositionWaitComplete(cmd_, 0.0001);
                 }
 
                 // cmd_.position = cmd_pos[i];
