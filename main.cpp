@@ -202,13 +202,13 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_18.csv";
+    std::string filename = "../trajGen/trajectory_data_15.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 2'000'000; // Target Time in ns
+    config.period_ns = 2'500'000; // Target Time in ns
     config.SetFifoScheduler(98);  // Priority 0-100
 
     // Set up controllers and transport
