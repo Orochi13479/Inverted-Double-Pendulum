@@ -44,6 +44,9 @@ q2_dot_dot_sim = zeros(size(t_sim));  % Initialise acceleration array of second 
 q1_desired = data(:, 2);  % Second column contains inverted y values
 q2_desired = data(:, 3);
 
+% Time step
+dt = t_sim(2) - t_sim(1);
+
 % Compute velocities using central differences
 q1_dot_desired = zeros(size(q1_desired));
 q2_dot_desired = zeros(size(q2_desired));
@@ -127,7 +130,7 @@ end
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_16.csv';
+filename = 'trajectory_data_17.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
