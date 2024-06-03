@@ -117,7 +117,7 @@ protected:
         std::vector<double> cmd_kp = {10.0, 1};
         std::vector<double> cmd_kd = {5.0, 0.5};
 
-        std::vector<double> cmd_pos = {0.6, 0.0};
+        std::vector<double> cmd_pos = {-0.5, 0.0};
         std::vector<double> cmd_pos_backup = {0.5, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
@@ -141,7 +141,7 @@ protected:
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                     index_++;
                     cmd_.position = cmd_pos[i];
-                    controllers_[i]->SetPositionWaitComplete(cmd_, 1);
+                    controllers_[i]->SetPosition(cmd_);
                 }
 
                 if (v1.trajectory_complete && v1.position != 0.5)
@@ -158,7 +158,7 @@ protected:
                     std::cout << "Moving" << std::endl;
                     cmd_.position = cmd_pos[i];
                 }
-                controllers_[i]->SetPosition(cmd_);
+                // controllers_[i]->SetPosition(cmd_);
                 printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
                        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
                        v1.position, v2.position,
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_17.csv";
+    std::string filename = "../trajGen/trajectory_data_18.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
