@@ -171,9 +171,9 @@ protected:
         if (now > status_time)
         {
 
-            printf("\n             %6.1fHz  rx_count=%2d   \r",
-                   hz_count / kStatusPeriodS, count);
-            fflush(stdout);
+            // printf("\n             %6.1fHz  rx_count=%2d   \r",
+            //        hz_count / kStatusPeriodS, count);
+            // fflush(stdout);
             total_count_++;
             total_hz_ += (hz_count / kStatusPeriodS);
 
