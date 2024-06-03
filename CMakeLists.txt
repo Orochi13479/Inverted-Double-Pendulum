@@ -49,6 +49,8 @@ target_include_directories(mainWebsoc_${PROJECT_NAME} PRIVATE ${websocketpp_SOUR
 
 setup_cactus_rt_target_options(mainWebsoc_${PROJECT_NAME})
 
+add_executable(trajRecord_${PROJECT_NAME} trajRecord.cpp)
+target_link_libraries(trajRecord_${PROJECT_NAME} moteus::cpp pthread) 
 
 # Control Executables
 add_executable(control_${PROJECT_NAME} control/IDPControlPosition.cpp)
