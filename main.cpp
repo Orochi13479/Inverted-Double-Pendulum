@@ -128,7 +128,7 @@ protected:
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                     index_++;
                     cmd_.position = cmd_pos_backup[i];
-                    controllers_[i]->SetPosition(cmd_);
+                    controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
                 }
 
                 // if (v1.trajectory_complete && v1.position != 0.5)
