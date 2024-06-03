@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     using namespace mjbots;
     // Set up controllers and transport
     moteus::Controller::DefaultArgProcess(argc, argv);
-    auto transport = moteus::Controller::MakeSingletonTransport({});
+    // auto transport = moteus::Controller::MakeSingletonTransport({});
 
     // Options for setting up controllers
     mjbots::moteus::Controller::Options options_common;
