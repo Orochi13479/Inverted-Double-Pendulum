@@ -131,7 +131,7 @@ protected:
         {
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
-
+            cmd_.maximum_torque = 1.0;
             if (index_ >= torque_commands_.size()) // POSITION MODE
             {
                 if (index_ == torque_commands_.size())
@@ -140,7 +140,6 @@ protected:
                 }
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 4.0;
-                cmd_.maximum_torque = 1.1;
 
                 // cmd_.feedforward_torque += torque_diff[i];
             }
@@ -212,7 +211,7 @@ int main(int argc, char **argv)
     // Signal handling setup
     std::signal(SIGINT, signalHandler);
     // Specify the full path to the CSV file
-    std::string filename = "../trajGen/trajectory_data_14.csv";
+    std::string filename = "../trajGen/trajectory_data_15.csv";
 
     std::vector<std::vector<float>> data = readCSV(filename);
 
@@ -237,7 +236,7 @@ int main(int argc, char **argv)
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
     pf.accel_limit = mjbots::moteus::kInt8;
-    pf.maximum_torque = mjbots::moteus::kInt16;
+    pf.maximum_torque = mjbots::moteus::kInt8;
     qf.trajectory_complete = mjbots::moteus::kIgnore;
 
     // Create two controllers
