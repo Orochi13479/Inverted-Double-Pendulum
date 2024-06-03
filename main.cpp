@@ -106,11 +106,11 @@ protected:
 
         std::vector<double> cmd_pos = {0.50, 0.00};
 
-        auto maybe_servo1 = controllers_[0]->SetQuery();
-        auto maybe_servo2 = controllers_[1]->SetQuery();
+        // auto maybe_servo1 = controllers_[0]->SetQuery();
+        // auto maybe_servo2 = controllers_[1]->SetQuery();
 
-        const auto &v1 = maybe_servo1->values;
-        const auto &v2 = maybe_servo2->values;
+        // const auto &v1 = maybe_servo1->values;
+        // const auto &v2 = maybe_servo2->values;
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
@@ -295,9 +295,6 @@ int main(int argc, char **argv)
     app.RegisterThread(motor_thread);
     cactus_rt::SetUpTerminationSignalHandler();
 
-    // Inform the user that the real-time loop is starting and will run until interrupted
-    std::cout << "RT loop will run until CTRL+C\n";
-
     // Start the application (and thus the motor control thread)
     app.Start();
 
@@ -319,7 +316,7 @@ int main(int argc, char **argv)
     // std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
 
     // Output the average speed of the motor control thread
-    std::cout << "Average speed: " << motor_thread->GetAverageHz() << " Hz\n";
+    // std::cout << "Average speed: " << motor_thread->GetAverageHz() << " Hz\n";
 
     return 0;
 }
