@@ -113,7 +113,7 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     tau = M * q_dot_dot + c + g_q;
     
     % Enforce torque limits
-    tau = min(max(tau, -0.9), 0.9);  % torque limits
+    tau = min(max(tau, -1), 1);  % torque limits
     
     % Store results
     tau1(i) = tau(1);
@@ -130,7 +130,7 @@ end
 % Create CSV file of Trajectory Generation Data
 
 % Define the filename
-filename = 'trajectory_data_17.csv';
+filename = 'trajectory_data_18.csv';
 
 % Transpose each variable and concatenate them into a single matrix
 data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
