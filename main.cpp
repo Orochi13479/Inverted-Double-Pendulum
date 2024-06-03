@@ -147,14 +147,13 @@ protected:
                 {
                     std::cout << "Adjusting" << std::endl;
                     cmd_.position = cmd_pos_backup[i];
-                    controllers_[i]->SetPosition(cmd_);
                 }
                 else
                 {
                     std::cout << "Moving" << std::endl;
                     cmd_.position = cmd_pos[i];
-                    controllers_[i]->SetPosition(cmd_);
                 }
+                controllers_[i]->SetPosition(cmd_);
             }
             else // TORQUE MODE
             {
