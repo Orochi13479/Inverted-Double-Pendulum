@@ -32,16 +32,12 @@ find_package(pinocchio REQUIRED)
 # Include Directories
 include_directories(${websocketpp_SOURCE_DIR})
 
+
 # Main Executables
 add_executable(main_${PROJECT_NAME} main.cpp)
 target_link_libraries(main_${PROJECT_NAME} moteus::cpp pthread cactus_rt)
 
 setup_cactus_rt_target_options(main_${PROJECT_NAME})
-
-add_executable(mainTest_${PROJECT_NAME} main_test.cpp)
-target_link_libraries(mainTest_${PROJECT_NAME} moteus::cpp pthread cactus_rt)
-
-setup_cactus_rt_target_options(mainTest_${PROJECT_NAME})
 
 add_executable(mainWebsoc_${PROJECT_NAME} mainWebsoc.cpp)
 target_link_libraries(mainWebsoc_${PROJECT_NAME} pinocchio::pinocchio moteus::cpp pthread cactus_rt)
@@ -49,8 +45,6 @@ target_include_directories(mainWebsoc_${PROJECT_NAME} PRIVATE ${websocketpp_SOUR
 
 setup_cactus_rt_target_options(mainWebsoc_${PROJECT_NAME})
 
-add_executable(trajRecord_${PROJECT_NAME} trajRecord.cpp)
-target_link_libraries(trajRecord_${PROJECT_NAME} moteus::cpp pthread) 
 
 # Control Executables
 add_executable(control_${PROJECT_NAME} control/IDPControlPosition.cpp)
@@ -90,3 +84,6 @@ add_executable(bandwidthTestRT_${PROJECT_NAME} driver/bandwidthTestRT.cpp)
 target_link_libraries(bandwidthTestRT_${PROJECT_NAME} moteus::cpp pthread cactus_rt)
 
 setup_cactus_rt_target_options(bandwidthTestRT_${PROJECT_NAME})
+
+add_executable(trajRecord_${PROJECT_NAME} driver/trajRecord.cpp)
+target_link_libraries(trajRecord_${PROJECT_NAME} moteus::cpp pthread) 
