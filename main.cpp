@@ -139,7 +139,7 @@ protected:
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                 }
                 cmd_.position = cmd_pos[i];
-                cmd_.accel_limit = 3.0;
+                cmd_.accel_limit = 4.0;
                 cmd_.maximum_torque = 1.1;
 
                 // cmd_.feedforward_torque += torque_diff[i];
@@ -231,13 +231,13 @@ int main(int argc, char **argv)
     // Set position format
     auto &pf = options_common.position_format;
     auto &qf = options_common.query_format;
-    pf.position = mjbots::moteus::kInt8;
+    pf.position = mjbots::moteus::kInt16;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
     pf.accel_limit = mjbots::moteus::kInt8;
-    pf.maximum_torque = mjbots::moteus::kInt8;
+    pf.maximum_torque = mjbots::moteus::kInt16;
     qf.trajectory_complete = mjbots::moteus::kIgnore;
 
     // Create two controllers
