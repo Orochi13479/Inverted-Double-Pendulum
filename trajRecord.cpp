@@ -65,14 +65,14 @@ int main(int argc, char **argv)
 
         // Get the current time in milliseconds since start
         auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
         printf("POSITION: %6.3f/%6.3f  VELOCITY: %6.3f/%6.3f TORQUE: %6.3f/%6.3f\r",
                v1.position, v2.position, v1.velocity, v2.velocity,
                v1.torque, v2.torque);
         fflush(stdout);
 
         // Write data to the CSV file
-        csv_file << elapsed << ","
+        csv_file << elapsed / 1000 << ","
                  << v1.position << "," << v1.velocity << "," << "0.0" << "," << v1.torque << ","
                  << v2.position << "," << v2.velocity << "," << "0.0" << "," << v2.torque << "\n";
     }
