@@ -118,14 +118,14 @@ protected:
         std::vector<double> cmd_kd = {5.0, 0.5};
         std::vector<double> cmd_pos = {0.5, 0.0};
 
-        auto maybe_servo1 = controllers_[0]->SetQuery();
-        auto maybe_servo2 = controllers_[1]->SetQuery();
+        // auto maybe_servo1 = controllers_[0]->SetQuery();
+        // auto maybe_servo2 = controllers_[1]->SetQuery();
 
-        const auto &v1 = maybe_servo1->values;
-        const auto &v2 = maybe_servo2->values;
+        // const auto &v1 = maybe_servo1->values;
+        // const auto &v2 = maybe_servo2->values;
 
-        const std::vector<double> &last_torque_command = torque_commands_.back();
-        std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
+        // const std::vector<double> &last_torque_command = torque_commands_.back();
+        // std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
 
         // printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TORQUE ERROR: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %s/%s FAULTS: %2d/%2d\r",
         //        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
@@ -139,7 +139,7 @@ protected:
             cmd_.kp_scale = cmd_kp[i];
             cmd_.kd_scale = cmd_kd[i];
 
-            if (index_ >= torque_commands_.size())
+            if (index_ >= torque_commands_.size()) // POSITION MODE
             {
                 // std::cout << "TRAJECTORY COMPLETE" << std::endl;
 
@@ -155,7 +155,7 @@ protected:
 
                 // cmd_.feedforward_torque += torque_diff[i];
             }
-            else
+            else // TRAJECTORY MODE
             {
                 // std::cout << "TRAJECTORY IN PROGRESS" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
