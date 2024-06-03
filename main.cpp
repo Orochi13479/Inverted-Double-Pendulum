@@ -145,14 +145,13 @@ protected:
 
                 if (v1.trajectory_complete && v1.position != 0.5)
                 {
-                    // std::cout << "ADJUSTING" << std::endl;
+                    std::cout << "Adjusting" << std::endl;
                     cmd_.position = cmd_pos_backup[i];
                     controllers_[i]->SetPosition(cmd_);
-                    // return true;
-                    // controllers_[i]->SetBrake();
                 }
                 else
                 {
+                    std::cout << "Moving" << std::endl;
                     cmd_.position = cmd_pos[i];
                     controllers_[i]->SetPosition(cmd_);
                 }
