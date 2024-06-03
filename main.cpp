@@ -118,7 +118,7 @@ protected:
         std::vector<double> cmd_kd = {5.0, 0.5};
 
         std::vector<double> cmd_pos = {0.5, 0.0};
-        std::vector<double> cmd_pos_backup = {0.501, 0.001};
+        std::vector<double> cmd_pos_backup = {0.6, 0.0};
 
         auto maybe_servo1 = controllers_[0]->SetQuery();
         auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -145,9 +145,11 @@ protected:
 
                 if (v1.trajectory_complete && v1.position != 0.5)
                 {
-                    std::cout << "ADJUSTING" << std::endl;
+                    // std::cout << "ADJUSTING" << std::endl;
+                    cmd_.position = cmd_pos_backup[i];
+                    controllers_[i]->SetPosition(cmd_);
                     // return true;
-                    controllers_[i]->SetBrake();
+                    // controllers_[i]->SetBrake();
                 }
                 else
                 {
