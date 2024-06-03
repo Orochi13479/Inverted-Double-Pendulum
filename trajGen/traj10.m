@@ -18,8 +18,11 @@ g = 9.8;          % gravity (m/s^2)
 
 %% SECTION 2: Initialising simulation variables
 
+% Read data from CSV file - generated in trajTool
+data = readmatrix('motor_data.csv');
+
 % Time vector for simulation
-t_sim = linspace(0, 5, 200);                                          % Time vector for simulation
+t_sim = data(:, 1);  % First column contains time values                                          % Time vector for simulation
 
 % Initialise arrays to store torques and other simulation results
 tau1 = zeros(size(t_sim));                                          % Initialise torque array of first motor to zero
@@ -31,76 +34,23 @@ q2_dot_sim = zeros(size(t_sim));                                    % Initialise
 q1_dot_dot_sim = zeros(size(t_sim));                                % Initialise acceleration array of first motor to zero
 q2_dot_dot_sim = zeros(size(t_sim));                                % Initialise acceleration array of second motor to zero
 
-%% SECTION 3: Desired Trajectory - Positions, Velocities and Accelerations
+% TRAJECTORY 1
+q1_desired_revolutions = data(:, 2);  % Second column contains desired position in revolutions
+q2_desired_revolutions = data(:, 6);
+q1_dot_desired_revolutions = data(:, 3);  % Third column contains desired velocity in revolutions/s
+q2_dot_desired_revolutions = data(:, 7);
 
-% Original trajectory points (TRAJECTORY 2)
-% % TRAJECTORY 4
-% q1_a = linspace(0, -0.5236, 50);
-% q1_b = linspace(-0.5079, 1.0472, 50);
-% q1_c = linspace(1.0210, -1.5708, 50);
-% q1_d = linspace(-1.5237, pi, 50);
-% 
-% q2_a = linspace(0, -0.5236, 50);
-% q2_b = linspace(-0.5183, 0.5236, 50);
-% q2_c = linspace(0.5183, -0.5236, 50);
-% q2_d = linspace(-0.5183, 0, 50);
-% 
-% % Concatenate the segments
-% q1_desired = [q1_a, q1_b, q1_c, q1_d];
-% q2_desired = [q2_a, q2_b, q2_c, q2_d];
+% Convert positions from revolutions to radians
+q1_desired = q1_desired_revolutions * 2 * pi;
+q2_desired = q2_desired_revolutions * 2 * pi;
 
-% TRAJECTORY 7
-% q1_a = linspace(0, -0.5, 20);
-% q1_b = linspace(-0.501, 0.6, 30);
-% q1_c = linspace(0.599, -0.8, 40);
-% q1_d = linspace(-0.799, 1.1, 50);
-% q1_e = linspace(1.101, -1.4, 60);
-% q1_f = linspace(-1.399,2.0, 70);
-% q1_g = linspace(1.99,-2.5, 80);
-% q1_h = linspace(-2.499,3.1416, 100);
-% 
-% 
-% q2_a = linspace(0, -0.5236, 20);
-% q2_b = linspace(-0.5183, 0.5236, 30);
-% q2_c = linspace(0.5183, -0.5236, 40);
-% q2_d = linspace(-0.5183, 0.5236, 50);
-% q2_e = linspace(0.5183, -0.5236, 60);
-% q2_f = linspace(-0.5183, 0.5236, 70);
-% q2_g = linspace(0.5183, -0.5236, 80);
-% q2_h = linspace(-0.5183,0, 100);
-% % Concatenate the segments
-% q1_desired = [q1_a, q1_b, q1_c, q1_d, q1_e, q1_f, q1_g, q1_h];
-% q2_desired = [q2_a, q2_b, q2_c, q2_d, q2_e, q2_f, q2_g, q2_h];
-
-% % %TRAJECTORY 8
-% q1_a = linspace(0, -0.5, 20);
-% q1_b = linspace(-0.501, 0.6, 20);
-% q1_c = linspace(0.599, -0.8, 20);
-% q1_d = linspace(-0.799, 1.1, 20);
-% q1_e = linspace(1.101, -1.4, 20);
-% q1_f = linspace(-1.399,2.0, 20);
-% q1_g = linspace(1.99,-2.5, 20);
-% q1_h = linspace(-2.499,3.1416, 20);
-% q1_i = linspace(-2.499,3.1416, 20);
-% q1_j = linspace(-2.499,3.1416, 20);
-% 
-% q2_a = linspace(0, -0.5236, 20);
-% q2_b = linspace(-0.5183, 0.5236, 20);
-% q2_c = linspace(0.5183, -0.5236, 20);
-% q2_d = linspace(-0.5183, 0.5236, 20);
-% q2_e = linspace(0.5183, -0.5236, 20);
-% q2_f = linspace(-0.5183, 0.5236, 20);
-% q2_g = linspace(0.5183, -0.5236, 20);
-% q2_h = linspace(-0.5183, 0.5236, 20);
-% q2_i = linspace(0.5183, -0.5236, 20);
-% q2_j = linspace(-0.5183,0, 20);
-
-% % Concatenate the segments
-% q1_desired = [q1_a, q1_b, q1_c, q1_d, q1_e, q1_f, q1_g, q1_h, q1_i, q1_j];
-% q2_desired = [q2_a, q2_b, q2_c, q2_d, q2_e, q2_f, q2_g, q2_h, q2_i, q2_j];
+% Convert velocities from revolutions/s to radians/s
+q1_dot_desired = q1_dot_desired_revolutions * 2 * pi;
+q2_dot_desired = q2_dot_desired_revolutions * 2 * pi;
 
 
-
+% Time step
+dt = t_sim(2) - t_sim(1);
 
 % Create a new time vector for the smooth trajectory
 t_original = linspace(0, 3, length(q1_desired));
@@ -113,15 +63,6 @@ q2_smooth = spline(t_original, q2_desired, t_smooth);
 % Use the smoothed trajectories
 q1_desired = q1_smooth;
 q2_desired = q2_smooth;
-
-% Compute velocities using finite differences
-dt = t_smooth(2) - t_smooth(1);  % Time step
-q1_dot_desired = diff(q1_desired) / dt;
-q2_dot_desired = diff(q2_desired) / dt;
-
-% Pad the velocities arrays to match the length of the time vector
-q1_dot_desired = [q1_dot_desired, 0];  % Add a zero to the end to match the original length
-q2_dot_desired = [q2_dot_desired, 0];  % Add a zero to the end to match the original length
 
 % Compute accelerations using finite differences
 q1_dot_dot_desired = diff(q1_dot_desired) / dt;
