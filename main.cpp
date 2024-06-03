@@ -140,13 +140,16 @@ protected:
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                     index_++;
                 }
-                cmd_.position = cmd_pos[i];
 
-                // if (v1.trajectory_complete)
-                // {
-                //     std::cout << "\nBACKUP TRAJ" << std::endl;
-                //     cmd_.position = cmd_pos_backup[i];
-                // }
+                if (v1.trajectory_complete && v1.position == 0.5)
+                {
+                    std::cout << "\nCOMPLETED" << std::endl;
+                    return true;
+                }
+                else
+                {
+                    cmd_.position = cmd_pos[i];
+                }
             }
             else // TORQUE MODE
             {
