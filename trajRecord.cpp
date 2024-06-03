@@ -83,6 +83,7 @@ int main(int argc, char **argv)
                v1.torque, v2.torque,
                v1.temperature, v2.temperature, v1.trajectory_complete, v2.trajectory_complete, static_cast<int>(v1.fault), static_cast<int>(v2.fault));
         fflush(stdout);
+        ::usleep(10000);
     }
 
     std::cout << "Entering fault mode!" << std::endl;
