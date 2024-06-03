@@ -126,6 +126,9 @@ protected:
 
         // const std::vector<double> &last_torque_command = torque_commands_.back();
         // std::vector<double> torque_diff = {TorqueError(last_torque_command[0], v1.torque), TorqueError(last_torque_command[1], v2.torque)};
+        // std::vector<double> actual_torque = {v1.torque, v2.torque};
+
+
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
@@ -141,7 +144,7 @@ protected:
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 4.0;
 
-                // cmd_.feedforward_torque += torque_diff[i];
+                // cmd_.feedforward_torque = actual_torque[i] + torque_diff[i];
             }
             else // TRAJECTORY MODE
             {
