@@ -146,8 +146,6 @@ protected:
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
 
-                // auto result = controllers_[i]->SetPosition(cmd_);
-
                 // cmd_.feedforward_torque += torque_diff[i];
             }
             else // TRAJECTORY MODE
@@ -197,6 +195,8 @@ protected:
             index_++;
         }
 
+        ::usleep(10);
+
         return false;
     }
 
@@ -230,7 +230,7 @@ int main(int argc, char **argv)
     // Set position format
     auto &pf = options_common.position_format;
     auto &qf = options_common.query_format;
-    pf.position = mjbots::moteus::kInt16;
+    pf.position = mjbots::moteus::kInt8;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
