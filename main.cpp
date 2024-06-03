@@ -105,8 +105,8 @@ protected:
         receive_frames.clear();
 
         std::vector<double> cmd_pos = {0.50, 0.00};
-        std::vector<double> cmd_kp = {100.0, 50.0};
-        std::vector<double> cmd_kd = {1.0, 1.0};
+        std::vector<double> cmd_kp = {5.0, 5.0};
+        std::vector<double> cmd_kd = {20.0, 0.5};
 
         // auto maybe_servo1 = controllers_[0]->SetQuery();
         // auto maybe_servo2 = controllers_[1]->SetQuery();
