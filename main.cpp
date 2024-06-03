@@ -149,7 +149,6 @@ protected:
             }
             else // TORQUE MODE
             {
-
                 cmd_.feedforward_torque = torque_commands_[index_][i];
                 printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \n",
                        v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
@@ -268,7 +267,7 @@ int main(int argc, char **argv)
     std::vector<std::vector<double>> torque_commands;
     for (size_t i = 1; i < data.size(); ++i)
     {
-        torque_commands.push_back({data[i][4], data[i][8]});
+        torque_commands.push_back({data[i][4] * 1.25, data[i][8] * 1.25});
     }
 
     // Calculate time intervals as differences between timestamps
