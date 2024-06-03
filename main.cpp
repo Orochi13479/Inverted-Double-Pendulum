@@ -141,7 +141,6 @@ protected:
                     index_++;
                 }
                 cmd_.position = cmd_pos[i];
-                cmd_.feedforward_torque = NaN;
 
                 // if (v1.trajectory_complete)
                 // {
@@ -152,7 +151,6 @@ protected:
             else // TORQUE MODE
             {
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-                cmd_.position = NaN;
 
                 printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \n",
                        v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
@@ -278,7 +276,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 200) - (data[i - 1][0] * 200));
+        time_intervals.push_back((data[i][0] * 150) - (data[i - 1][0] * 150));
     }
 
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
