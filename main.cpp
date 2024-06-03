@@ -237,6 +237,7 @@ int main(int argc, char **argv)
     pf.kp_scale = mjbots::moteus::kInt8;
     pf.kd_scale = mjbots::moteus::kInt8;
     pf.accel_limit = mjbots::moteus::kInt8;
+    pf.maximum_torque = mjbots::moteus::kInt8;
     qf.trajectory_complete = mjbots::moteus::kIgnore;
 
     // Create two controllers
