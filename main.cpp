@@ -149,7 +149,10 @@ protected:
             }
             else // TORQUE MODE
             {
+
                 cmd_.feedforward_torque = torque_commands_[index_][i];
+                printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \r",
+                       v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
             }
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
@@ -175,14 +178,14 @@ protected:
         const auto now = GetNow();
         if (now > status_time)
         {
-            printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
-                   static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                   v1.position, v2.position,
-                   v1.torque, v2.torque,
-                   v1.temperature, v2.temperature, v1.trajectory_complete, v2.trajectory_complete, static_cast<int>(v1.fault), static_cast<int>(v2.fault));
-            printf("\n             %6.1fHz  rx_count=%2d   \r",
-                   hz_count / kStatusPeriodS, count);
-            fflush(stdout);
+            // printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
+            //        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
+            //        v1.position, v2.position,
+            //        v1.torque, v2.torque,
+            //        v1.temperature, v2.temperature, v1.trajectory_complete, v2.trajectory_complete, static_cast<int>(v1.fault), static_cast<int>(v2.fault));
+            // printf("\n             %6.1fHz  rx_count=%2d   \r",
+            //        hz_count / kStatusPeriodS, count);
+            // fflush(stdout);
 
             total_count_++;
             total_hz_ += (hz_count / kStatusPeriodS);
