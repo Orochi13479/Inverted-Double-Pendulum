@@ -139,7 +139,8 @@ protected:
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                 }
                 cmd_.position = cmd_pos[i];
-                cmd_.accel_limit = 2.0;
+                cmd_.accel_limit = 3.0;
+                cmd_.maximum_torque = 1.1;
 
                 // cmd_.feedforward_torque += torque_diff[i];
             }
