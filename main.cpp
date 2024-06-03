@@ -132,6 +132,7 @@ protected:
                 }
 
                 // cmd_.position = cmd_pos[i];
+                cmd_.feedforward_torque = 0.0;
 
                 printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
                        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
