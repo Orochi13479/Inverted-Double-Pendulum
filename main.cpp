@@ -139,13 +139,13 @@ protected:
             // cmd_.kp_scale = cmd_kp[i];
             // cmd_.kd_scale = cmd_kd[i];
 
-            if (index_ == torque_commands_.size()) // POSITION MODE
+            if (index_ == torque_commands_.size())
             {
-                std::cout << "COMPLETE" << "index_: " << index_ << std::endl;
+                std::cout << "\nCOMPLETE" << "index_: " << index_ << std::endl;
             }
             if (index_ >= torque_commands_.size()) // POSITION MODE
             {
-
+                std::cout << "\nCOMPLETE" << "index_: " << index_ << std::endl;
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
 
@@ -292,8 +292,8 @@ int main(int argc, char **argv)
     }
 
     // Prompt the user to press enter
-    std::cout << "CAREFULLY CHECK TORQUE VALUES";
-    std::cout << "Press Enter to start the real-time loop...";
+    std::cout << "CAREFULLY CHECK TORQUE VALUES\n";
+    std::cout << "Press Enter to start the real-time loop...\n";
     std::cin.get();
 
     // Create the motor control thread
