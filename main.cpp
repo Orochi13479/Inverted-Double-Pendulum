@@ -105,6 +105,8 @@ protected:
         receive_frames.clear();
 
         std::vector<double> cmd_pos = {0.50, 0.00};
+        std::vector<double> cmd_kp = {20.0, 20.0};
+        std::vector<double> cmd_kd = {15.0, 10.0};
 
         // auto maybe_servo1 = controllers_[0]->SetQuery();
         // auto maybe_servo2 = controllers_[1]->SetQuery();
@@ -114,8 +116,8 @@ protected:
 
         for (size_t i = 0; i < controllers_.size(); i++)
         {
-            cmd_.kp_scale = 2.0;
-            cmd_.kd_scale = 1.0;
+            cmd_.kp_scale = cmd_kp[i];
+            cmd_.kd_scale = cmd_kd[i];
             cmd_.maximum_torque = 1.0;
             cmd_.accel_limit = 4.0;
 
@@ -224,8 +226,8 @@ int main(int argc, char **argv)
     pf.position = mjbots::moteus::kInt16;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kInt16;
-    pf.kp_scale = mjbots::moteus::kInt8;
-    pf.kd_scale = mjbots::moteus::kInt8;
+    pf.kp_scale = mjbots::moteus::kInt16;
+    pf.kd_scale = mjbots::moteus::kInt16;
     pf.accel_limit = mjbots::moteus::kInt8;
     pf.maximum_torque = mjbots::moteus::kInt8;
     qf.trajectory_complete = mjbots::moteus::kInt8;
