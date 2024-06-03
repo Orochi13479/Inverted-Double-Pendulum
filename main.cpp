@@ -141,11 +141,11 @@ protected:
 
             if (index_ == torque_commands_.size())
             {
-                std::cout << "\nCOMPLETE" << "index_: " << index_ << std::endl;
+                std::cout << "\nCOMPLETE " << "index_: " << index_ << std::endl;
             }
             if (index_ >= torque_commands_.size()) // POSITION MODE
             {
-                std::cout << "\nCOMPLETE" << "index_: " << index_ << std::endl;
+                std::cout << "\nCOMPLETED " << "index_: " << index_ << std::endl;
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
 
