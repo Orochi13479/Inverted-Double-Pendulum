@@ -130,7 +130,7 @@ protected:
         {
             cmd_.kp_scale = 2.0;
             cmd_.kd_scale = 1.0;
-            // cmd_.maximum_torque = 1.0;
+            cmd_.maximum_torque = 1.0;
             cmd_.accel_limit = 3.0;
 
             if (index_ >= torque_commands_.size()) // POSITION MODE
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
     // Set position format
     auto &pf = options_common.position_format;
     auto &qf = options_common.query_format;
-    pf.position = mjbots::moteus::kInt16;
+    pf.position = mjbots::moteus::kIgnore;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
