@@ -143,8 +143,6 @@ protected:
                 // }
 
                 cmd_.position = cmd_pos[i];
-                cmd_.stop_position = cmd_pos[i];
-                controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
 
                 printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
                        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
@@ -158,13 +156,14 @@ protected:
 
                 // printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \n",
                 //        v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
-                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-                transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
             }
+            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
         for (auto &pair : responses_)
             pair.second = false;
+
+        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
