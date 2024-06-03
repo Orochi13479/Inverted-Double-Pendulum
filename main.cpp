@@ -117,7 +117,7 @@ protected:
         {
             cmd_.kp_scale = 2.0;
             cmd_.kd_scale = 1.0;
-            // cmd_.maximum_torque = 1.0;
+            cmd_.maximum_torque = 1.0;
             cmd_.accel_limit = 4.0;
 
             if (index_ >= torque_commands_.size()) // POSITION MODE
