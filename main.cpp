@@ -151,7 +151,7 @@ protected:
             {
 
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-                printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \r",
+                printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \n",
                        v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
             }
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
