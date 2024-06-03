@@ -23,9 +23,6 @@ void signalHandler(int signal)
     ctrl_c_pressed = 1; // Set flag to indicate Ctrl+C was pressed
 }
 
-// Arrays to store data for each column
-std::vector<float> timestamp, q1, q1_dot, q1_dot_dot, tau1, q2, q2_dot, q2_dot_dot, tau2;
-
 // Function to read CSV data
 std::vector<std::vector<float>> readCSV(const std::string &filename)
 {
@@ -53,13 +50,6 @@ std::vector<std::vector<float>> readCSV(const std::string &filename)
     }
 
     return data;
-}
-
-double TorqueError(double desired_torque, double actual_torque)
-{
-    double torque_error = actual_torque - desired_torque;
-
-    return torque_error;
 }
 
 // A simple way to get the current time accurately as a double.
@@ -114,9 +104,6 @@ protected:
         send_frames.clear();
         receive_frames.clear();
 
-        std::vector<double> cmd_kp = {10.0, 1};
-        std::vector<double> cmd_kd = {5.0, 0.5};
-
         std::vector<double> cmd_pos = {0.5, 0.01};
         std::vector<double> cmd_pos_backup = {0.6, 0.01};
 
@@ -130,8 +117,8 @@ protected:
         {
             cmd_.kp_scale = 2.0;
             cmd_.kd_scale = 1.0;
-            cmd_.maximum_torque = 1.0;
-            cmd_.accel_limit = 3.0;
+            // cmd_.maximum_torque = 1.0;
+            cmd_.accel_limit = 4.0;
 
             if (index_ >= torque_commands_.size()) // POSITION MODE
             {
@@ -147,19 +134,15 @@ protected:
                 // if (v1.trajectory_complete && v1.position != 0.5)
                 // {
                 //     std::cout << "Adjusting" << std::endl;
-                //     cmd_.position = cmd_pos[i];
-                // }
-                // else if (v1.trajectory_complete && v1.position == 0.5)
-                // {
-                //     std::cout << "FINISHED" << std::endl;
+                //     cmd_.position = cmd_pos_backup[i];
                 // }
                 // else
                 // {
                 //     std::cout << "Moving" << std::endl;
                 //     cmd_.position = cmd_pos[i];
                 // }
+
                 cmd_.position = cmd_pos[i];
-                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
 
                 printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
                        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
@@ -173,8 +156,8 @@ protected:
 
                 // printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \n",
                 //        v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
-                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
             }
+            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
         for (auto &pair : responses_)
@@ -325,7 +308,7 @@ int main(int argc, char **argv)
     cactus_rt::SetUpTerminationSignalHandler();
 
     // Inform the user that the real-time loop is starting and will run until interrupted
-    std::cout << "Testing RT loop until CTRL+C\n";
+    std::cout << "RT loop will run until CTRL+C\n";
 
     // Start the application (and thus the motor control thread)
     app.Start();
@@ -344,11 +327,11 @@ int main(int argc, char **argv)
     }
 
     // Calculate the average loop duration from the motor control thread
-    std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
-    std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
+    // std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
+    // std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
 
     // Output the average speed of the motor control thread
-    std::cout << "\nAverage speed: " << motor_thread->GetAverageHz() << " Hz\n";
+    std::cout << "Average speed: " << motor_thread->GetAverageHz() << " Hz\n";
 
     return 0;
 }
