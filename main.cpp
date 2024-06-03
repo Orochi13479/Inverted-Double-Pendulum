@@ -240,7 +240,7 @@ int main(int argc, char **argv)
     pf.kd_scale = mjbots::moteus::kInt8;
     pf.accel_limit = mjbots::moteus::kInt8;
     pf.maximum_torque = mjbots::moteus::kInt8;
-    qf.trajectory_complete = mjbots::moteus::kIgnore;
+    qf.trajectory_complete = mjbots::moteus::kInt8;
 
     // Create two controllers
     std::vector<std::shared_ptr<mjbots::moteus::Controller>> controllers = {
