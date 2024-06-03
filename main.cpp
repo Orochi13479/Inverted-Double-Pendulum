@@ -146,12 +146,7 @@ protected:
                 cmd_.position = cmd_pos[i];
                 cmd_.accel_limit = 2.0;
 
-                auto result = controllers_[i]->SetPosition(cmd_);
-
-                if (result && result->values.trajectory_complete)
-                {
-                    return true;
-                }
+                // auto result = controllers_[i]->SetPosition(cmd_);
 
                 // cmd_.feedforward_torque += torque_diff[i];
             }
@@ -159,13 +154,14 @@ protected:
             {
                 // std::cout << "TRAJECTORY IN PROGRESS" << std::endl;
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-                send_frames.push_back(controllers_[i]->MakePosition(cmd_));
-                transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
             }
+            send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
 
         for (auto &pair : responses_)
             pair.second = false;
+
+        transport_->BlockingCycle(&send_frames[0], send_frames.size(), &receive_frames);
 
         for (const auto &frame : receive_frames)
             responses_[frame.source] = true;
