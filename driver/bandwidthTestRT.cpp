@@ -87,7 +87,7 @@ protected:
         const auto now = GetNow();
         if (now > status_time)
         {
-            printf("                 %6.1fHz  rx_count=%2d   \r",
+            printf("\n                 %6.1fHz  rx_count=%2d   \r",
                    hz_count / kStatusPeriodS, count);
             fflush(stdout);
 
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 {
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 100'000;  // Target Time in ns
+    config.period_ns = 110'000;  // Target Time in ns
     config.SetFifoScheduler(98); // Priority 0-100
 
     // Set up controllers and transport
