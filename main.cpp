@@ -127,7 +127,7 @@ protected:
                 {
                     std::cout << "\nCOMPLETE AT " << "index_: " << index_ << std::endl;
                     index_++;
-                    cmd_.stop_position = cmd_pos_backup[i];
+                    cmd_.position = cmd_pos_backup[i];
                     controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
                 }
 
@@ -142,6 +142,7 @@ protected:
                 //     cmd_.position = cmd_pos[i];
                 // }
 
+                cmd_.position = cmd_pos[i];
                 cmd_.stop_position = cmd_pos[i];
                 controllers_[i]->SetPositionWaitComplete(cmd_, 0.001);
 
