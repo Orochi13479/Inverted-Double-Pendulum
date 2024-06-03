@@ -235,7 +235,7 @@ int main(int argc, char **argv)
     // Set position format
     auto &pf = options_common.position_format;
     auto &qf = options_common.query_format;
-    pf.position = mjbots::moteus::kIgnore;
+    pf.position = mjbots::moteus::kInt16;
     pf.velocity = mjbots::moteus::kIgnore;
     pf.feedforward_torque = mjbots::moteus::kFloat;
     pf.kp_scale = mjbots::moteus::kInt8;
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
     std::vector<int> time_intervals;
     for (size_t i = 1; i < data.size(); ++i) // Start from the second element
     {
-        time_intervals.push_back((data[i][0] * 1000) - (data[i - 1][0] * 1000));
+        time_intervals.push_back((data[i][0] * 200) - (data[i - 1][0] * 200));
     }
 
     std::cout << "time_intervalssize " << time_intervals.size() << std::endl;
