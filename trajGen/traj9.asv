@@ -60,7 +60,7 @@ dt = t_sim(2) - t_sim(1);
 smooth_data = @(data, window_size) filter(ones(1, window_size) / window_size, 1, data);
 
 % Define the window size for the moving average filter
-window_size = 500;  % Adjust as needed
+window_size = 100;  % Adjust as needed
 
 % Smooth the desired position data
 q1_desired_smooth = smooth_data(q1_desired, window_size);
@@ -138,69 +138,6 @@ for i = 1:length(t_sim)  % Ensure the loop runs for the correct length
     q2_dot_dot_sim(i) = q2_dot_dot;
 end
 
-%% GENERATE CSV FILE OF TRAJECTORY
-% Create CSV file of Trajectory Generation Data
-
-% Define the filename
-filename = 'trajectory_data_17.csv';
-
-% Transpose each variable and concatenate them into a single matrix
-data = [t_sim(:), q1_sim(:), q1_dot_sim(:), q1_dot_dot_sim(:), tau1(:), q2_sim(:), q2_dot_sim(:), q2_dot_dot_sim(:), tau2(:)];
-
-% Define custom variable names as a title
-title_line = 'Time,q1,q1_dot,q1_dot_dot,tau1,q2,q2_dot,q2_dot_dot,tau2';
-
-% Write the title to the CSV file without adding a newline character
-fid = fopen(filename, 'w');
-fprintf(fid, '%s\n', title_line);
-fclose(fid);
-
-% Append data to the CSV file
-writematrix(data, filename, 'WriteMode', 'append');
-%% SIMULATE SYSTEM
-
-% Calculate the real-time time step
-dt_real_time = mean(diff(t_sim));  % Assuming uniform time steps
-
-% Animation of the double inverted pendulum
-figure;
-hold on;
-axis equal;
-xlim([-0.5 0.5]);
-ylim([-0.5 0.5]);
-xlabel('X Position (m)');
-ylabel('Y Position (m)');
-title('Double Inverted Pendulum Animation');
-
-% Define the pendulum links
-pendulum1 = plot([0, L1 * sin(q1_sim(1))], [0, -L1 * cos(q1_sim(1))], 'r-', 'LineWidth', 2);
-pendulum2 = plot([L1 * sin(q1_sim(1)), L1 * sin(q1_sim(1)) + L2 * sin(q1_sim(1) + q2_sim(1))], ...
-                 [-L1 * cos(q1_sim(1)), -L1 * cos(q1_sim(1)) - L2 * cos(q1_sim(1) + q2_sim(1))], 'b-', 'LineWidth', 2);
-
-% Initialize text annotations
-q1_text = text(0.3, 0.4, sprintf('q1: %.2f rad', q1_sim(1)), 'FontSize', 10, 'Color', 'k');
-q2_text = text(0.3, 0.35, sprintf('q2: %.2f rad', q2_sim(1)), 'FontSize', 10, 'Color', 'k');
-q1_dot_text = text(0.3, 0.3, sprintf('q1_dot: %.2f rad/s', q1_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
-q2_dot_text = text(0.3, 0.25, sprintf('q2_dot: %.2f rad/s', q2_dot_sim(1)), 'FontSize', 10, 'Color', 'k');
-
-% Animate the pendulum
-for i = 1:length(t_sim)
-    % Update pendulum links
-    set(pendulum1, 'XData', [0, L1 * sin(q1_sim(i))], 'YData', [0, -L1 * cos(q1_sim(i))]);
-    set(pendulum2, 'XData', [L1 * sin(q1_sim(i)), L1 * sin(q1_sim(i)) + L2 * sin(q1_sim(i) + q2_sim(i))], ...
-                   'YData', [-L1 * cos(q1_sim(i)), -L1 * cos(q1_sim(i)) - L2 * cos(q1_sim(i) + q2_sim(i))]);
-    
-    % Update text annotations
-    set(q1_text, 'String', sprintf('q1: %.2f rad', q1_sim(i)));
-    set(q2_text, 'String', sprintf('q2: %.2f rad', q2_sim(i)));
-    set(q1_dot_text, 'String', sprintf('q1_dot: %.2f rad/s', q1_dot_sim(i)));
-    set(q2_dot_text, 'String', sprintf('q2_dot: %.2f rad/s', q2_dot_sim(i)));
-    
-    % Pause to create real-time effect
-    pause(dt_real_time);
-end
-
-hold off;
 
 %% Generate Graphs for Joint 1 and Joint 2 Angular Position, Velocity, Acceleration, and Torque
 
