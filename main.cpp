@@ -149,6 +149,7 @@ protected:
                 else
                 {
                     cmd_.position = cmd_pos[i];
+                    controllers_[i]->SetPosition(cmd_);
                 }
             }
             else // TORQUE MODE
