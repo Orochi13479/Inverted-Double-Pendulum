@@ -229,8 +229,8 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 3'300'000; // Target Time in ns
-    config.SetFifoScheduler(98);  // Priority 0-100
+    config.period_ns = 3'000'000; // Target Time in ns
+    config.SetFifoScheduler(90);  // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -332,10 +332,6 @@ int main(int argc, char **argv)
     {
         c->SetStop();
     }
-
-    // Calculate the average loop duration from the motor control thread
-    // std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
-    // std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
 
     // Output the average speed of the motor control thread
     std::cout << "\nAverage speed: " << motor_thread->GetAverageHz() << " Hz\n";

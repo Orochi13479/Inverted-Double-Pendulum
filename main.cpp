@@ -108,12 +108,6 @@ protected:
         std::vector<double> cmd_kp = {5.0, 5.0};
         std::vector<double> cmd_kd = {20.0, 0.5};
 
-        // auto maybe_servo1 = controllers_[0]->SetQuery();
-        // auto maybe_servo2 = controllers_[1]->SetQuery();
-
-        // const auto &v1 = maybe_servo1->values;
-        // const auto &v2 = maybe_servo2->values;
-
         for (size_t i = 0; i < controllers_.size(); i++)
         {
             cmd_.kp_scale = cmd_kp[i];
@@ -133,19 +127,10 @@ protected:
 
                 cmd_.position = cmd_pos[i];
                 cmd_.feedforward_torque = 0.0;
-
-                // printf("MODE: %2d/%2d  POSITION: %6.3f/%6.3f  TORQUE: %6.3f/%6.3f  TEMP: %4.1f/%4.1f  TRAJCOMPLETE: %d/%d FAULTS: %2d/%2d\r",
-                //        static_cast<int>(v1.mode), static_cast<int>(v2.mode),
-                //        v1.position, v2.position,
-                //        v1.torque, v2.torque,
-                //        v1.temperature, v2.temperature, v1.trajectory_complete, v2.trajectory_complete, static_cast<int>(v1.fault), static_cast<int>(v2.fault));
             }
             else // TORQUE MODE
             {
                 cmd_.feedforward_torque = torque_commands_[index_][i];
-
-                // printf("TORQUE: %6.3f/%6.3f COMMANDED: %6.3f/%6.3f \n",
-                //        v1.torque, v2.torque, torque_commands_[index_][0], torque_commands_[index_][1]);
             }
             send_frames.push_back(controllers_[i]->MakePosition(cmd_));
         }
@@ -172,9 +157,6 @@ protected:
         if (now > status_time)
         {
 
-            // printf("\n             %6.1fHz  rx_count=%2d   \r",
-            //        hz_count / kStatusPeriodS, count);
-            // fflush(stdout);
             total_count_++;
             total_hz_ += (hz_count / kStatusPeriodS);
 
@@ -211,8 +193,8 @@ int main(int argc, char **argv)
 
     // Real-time thread configuration
     cactus_rt::CyclicThreadConfig config;
-    config.period_ns = 3'300'000; // Target Time in ns
-    config.SetFifoScheduler(98);  // Priority 0-100
+    config.period_ns = 1'670'000; // Target Time in ns
+    config.SetFifoScheduler(90);  // Priority 0-100
 
     // Set up controllers and transport
     mjbots::moteus::Controller::DefaultArgProcess(argc, argv);
@@ -312,13 +294,6 @@ int main(int argc, char **argv)
     {
         c->SetStop();
     }
-
-    // Calculate the average loop duration from the motor control thread
-    // std::cout << "Target Duration: " << config.period_ns << "ns" << std::endl;
-    // std::cout << "Target Frequency: " << 1 / (config.period_ns / 1e9) << "Hz" << std::endl;
-
-    // Output the average speed of the motor control thread
-    // std::cout << "Average speed: " << motor_thread->GetAverageHz() << " Hz\n";
 
     return 0;
 }

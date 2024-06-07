@@ -46,7 +46,7 @@ make
 ### Using
 Please run the following in the ~/git/Inverted-Double-Pendulum directory:
 ```
-./build/EXECUTATBLE-NAME # E.g. ./build/IDPDriver
+./build/EXECUTATBLE-NAME # E.g. ./build/main_InvertedDoublePendulum
 ```
 
 ## Useful Commands
